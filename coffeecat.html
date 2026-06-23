@@ -1474,6 +1474,7 @@ function App() {
               )}
             </div>
           ) : (
+          <>
           {previewDeco && (
             <button onClick={()=>setPreviewDeco(null)} style={{width:'100%',border:'none',borderRadius:'.75rem',padding:'.5rem .65rem',marginBottom:'.65rem',background:drawerUi.lockBg,color:drawerUi.accent,fontFamily:'inherit',fontSize:'.62rem',fontWeight:800,cursor:'pointer'}}>
               미리보기 중 · 해금 전에는 저장되지 않아요 · 되돌리기
@@ -1521,6 +1522,7 @@ function App() {
               );
             })}
           </div>
+          </>
           )}
         </div>
       </div>
