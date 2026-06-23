@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코지 카페 타이머</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 설치 여부와 무관하게 모든 브라우저에서 같은 한글 폰트를 사용한다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Pretendard Variable"', 'Pretendard', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body, #root {
+            background: transparent !important;
+	    background-color: transparent !important;
+        }
+        html.dark, html.dark body, html.dark #root {
+            background: #191919 !important;
+            background-color: #191919 !important;
+        }
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: transparent !important;
+            font-family: "Pretendard Variable", Pretendard, sans-serif;
+        }
+        button, input, textarea, select { font-family: inherit; }
+        ::-webkit-scrollbar { display: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+        .coffee-cup { filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05)); }
+        .mode-tab { transition: color 0.2s; }
+        .mode-slider { transition: transform 0.25s cubic-bezier(.4,0,.2,1); }
+        
+        /* 다크모드 대응 드롭다운 */
+        .subject-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            background: #FDFBF7; border: 1px solid #EBE8DE; border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08); z-index: 50; overflow: hidden;
+        }
+        .dark .subject-dropdown {
+            background: #191919; border-color: #2F2F2F;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .subject-option { padding: 10px 16px; cursor: pointer; font-size: 0.875rem; transition: background 0.15s; }
+        .subject-option.has-parent { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .subject-parent-badge { padding: 4px 8px; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; line-height: 1; color: #FFFFFF; background: #1A1A1A; white-space: nowrap; }
+        .dark .subject-parent-badge { background: #F3F4F6; color: #1A1A1A; }
+        .subject-option:hover { background: #F4F0EA; }
+        .dark .subject-option:hover { background: #252525; }
+
+        /* 다크모드 대응 커피잔 */
+        .cup-body { fill: #FFFFFF; transition: fill 0.3s; }
+        .cup-handle { stroke: #FFFFFF; transition: stroke 0.3s; }
+        .cup-inner { fill: #F4F0EA; transition: fill 0.3s; }
+        .cup-text { fill: #D1CBBF; transition: fill 0.3s; }
+        .cup-shadow-line { stroke: rgba(0,0,0,0.06); transition: stroke 0.3s; }
+
+        .dark .cup-body { fill: #2C2C2C; }
+        .dark .cup-handle { stroke: #2C2C2C; }
+        .dark .cup-inner { fill: #1E1E1E; }
+        .dark .cup-text { fill: #666666; }
+        .dark .cup-shadow-line { stroke: rgba(255,255,255,0.04); }
+
+        @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .toast { animation: slideUp 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+        .record-item { animation: fadeIn 0.25s ease; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.8s linear infinite; }
+        .screen-wrap { display: flex; transition: transform 0.35s cubic-bezier(.4,0,.2,1); width: 200%; }
+        .screen { width: 50%; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+<div id="root" class="w-full h-full flex justify-center items-center p-4 bg-transparent"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ── 아이콘 ── */
+const PlayIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+const PauseIcon   = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>;
+const SkipIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>;
+const StopIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>;
+const GearIcon    = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+const XIcon       = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const ChevronIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+const BookIcon    = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+const ListIcon    = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+const TimerIcon   = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+const TrashIcon   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>;
+const RefreshIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>;
+const CheckIcon   = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const NotionIcon  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.887l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933z"/></svg>;
+const MoonIcon    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
+const SunIcon     = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
+
+/* ── 테마 ── */
+const THEMES = {
+    latte:    { id:'latte',    name:'카페 라떼', bg:'bg-[#A67B5B]', hover:'hover:bg-[#8B664B]', hex:'#A67B5B', ring:'ring-[#A67B5B]' },
+    matcha:   { id:'matcha',   name:'말차 라떼', bg:'bg-[#849F71]', hover:'hover:bg-[#738C62]', hex:'#849F71', ring:'ring-[#849F71]' },
+    choco:    { id:'choco',    name:'초코 라떼', bg:'bg-[#5C3A21]', hover:'hover:bg-[#4A2E1A]', hex:'#5C3A21', ring:'ring-[#5C3A21]' },
+    berry:    { id:'berry',    name:'딸기 라떼', bg:'bg-[#D98891]', hover:'hover:bg-[#C2737D]', hex:'#D98891', ring:'ring-[#D98891]' },
+    earlgrey: { id:'earlgrey', name:'밀크티',    bg:'bg-[#D4A373]', hover:'hover:bg-[#B88B5E]', hex:'#D4A373', ring:'ring-[#D4A373]' },
+};
+
+/* ── 포맷 함수 ── */
+const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
+};
+const fmtMin = (sec) => {
+    const totalMin = Math.floor(sec / 60);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    if (h === 0 && m === 0) return '0분';
+    if (h > 0 && m > 0) return `${h}시간 ${m}분`;
+    if (h > 0) return `${h}시간`;
+    return `${m}분`;
+};
+const toNotionMinutes = (sec) => Math.floor(sec / 60);
+const fmtHHMM = (iso) => new Date(iso).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', hour12:false });
+const todayStr = () => new Date().toLocaleDateString('ko-KR', { month:'long', day:'numeric', weekday:'short' });
+
+/* ── 설정 파싱 (URL 파라미터) ── */
+const loadConfig = () => {
+    const params = new URLSearchParams(window.location.search);
+    const proxyUrl = params.get('proxyUrl') || '';
+    const apiKey = params.get('apiKey') || '';
+    const recordDbId = params.get('recordDbId') || '';
+    const subjectDbId = params.get('subjectDbId') || '';
+    const subjectNameProp = params.get('subjectNameProp') || '이름';
+    // 대시보드 통계용 페이지와 자동 연결하기 위한 설정
+    // dashboardPageId: 대시보드 통계 DB 안에 있는 '대시보드 통계용' 페이지 ID
+    // dashboardRelationProp: 공부 기록 DB에 있는 대시보드 관계형 속성 이름
+    const dashboardPageId = params.get('dashboardPageId') || '';
+    const dashboardRelationProp = params.get('dashboardRelationProp') || '대시보드 통계용';
+
+    // proxyUrl, apiKey, recordDbId가 있으면 연결된 것으로 간주
+    const saved = Boolean(proxyUrl && apiKey && recordDbId);
+
+    return { proxyUrl, apiKey, recordDbId, subjectDbId, subjectNameProp, dashboardPageId, dashboardRelationProp, saved };
+};
+
+/* ══════════════════════════════════════════════════════════ */
+const App = () => {
+    /* ── 다크모드 상태 관리 ── */
+    const [isDark, setIsDark] = useState(() => {
+        const saved = localStorage.getItem('cozy_timer_dark');
+        return saved === 'true';
+    });
+
+    useEffect(() => {
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('cozy_timer_dark', isDark);
+    }, [isDark]);
+
+    /* ── Notion 설정 (URL에서만 로드) ── */
+    const [config] = useState(loadConfig);
+
+    /* ── 화면 ── */
+    const [screen, setScreen]         = useState('timer'); // 'timer' | 'records'
+
+    /* ── 과목 ── */
+    const [subjects, setSubjects]               = useState([]);
+    const [subjectsLoading, setSubjectsLoading] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState(null); 
+    const [showSubjectDrop, setShowSubjectDrop] = useState(false);
+    const subjectRef = useRef(null);
+
+    /* ── 타이머 모드 ── */
+    const [timerMode, setTimerMode] = useState('pomodoro');
+    const [pomoPhase, setPomoPhase]         = useState('focus');
+    const [timeLeft, setTimeLeft]           = useState(25 * 60);
+    const [focusDuration, setFocusDuration] = useState(25);
+    const [breakDuration, setBreakDuration] = useState(5);
+    const pomoDeadlineRef   = useRef(null);
+    const pomoFocusAccum    = useRef(0);
+
+    /* ── 스톱워치 ── */
+    const [elapsed, setElapsed]       = useState(0);
+    const [startTime, setStartTime]   = useState(null);
+    const swOffsetRef     = useRef(0);
+    const swPauseStartRef = useRef(null);
+
+    /* ── 공통 ── */
+    const [isActive, setIsActive]         = useState(false);
+    const [themeId, setThemeId]           = useState(() => {
+        try { const saved = localStorage.getItem('cozy_timer_theme'); return (saved && THEMES[saved]) ? saved : 'latte'; } catch { return 'latte'; }
+    });
+    const [showSettings, setShowSettings] = useState(false);
+
+    /* ── 기록 ── */
+    const [records, setRecords] = useState([]);
+    const [recordsLoading, setRecordsLoading] = useState(false);
+    const [saving, setSaving]   = useState(false);
+    const [toast, setToast]     = useState(null);
+
+    const alarmSound = useRef(typeof Audio !== "undefined" ? new Audio('./alarm_1.mp3') : null);
+    const theme = THEMES[themeId];
+
+    const notionFetch = useCallback(async (path, options = {}) => {
+        const { proxyUrl, apiKey } = config;
+        if (!proxyUrl || !apiKey) throw new Error('URL 파라미터 설정이 누락되었습니다');
+        const res = await fetch(`${proxyUrl}${path}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'x-notion-version': '2022-06-28',
+                ...(options.headers || {}),
+            },
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || `API 오류 (${res.status})`);
+        }
+        return res.json();
+    }, [config]);
+
+    const loadSubjects = useCallback(async () => {
+        if (!config.saved || !config.subjectDbId) return;
+        setSubjectsLoading(true);
+        try {
+            const data = await notionFetch(`/v1/databases/${config.subjectDbId}/query`, {
+                method: 'POST',
+                body: JSON.stringify({ page_size: 100 }),
+            });
+            const nameProp = config.subjectNameProp || '이름';
+            const subjectMap = {};
+            data.results.forEach(page => {
+                const prop = page.properties[nameProp];
+                const name = prop?.title?.[0]?.plain_text || prop?.rich_text?.[0]?.plain_text || '';
+                const parentProp = page.properties['상위 항목'] || Object.values(page.properties).find(p => p.type === 'relation' && p.name && p.name.includes('상위'));
+                const parentId = parentProp?.relation?.[0]?.id || null;
+                if (name) subjectMap[page.id] = { id: page.id, name, parentId };
+            });
+            const list = Object.values(subjectMap)
+                .map(subject => ({
+                    ...subject,
+                    parentName: subject.parentId && subjectMap[subject.parentId]
+                        ? subjectMap[subject.parentId].name
+                        : null
+                }))
+                .filter(s => s.name);
+            setSubjects(list);
+        } catch (e) {
+            showToast('과목 로드 실패: ' + e.message);
+        } finally {
+            setSubjectsLoading(false);
+        }
+    }, [config, notionFetch]);
+
+    const loadTodayRecords = useCallback(async () => {
+        if (!config.saved || !config.recordDbId) return;
+        setRecordsLoading(true);
+        try {
+            const data = await notionFetch(`/v1/databases/${config.recordDbId}/query`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    sorts: [{ property: '날짜', direction: 'descending' }],
+                    page_size: 100
+                }),
+            });
+            const todayStrKst = new Date().toLocaleDateString();
+            const loaded = data.results.map(page => {
+                const titleProp = Object.values(page.properties).find(p => p.type === 'title');
+                const titleText = titleProp?.title?.[0]?.plain_text || '미선택';
+                const subjMatch = titleText.match(/^\[(.*?)\]/);
+                const subject = subjMatch ? subjMatch[1] : '미선택';
+                const minutes = page.properties['순공시간']?.number || 0;
+                const startIso = page.properties['날짜']?.date?.start || page.created_time;
+                const modeName = page.properties['모드']?.select?.name || '';
+                const modeLabel = modeName.includes('뽀모도로') ? 'pomodoro' : 'stopwatch';
+                return { id: page.id, subject, seconds: minutes * 60, startIso, modeLabel, synced: true };
+            }).filter(r => new Date(r.startIso).toLocaleDateString() === todayStrKst);
+
+            setRecords(prev => {
+                const unsynced = prev.filter(r => !r.synced);
+                return [...unsynced, ...loaded];
+            });
+        } catch (e) {
+            console.error("Failed to load records:", e);
+        } finally {
+            setRecordsLoading(false);
+        }
+    }, [config, notionFetch]);
+
+    useEffect(() => { loadSubjects(); loadTodayRecords(); }, [loadSubjects, loadTodayRecords]);
+
+    useEffect(() => {
+        if (timerMode !== 'pomodoro' || !isActive) return;
+        if (!pomoDeadlineRef.current) pomoDeadlineRef.current = Date.now() + timeLeft * 1000;
+        const iv = setInterval(() => {
+            const remaining = Math.round((pomoDeadlineRef.current - Date.now()) / 1000);
+            if (pomoPhase === 'focus') pomoFocusAccum.current = (focusDuration * 60) - Math.max(0, remaining);
+            if (remaining <= 0) {
+                clearInterval(iv); pomoDeadlineRef.current = null;
+                if (alarmSound.current) alarmSound.current.play().catch(()=>console.log("알람 재생 실패"));
+                if (pomoPhase === 'focus') {
+                    saveRecord(pomoFocusAccum.current, 'pomodoro');
+                    pomoFocusAccum.current = 0; setPomoPhase('break'); setTimeLeft(breakDuration * 60);
+                    showToast('🍅 집중 완료! 잠깐 쉬어요 ☕');
+                } else {
+                    setPomoPhase('focus'); setTimeLeft(focusDuration * 60);
+                    showToast('✨ 휴식 끝! 다시 집중해봐요');
+                }
+                setIsActive(false);
+            } else { setTimeLeft(remaining); }
+        }, 500);
+        return () => clearInterval(iv);
+    }, [isActive, pomoPhase, focusDuration, breakDuration, timerMode]);
+
+    useEffect(() => { if (timerMode !== 'pomodoro') return; if (!isActive) pomoDeadlineRef.current = null; }, [isActive, timerMode]);
+
+    useEffect(() => {
+        if (timerMode !== 'stopwatch' || !isActive) return;
+        const iv = setInterval(() => {
+            const base = startTime ? new Date(startTime).getTime() : Date.now();
+            const secs = Math.floor((Date.now() - base - swOffsetRef.current) / 1000);
+            setElapsed(Math.max(0, secs));
+        }, 500);
+        return () => clearInterval(iv);
+    }, [isActive, timerMode, startTime]);
+
+    useEffect(() => {
+        if (!isActive && timerMode === 'pomodoro') {
+            setTimeLeft(focusDuration * 60); setPomoPhase('focus'); pomoFocusAccum.current = 0;
+        }
+    }, [focusDuration, breakDuration]); 
+
+    useEffect(() => {
+        const h = (e) => { if (subjectRef.current && !subjectRef.current.contains(e.target)) setShowSubjectDrop(false); };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
+
+    const saveRecord = async (seconds, modeLabel) => {
+        if (seconds < 60) return; 
+        const d = startTime ? new Date(startTime) : new Date();
+        const titleDate = `${String(d.getFullYear()).slice(-2)}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+        const subjName = selectedSubject?.name || '미선택';
+        const pageTitle = `[${subjName}] ${titleDate}`;
+
+        const rec = {
+            id: Date.now(), subject: subjName, subjectId: selectedSubject?.id || null,
+            seconds, minutes: toNotionMinutes(seconds), startIso: d.toISOString(), modeLabel, synced: false,
+        };
+        setRecords(prev => [rec, ...prev]);
+        if (!config.saved) return;
+
+        setSaving(true);
+        try {
+            const properties = {
+                'title': { title: [{ text: { content: pageTitle } }] },
+                '순공시간': { number: rec.minutes },         
+                '날짜':     { date: { start: rec.startIso } },
+                '모드':     { select: { name: modeLabel === 'pomodoro' ? '🍅 뽀모도로' : '⏱ 일반' } },
+                '커피 종류': { select: { name: THEMES[themeId].name } }
+            };
+            if (rec.subjectId) properties['과목'] = { relation: [{ id: rec.subjectId }] };
+            // 대시보드 통계용 페이지와 자동 연결
+            // 이 관계가 연결되면 대시보드 통계용 페이지의 Rollup 값이 자동 집계됩니다.
+            if (config.dashboardPageId) {
+                properties[config.dashboardRelationProp] = { relation: [{ id: config.dashboardPageId }] };
+            }
+            
+            const resData = await notionFetch('/v1/pages', {
+                method: 'POST', body: JSON.stringify({ parent: { database_id: config.recordDbId }, properties }),
+            });
+            setRecords(prev => prev.map(r => r.id === rec.id ? { ...r, id: resData.id, synced: true } : r));
+            showToast(`☕ ${fmtMin(seconds)} 노션에 기록됐어요!`);
+        } catch (e) { showToast('노션 저장 실패: ' + e.message); } finally { setSaving(false); }
+    };
+
+    const stopStopwatch = () => {
+        setIsActive(false);
+        if (elapsed >= 60) saveRecord(elapsed, 'stopwatch');
+        else if (elapsed > 0) showToast('1분 이상 공부해야 기록돼요 ☕');
+        setElapsed(0); setStartTime(null); swOffsetRef.current = 0; swPauseStartRef.current = null;
+    };
+
+    const toggleTimer = () => {
+        if (timerMode === 'stopwatch') {
+            if (!isActive) {
+                if (elapsed === 0) { swOffsetRef.current = 0; swPauseStartRef.current = null; setStartTime(new Date().toISOString()); }
+                else { if (swPauseStartRef.current !== null) { swOffsetRef.current += Date.now() - swPauseStartRef.current; swPauseStartRef.current = null; } }
+            } else { swPauseStartRef.current = Date.now(); }
+        }
+        setIsActive(a => !a);
+    };
+
+    const switchTimerMode = (m) => {
+        if (isActive) return;
+        setTimerMode(m); setElapsed(0); setStartTime(null); swOffsetRef.current = 0; swPauseStartRef.current = null;
+        pomoDeadlineRef.current = null; pomoFocusAccum.current = 0; setPomoPhase('focus'); setTimeLeft(focusDuration * 60);
+    };
+
+    const skipPomo = () => {
+        if (pomoPhase === 'focus' && pomoFocusAccum.current >= 60) saveRecord(pomoFocusAccum.current, 'pomodoro');
+        pomoFocusAccum.current = 0;
+        const next = pomoPhase === 'focus' ? 'break' : 'focus';
+        setPomoPhase(next); setTimeLeft(next === 'focus' ? focusDuration * 60 : breakDuration * 60);
+        setIsActive(false); pomoDeadlineRef.current = null;
+    };
+
+    const deleteRecord = async (id) => {
+        const rec = records.find(r => r.id === id);
+        setRecords(prev => prev.filter(r => r.id !== id));
+        if (rec && typeof id === 'string' && config.saved) {
+            try {
+                await notionFetch(`/v1/pages/${id}`, { method: 'PATCH', body: JSON.stringify({ archived: true }) });
+                showToast('기록이 삭제되었습니다.');
+            } catch (e) { showToast('노션 데이터 삭제 실패: ' + e.message); }
+        }
+    };
+
+    const totalSeconds  = records.reduce((a, r) => a + r.seconds, 0);
+    const subjectTotals = records.reduce((acc, r) => { acc[r.subject] = (acc[r.subject]||0) + r.seconds; return acc; }, {});
+    const currentDuration = pomoPhase === 'focus' ? focusDuration * 60 : breakDuration * 60;
+    const percentage    = timerMode === 'pomodoro' ? timeLeft / currentDuration : 1;
+    const phase         = timerMode === 'pomodoro' ? pomoPhase : 'focus';
+    const displayTime   = timerMode === 'pomodoro' ? formatTime(timeLeft) : formatTime(elapsed);
+
+    const getArcPath = (pct) => {
+        if (pct <= 0) return "";
+        if (pct >= 1) return `M100,0 A100,100 0 1,1 99.9,0 Z`;
+        const angle = pct * 360, rad = (angle - 90) * (Math.PI / 180);
+        const x = 100 + 100 * Math.cos(rad), y = 100 + 100 * Math.sin(rad);
+        return `M100,100 L100,0 A100,100 0 ${angle > 180 ? 1 : 0},1 ${x},${y} Z`;
+    };
+
+    const subjectBtnBg = selectedSubject ? `${theme.hex}15` : (isDark ? '#252525' : 'white');
+    const subjectBtnBorder = selectedSubject ? `${theme.hex}40` : (isDark ? '#2F2F2F' : '#EBE8DE');
+
+    return (
+        <div className="w-full max-w-[340px] bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2f2f2f] relative overflow-hidden transition-colors">
+
+            {/* 헤더 */}
+            <div className="flex justify-between items-center px-7 pt-6 pb-0">
+                <div className="flex flex-col">
+                    <span className="text-xs font-bold tracking-widest text-gray-400 uppercase flex items-center gap-1.5">
+                        {screen === 'records' ? "TODAY'S RECORD"
+                            : timerMode === 'pomodoro' ? (phase === 'focus' ? 'FOCUS TIME' : 'BREAK TIME') : 'STUDY TIMER'}
+                        {screen === 'timer' && (
+                            <span className={`w-2 h-2 rounded-full ${isActive ? theme.bg : 'bg-gray-300 dark:bg-gray-600'}`}
+                                style={isActive ? { boxShadow:`0 0 0 3px ${theme.hex}33` } : {}}/>
+                        )}
+                        {saving && <span className="spin inline-block w-2 h-2 border border-gray-400 border-t-transparent rounded-full ml-1"/>}
+                    </span>
+                    <span className="text-lg font-bold text-gray-800 dark:text-gray-100 mt-0.5">{theme.name}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    {config.saved && <div className="w-2 h-2 rounded-full bg-green-400 mr-0.5" title="Notion 연결됨"/>}
+                    
+                    {/* 다크모드 토글 버튼 */}
+                    <button onClick={() => setIsDark(!isDark)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        {isDark ? <SunIcon/> : <MoonIcon/>}
+                    </button>
+
+                    <button onClick={() => { setShowSettings(false); setScreen(s => s === 'timer' ? 'records' : 'timer'); }}
+                        className="p-2 transition-colors text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        style={screen === 'records' ? { color:theme.hex } : {}}>
+                        {screen === 'records' ? <TimerIcon/> : <ListIcon/>}
+                    </button>
+                    {screen === 'timer' && (
+                        <button onClick={() => setShowSettings(!showSettings)} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                            {showSettings ? <XIcon/> : <GearIcon/>}
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {/* 슬라이드 래퍼 */}
+            <div style={{ overflow:'hidden' }}>
+                <div className="screen-wrap" style={{ transform: screen === 'timer' ? 'translateX(0)' : 'translateX(-50%)' }}>
+
+                    {/* ══ 타이머 화면 ══ */}
+                    <div className="screen">
+                        <div className="relative p-7 pt-5 flex flex-col items-center">
+
+                            {/* 설정 패널 */}
+                            {showSettings && (
+                                <div className="absolute inset-0 bg-[#FDFBF7]/96 dark:bg-[#191919]/96 backdrop-blur-md z-20 p-8 flex flex-col justify-center rounded-[2.5rem]">
+                                    <h3 className="text-lg font-bold mb-5 text-gray-800 dark:text-gray-100">음료 설정</h3>
+                                    <div className="space-y-5">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">집중 시간 (분)</label>
+                                            <input type="number" value={focusDuration}
+                                                onChange={e => setFocusDuration(Math.max(1, parseInt(e.target.value)||25))}
+                                                className="w-16 text-center border-b-2 border-gray-300 dark:border-neutral-600 bg-transparent text-gray-800 dark:text-gray-100 font-bold p-1 focus:outline-none focus:border-[#A67B5B] transition-colors" min="1"/>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-300">휴식 시간 (분)</label>
+                                            <input type="number" value={breakDuration}
+                                                onChange={e => setBreakDuration(Math.max(1, parseInt(e.target.value)||5))}
+                                                className="w-16 text-center border-b-2 border-gray-300 dark:border-neutral-600 bg-transparent text-gray-800 dark:text-gray-100 font-bold p-1 focus:outline-none focus:border-[#A67B5B] transition-colors" min="1"/>
+                                        </div>
+                                        <div className="pt-4 border-t border-[#EBE8DE] dark:border-[#2F2F2F]">
+                                            <label className="text-sm font-medium text-gray-600 dark:text-gray-300 block mb-3">테마 색상</label>
+                                            <div className="flex justify-between">
+                                                {Object.values(THEMES).map(t => (
+                                                    <button key={t.id} onClick={() => { setThemeId(t.id); try { localStorage.setItem('cozy_timer_theme', t.id); } catch {} }}
+                                                        className={`w-9 h-9 rounded-full ${t.bg} shadow-sm transition-all focus:outline-none ${themeId===t.id ? `ring-2 ring-offset-2 ring-offset-[#FDFBF7] dark:ring-offset-[#191919] ${t.ring} scale-110` : 'hover:scale-110'}`}
+                                                        title={t.name}/>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 border-t border-[#EBE8DE] dark:border-[#2F2F2F]">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Notion 연결</label>
+                                            </div>
+                                            {config.saved
+                                                ? <div className="space-y-1">
+                                                    <p className="text-xs text-green-500 font-medium flex items-center gap-1"><CheckIcon/> URL로 연결됨</p>
+                                                    {config.dashboardPageId && (
+                                                        <p className="text-xs text-green-500 font-medium flex items-center gap-1"><CheckIcon/> 대시보드 자동 연결됨</p>
+                                                    )}
+                                                </div>
+                                                : <p className="text-xs text-gray-400">파라미터 없음 — 로컬만 기록</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 타이머 모드 탭 */}
+                            <div className="w-full mb-5">
+                                <div className="relative flex bg-[#F4F0EA] dark:bg-[#252525] rounded-full p-1 transition-colors">
+                                    <div className="mode-slider absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-white dark:bg-[#3d3d3d] shadow-sm"
+                                        style={{ transform: timerMode==='pomodoro' ? 'translateX(0)' : 'translateX(100%)' }}/>
+                                    <button onClick={() => switchTimerMode('pomodoro')}
+                                        className={`mode-tab relative z-10 flex-1 text-xs font-bold py-1.5 rounded-full transition-colors ${timerMode==='pomodoro' ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'} ${isActive ? 'cursor-not-allowed opacity-50' : ''}`}>
+                                        🍅 뽀모도로
+                                    </button>
+                                    <button onClick={() => switchTimerMode('stopwatch')}
+                                        className={`mode-tab relative z-10 flex-1 text-xs font-bold py-1.5 rounded-full transition-colors ${timerMode==='stopwatch' ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'} ${isActive ? 'cursor-not-allowed opacity-50' : ''}`}>
+                                        ⏱ 일반 타이머
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* 과목 선택 */}
+                            <div className="w-full mb-4 relative" ref={subjectRef}>
+                                <button onClick={() => !isActive && setShowSubjectDrop(v => !v)}
+                                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-2xl border transition-all duration-200 ${isActive ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                                    style={{ background: subjectBtnBg, borderColor: subjectBtnBorder }}>
+                                    <span className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                        <BookIcon/>
+                                        {subjectsLoading
+                                            ? <span className="text-gray-400">불러오는 중...</span>
+                                            : (selectedSubject?.parentName ? `${selectedSubject.parentName} ▶ ${selectedSubject.name}` : selectedSubject?.name) || <span className="text-gray-400 dark:text-gray-500">과목 선택</span>}
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        {config.saved && (
+                                            <button onClick={e => { e.stopPropagation(); loadSubjects(); }}
+                                                className={`text-gray-300 dark:text-gray-500 hover:text-[#A67B5B] transition-colors p-0.5 ${subjectsLoading ? 'spin' : ''}`}>
+                                                <RefreshIcon/>
+                                            </button>
+                                        )}
+                                        <span className={`text-gray-400 transition-transform duration-200 ${showSubjectDrop ? 'rotate-180' : ''}`}><ChevronIcon/></span>
+                                    </div>
+                                </button>
+                                {showSubjectDrop && !isActive && (
+                                    <div className="subject-dropdown">
+                                        <div className="subject-option text-gray-400 dark:text-gray-500"
+                                            onClick={() => { setSelectedSubject(null); setShowSubjectDrop(false); }}>선택 안 함</div>
+                                        {subjects.length === 0 && !subjectsLoading && (
+                                            <div className="subject-option text-xs text-gray-400">
+                                                {config.saved ? '과목 DB에 항목이 없어요' : 'URL 설정 후 사용 가능해요'}
+                                            </div>
+                                        )}
+                                        {subjects.map(s => (
+                                            <div key={s.id}
+                                                className={`subject-option font-medium ${s.parentName ? 'has-parent' : ''} ${selectedSubject?.id===s.id ? 'text-gray-800 dark:text-gray-100' : 'text-gray-600 dark:text-gray-400'}`}
+                                                style={selectedSubject?.id===s.id ? { background:`${theme.hex}18` } : {}}
+                                                onClick={() => { setSelectedSubject(s); setShowSubjectDrop(false); }}>
+                                                <span>
+                                                    {selectedSubject?.id===s.id && <span className="mr-1.5" style={{color:theme.hex}}>✓</span>}
+                                                    {s.name}
+                                                </span>
+                                                {s.parentName && <span className="subject-parent-badge">{s.parentName}</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 커피잔 SVG */}
+                            <div className="relative w-56 h-56 flex items-center justify-center mb-1 translate-x-3">
+                                <svg viewBox="-20 -20 280 260" className="w-full h-full coffee-cup overflow-visible">
+                                    <defs>
+                                        <filter id="cup-shadow" x="-100%" y="-100%" width="300%" height="300%">
+                                            <feDropShadow dx="2" dy="8" stdDeviation="5" floodOpacity="0.08"/>
+                                        </filter>
+                                        <clipPath id="coffee-clip"><path d={getArcPath(percentage)}/></clipPath>
+                                    </defs>
+                                    <path d="M 170 65 C 225 65, 225 135, 170 135" fill="none" className="cup-handle" strokeWidth="18" strokeLinecap="round" filter="url(#cup-shadow)"/>
+                                    <circle cx="100" cy="100" r="90" className="cup-body" filter="url(#cup-shadow)"/>
+                                    <circle cx="100" cy="100" r="80" className="cup-inner"/>
+                                    <text x="100" y="96" textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="bold" className="cup-text">
+                                        {timerMode==='pomodoro' ? (phase==='focus' ? 'Good Job!' : 'Take a rest') : (elapsed===0 ? 'Ready!' : 'Fighting!')}
+                                    </text>
+                                    <g clipPath="url(#coffee-clip)">
+                                        <circle cx="100" cy="100" r="80" fill={theme.hex}/>
+                                        <circle cx="100" cy="100" r="76" fill="none" stroke="#FFFFFF" strokeWidth="3" opacity="0.15"/>
+                                        <path transform="translate(0, 10)" d="M100,135 C100,135 60,105 60,80 C60,50 100,55 100,85 C100,55 140,50 140,80 C140,105 100,135 100,135 Z" fill="#FFF9ED" opacity="0.85"/>
+                                    </g>
+                                    <circle cx="100" cy="100" r="80" fill="none" className="cup-shadow-line" strokeWidth="6"/>
+                                </svg>
+                            </div>
+
+                            {/* 시간 표시 */}
+                            <div className="font-sans text-[2.5rem] leading-none font-bold tracking-tight text-gray-800 dark:text-gray-100 mb-5 tabular-nums transition-colors">
+                                {displayTime}
+                            </div>
+
+                            {/* 컨트롤 */}
+                            <div className="flex w-full space-x-3">
+                                <button onClick={toggleTimer}
+                                    className={`flex-1 flex items-center justify-center space-x-2 py-3.5 rounded-[1.25rem] font-bold text-sm transition-all duration-200 shadow-sm
+                                        ${isActive ? 'bg-white dark:bg-[#2A2A2A] text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-[#333]' : `${theme.bg} text-white ${theme.hover} shadow-md`}`}>
+                                    {isActive ? (
+                                        <><PauseIcon/><span>{timerMode==='pomodoro' ? (phase==='focus' ? '잠깐 쉬기' : '잠깐 멈추기') : '잠깐 쉬기'}</span></>
+                                    ) : (
+                                        <><PlayIcon/><span>
+                                            {timerMode==='pomodoro'
+                                                ? (timeLeft===currentDuration ? (phase==='focus' ? '집중 시작' : '휴식 시작') : '계속하기')
+                                                : (elapsed===0 ? '공부 시작' : '계속하기')}
+                                        </span></>
+                                    )}
+                                </button>
+                                {timerMode==='pomodoro' ? (
+                                    <button onClick={skipPomo}
+                                        className="px-5 py-3.5 flex items-center justify-center rounded-[1.25rem] bg-white dark:bg-[#2A2A2A] text-gray-500 dark:text-gray-400 hover:text-[#A67B5B] dark:hover:text-[#A67B5B] border border-gray-200 dark:border-neutral-700 transition-colors shadow-sm"
+                                        title="건너뛰기"><SkipIcon/></button>
+                                ) : (
+                                    <button onClick={stopStopwatch} disabled={elapsed===0}
+                                        className={`px-5 py-3.5 flex items-center justify-center rounded-[1.25rem] border transition-colors shadow-sm
+                                            ${elapsed>0 ? 'bg-white dark:bg-[#2A2A2A] text-gray-500 dark:text-gray-400 hover:text-red-400 dark:hover:text-red-400 border-gray-200 dark:border-neutral-700' : 'bg-gray-50 dark:bg-[#1E1E1E] text-gray-300 dark:text-gray-600 border-gray-100 dark:border-[#252525] cursor-not-allowed'}`}
+                                        title="종료 및 기록"><StopIcon/></button>
+                                )}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {/* ══ 기록 화면 ══ */}
+                    <div className="screen">
+                        <div className="p-7 pt-5 flex flex-col" style={{ minHeight:'520px' }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{todayStr()}</span>
+                                    {config.saved && (
+                                        <button onClick={loadTodayRecords} className={`text-gray-300 dark:text-gray-500 hover:text-[#A67B5B] transition-colors p-0.5 ${recordsLoading ? 'spin' : ''}`} title="노션에서 동기화">
+                                            <RefreshIcon/>
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 총 순공시간 카드 */}
+                            <div className="rounded-2xl p-4 mb-4 flex items-center justify-between"
+                                style={{ background:`${theme.hex}12`, border:`1px solid ${theme.hex}30` }}>
+                                <div>
+                                    <div className="text-xs font-semibold text-gray-400 dark:text-gray-300 mb-0.5 flex items-center gap-1.5">
+                                        오늘 총 순공시간
+                                        {recordsLoading && <span className="spin inline-block w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full"/>}
+                                    </div>
+                                    <div className="text-2xl font-bold tabular-nums" style={{ color:theme.hex }}>
+                                        {totalSeconds >= 60 ? fmtMin(totalSeconds) : '0분'}
+                                    </div>
+                                </div>
+                                {Object.keys(subjectTotals).length > 0 && (
+                                    <div className="flex flex-col gap-1 items-end">
+                                        {Object.entries(subjectTotals).slice(0,3).map(([subj, sec]) => (
+                                            <span key={subj} className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                {subj} <span style={{color:theme.hex}}>{fmtMin(sec)}</span>
+                                            </span>
+                                        ))}
+                                        {Object.keys(subjectTotals).length > 3 && (
+                                            <span className="text-xs text-gray-300 dark:text-gray-600">+{Object.keys(subjectTotals).length-3}개 더</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 기록 리스트 */}
+                            {records.length === 0 ? (
+                                <div className="flex-1 flex flex-col items-center justify-center gap-2 py-10">
+                                    <span className="text-3xl">☕</span>
+                                    <span className="text-sm text-gray-300 dark:text-gray-500 font-medium">아직 기록이 없어요</span>
+                                    <span className="text-xs text-gray-300 dark:text-gray-600">타이머를 시작해보세요!</span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight:'280px' }}>
+                                    {records.map(rec => (
+                                        <div key={rec.id} className="record-item flex items-center justify-between px-4 py-3 rounded-2xl bg-white dark:bg-[#252525] border border-[#EBE8DE] dark:border-[#2f2f2f] group transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                                                    style={{ background:theme.hex }}>
+                                                    {rec.subject.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
+                                                        {rec.subject}
+                                                        {config.saved && (
+                                                            rec.synced
+                                                                ? <span className="text-green-400" title="노션 동기화됨"><CheckIcon/></span>
+                                                                : <span className="spin inline-block w-3 h-3 border border-gray-300 dark:border-gray-600 border-t-transparent rounded-full" title="저장 중..."/>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
+                                                        <span>{rec.modeLabel==='pomodoro' ? '🍅' : '⏱'}</span>
+                                                        <span>{fmtHHMM(rec.startIso)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-bold tabular-nums" style={{ color:theme.hex }}>
+                                                    {fmtMin(rec.seconds)}
+                                                </span>
+                                                <button onClick={() => deleteRecord(rec.id)}
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 dark:text-gray-600 hover:text-red-400 dark:hover:text-red-400 p-1"
+                                                    title="기록 삭제">
+                                                    <TrashIcon/>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* 토스트 */}
+            {toast && (
+                <div className="toast absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-gray-800 dark:bg-gray-100 text-white dark:text-gray-900 text-xs font-medium shadow-lg whitespace-nowrap z-50 transition-colors">
+                    {toast}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
