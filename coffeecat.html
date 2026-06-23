@@ -909,6 +909,8 @@ function App() {
   const [drawer,    setDrawer]    = useState(null); // null | 'deco' | 'quest'
   const [decoTab,   setDecoTab]   = useState('cat');
   const [deco, setDeco] = useState(() => normalizeDeco(loadLS(LS.DECO, DEFAULT_DECO)));
+  const [previewDeco, setPreviewDeco] = useState(null); // 잠긴 아이템은 화면에만 미리 적용
+  const displayDeco = previewDeco || deco;
   const [recordMonths, setRecordMonths] = useState(() => loadLS(LS.RECORD_MONTHS, '12'));
   const [decoPresets, setDecoPresets] = useState(() => loadLS(LS.PRESETS, []));
   const [presetName, setPresetName] = useState('');
@@ -1048,7 +1050,7 @@ function App() {
   };
 
   // ── 꾸미기 선택 ──
-  const bgColor = DECO_ITEMS.bg.find(i=>i.id===deco.bg)?.color || '#FDFBF7';
+  const bgColor = DECO_ITEMS.bg.find(i=>i.id===displayDeco.bg)?.color || '#FDFBF7';
   const cardBg  = darkMode ? '#252525' : bgColor;
   const dark    = darkMode || bgColor === '#2D2420';
   const textCol = dark ? '#F3F4F6' : '#5C3A21';
@@ -1063,6 +1065,17 @@ function App() {
   // 잠금 해제 여부
   const isUnlocked = (item) => !item.unlock || !!questDone[item.unlock];
   const getDecoItems = (key) => DECO_ITEMS[key];
+
+  const getQuestRewards = (questId) => Object.entries(DECO_ITEMS).flatMap(([tab, items]) =>
+    (items || []).filter(item => item.unlock === questId).map(item => ({
+      tab: DECO_TAB_LABELS[tab] || tab,
+      label: item.label
+    }))
+  );
+
+  useEffect(() => {
+    if (drawer !== 'deco') setPreviewDeco(null);
+  }, [drawer]);
 
   const getDecoLabel = useCallback((key, value) => {
     const item = getDecoItems(key)?.find(i => i.id === value);
@@ -1337,7 +1350,7 @@ function App() {
         {/* 일러스트 영역 */}
         <div className={`widget-content${coffeePop ? ' pop' : ''}`} style={{padding: uiOn ? '.45rem .7rem 0' : '.65rem .7rem 1.35rem', marginTop: uiOn ? '0' : '.25rem', transformOrigin:'center center'}}>
           <div style={{width:'100%',aspectRatio:'1',maxWidth: uiOn ? '200px' : '205px',margin:'0 auto',transform:'translateX(10px)',transformOrigin:'center center'}}>
-            <CupSVG catItem={deco.cat} drinkItem={deco.drink} catAccItem={deco.catAcc} cupDecoItem={deco.cupDeco} cupDeco2Item={deco.cupDeco2} bgColor={cardBg}/>
+              <CupSVG catItem={displayDeco.cat} drinkItem={displayDeco.drink} catAccItem={displayDeco.catAcc} cupDecoItem={displayDeco.cupDeco} cupDeco2Item={displayDeco.cupDeco2} bgColor={cardBg}/>
           </div>
         </div>
 
@@ -1443,16 +1456,30 @@ function App() {
               )}
             </div>
           ) : (
+          {previewDeco && (
+            <button onClick={()=>setPreviewDeco(null)} style={{width:'100%',border:'none',borderRadius:'.75rem',padding:'.5rem .65rem',marginBottom:'.65rem',background:drawerUi.lockBg,color:drawerUi.accent,fontFamily:'inherit',fontSize:'.62rem',fontWeight:800,cursor:'pointer'}}>
+              미리보기 중 · 해금 전에는 저장되지 않아요 · 되돌리기
+            </button>
+          )}
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(64px,1fr))',gap:'.55rem'}}>
             {DECO_ITEMS[decoTab]?.map(item => {
               const unlocked = isUnlocked(item);
-              const selected = deco[decoTab] === item.id;
+              const selected = displayDeco[decoTab] === item.id;
               const thumbSrc = getDecoThumbSrc(decoTab, item.id);
+              const handleItemClick = () => {
+                if (!unlocked) {
+                  setPreviewDeco(current => ({...(current || deco), [decoTab]:item.id}));
+                  showToast(`🔒 ${item.label} 미리보기 · ${QUESTS.find(q=>q.id===item.unlock)?.name} 달성 후 저장됩니다`);
+                  return;
+                }
+                setPreviewDeco(null);
+                setDeco(d=>({...d,[decoTab]:item.id}));
+              };
               return (
                 <button key={item.id}
                   className={`item-btn${selected?' selected':''}${!unlocked?' locked':''}`}
                   title={item.label}
-                  onClick={()=>{ if(!unlocked){showToast(`🔒 퀘스트 달성 후 해금됩니다`);return;} setDeco(d=>({...d,[decoTab]:item.id})); }}
+                  onClick={handleItemClick}
                 >
                   <div className="item-thumb">
                     {decoTab === 'bg'
@@ -1513,6 +1540,7 @@ function App() {
           {filteredQuests.map(q => {
             const done = !!questDone[q.id];
             const claimable = !done && q.check(stats);
+            const rewards = getQuestRewards(q.id);
             return (
               <div key={q.id} className="quest-row" style={{opacity: done ? 1 : .85}}>
                 <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B'} : {}}>
@@ -1522,6 +1550,11 @@ function App() {
                   <div style={{fontSize:'.72rem',fontWeight:700,color: done ? drawerUi.accent : drawerUi.text,textDecoration: done?'line-through':'none',lineHeight:1.3}}>
                     {q.name}
                   </div>
+                  {rewards.length > 0 && (
+                    <div style={{fontSize:'.58rem',color:drawerUi.muted,marginTop:'.12rem',lineHeight:1.35}}>
+                      보상 · {rewards.map(reward => `${reward.tab} ${reward.label}`).join(' · ')}
+                    </div>
+                  )}
                   {done && questDone[q.id] && (
                     <div style={{fontSize:'.6rem',color:drawerUi.muted,marginTop:'.1rem'}}>{questDone[q.id]} 완료 🎉</div>
                   )}
