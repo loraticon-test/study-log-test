@@ -4,9 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>냥이 카페 시계</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+  <script>
+    window.showClockLoadError = (message) => {
+      window.__clockLoadError = message;
+      const render = () => {
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.innerHTML = `<div style="margin:2rem auto;padding:1rem;max-width:320px;border-radius:1rem;background:#FDF1E8;color:#8B664B;font:14px system-ui;line-height:1.6"><b>냥이 카페 시계를 불러오지 못했어요.</b><br/>${message}<br/><small>페이지를 새로고침해도 계속되면 이 문구를 알려주세요.</small></div>`;
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render, { once:true });
+      else render();
+    };
+    window.addEventListener('error', event => {
+      if (event.error) window.showClockLoadError(`실행 오류: ${event.error.message || event.message}`);
+    });
+    window.addEventListener('unhandledrejection', event => {
+      window.showClockLoadError(`실행 오류: ${event.reason?.message || event.reason}`);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin onerror="this.onerror=function(){window.showClockLoadError('React 라이브러리를 불러오지 못했어요.');};this.src='https://unpkg.com/react@18.2.0/umd/react.production.min.js';"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin onerror="this.onerror=function(){window.showClockLoadError('React DOM 라이브러리를 불러오지 못했어요.');};this.src='https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js';"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js" onerror="this.onerror=function(){window.showClockLoadError('Babel 라이브러리를 불러오지 못했어요.');};this.src='https://unpkg.com/@babel/standalone@7.24.7/babel.min.js';"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -1066,12 +1084,12 @@ function App() {
   const isUnlocked = (item) => !item.unlock || !!questDone[item.unlock];
   const getDecoItems = (key) => DECO_ITEMS[key];
 
-  const getQuestRewards = (questId) => Object.entries(DECO_ITEMS).flatMap(([tab, items]) =>
-    (items || []).filter(item => item.unlock === questId).map(item => ({
-      tab: DECO_TAB_LABELS[tab] || tab,
-      label: item.label
-    }))
-  );
+  const getQuestRewards = (questId) => Object.entries(DECO_ITEMS).reduce((rewards, [tab, items]) => {
+    (items || []).filter(item => item.unlock === questId).forEach(item => {
+      rewards.push({ tab: DECO_TAB_LABELS[tab] || tab, label: item.label });
+    });
+    return rewards;
+  }, []);
 
   useEffect(() => {
     if (drawer !== 'deco') setPreviewDeco(null);
