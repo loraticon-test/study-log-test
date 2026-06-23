@@ -1477,7 +1477,7 @@ function App() {
           <>
           {previewDeco && (
             <button onClick={()=>setPreviewDeco(null)} style={{width:'100%',border:'none',borderRadius:'.75rem',padding:'.5rem .65rem',marginBottom:'.65rem',background:drawerUi.lockBg,color:drawerUi.accent,fontFamily:'inherit',fontSize:'.62rem',fontWeight:800,cursor:'pointer'}}>
-              미리보기 중 · 해금 전에는 저장되지 않아요 · 되돌리기
+              되돌리기
             </button>
           )}
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(64px,1fr))',gap:'.55rem'}}>
@@ -1488,7 +1488,7 @@ function App() {
               const handleItemClick = () => {
                 if (!unlocked) {
                   setPreviewDeco(current => ({...(current || deco), [decoTab]:item.id}));
-                  showToast(`🔒 ${item.label} 미리보기 · ${QUESTS.find(q=>q.id===item.unlock)?.name} 달성 후 저장됩니다`);
+                  showToast(`${item.label} ${QUESTS.find(q=>q.id===item.unlock)?.name} 달성 후 얻을 수 있어요`);
                   return;
                 }
                 setPreviewDeco(null);
