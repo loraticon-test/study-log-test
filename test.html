@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단어 테스트</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 설치 여부와 무관하게 모든 브라우저에서 같은 한글 폰트를 사용한다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // 다크모드 지원 설정
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Pretendard Variable"', 'Pretendard', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        latte: {
+                            50: '#F4F0EA',
+                            100: '#EBE8DE',
+                            200: '#D8D0C4',
+                            300: '#D1CBBF',
+                            500: '#A67B5B',
+                            700: '#8B664B',
+                            900: '#5C3A21',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body, #root {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        body { display: flex; flex-direction: column; align-items: stretch; box-sizing: border-box; font-family: "Pretendard Variable", Pretendard, sans-serif; }
+        button, input, textarea, select { font-family: inherit; }
+        #root {
+            align-items: flex-start !important;
+            padding: 1.25rem;
+            box-sizing: border-box;
+        }
+        html.dark, html.dark body, html.dark #root {
+            background: #191919 !important;
+            background-color: #191919 !important;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #EBE8DE; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background-color: #333333; }
+        * { -ms-overflow-style: none; scrollbar-width: thin; }
+        
+        .soft-shadow, .dark .soft-shadow { box-shadow: none !important; }
+
+        .input-underline { border-bottom: 2px solid #EBE8DE; transition: border-color 0.2s; }
+        .input-underline:focus { border-bottom-color: #A67B5B; outline: none; }
+        .dark .input-underline { border-bottom-color: #333333; }
+        .dark .input-underline:focus { border-bottom-color: #A67B5B; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .animate-shake { animation: shake 0.3s ease; }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.8s linear infinite; }
+
+        /* 토글 애니메이션 클래스 */
+        .toggle-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
+        }
+        .toggle-content.open {
+            grid-template-rows: 1fr;
+        }
+        .toggle-inner {
+            overflow: hidden;
+        }
+
+        .test-shell {
+            width: 100%;
+            max-width: none;
+            max-height: 90vh;
+        }
+
+        .test-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .review-grid > .wide-card {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 640px) {
+            body { align-items: stretch; }
+            .test-shell {
+                max-width: 100%;
+                max-height: none;
+                min-height: 0;
+                border-radius: 1.75rem !important;
+                padding: 1.25rem !important;
+            }
+            .review-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 420px) {
+            .test-shell {
+                min-height: 0;
+                border-radius: 1.5rem !important;
+                padding: 1rem !important;
+            }
+        }    </style>
+</head>
+<body>
+<div id="root" class="w-full h-full flex justify-center items-center"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+/* ── 아이콘 ── */
+const CheckIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const XIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const SunIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="4.22" x2="19.78" y2="5.64"/></svg>;
+const ThemeMoonIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
+const ThemeSunIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>;
+const ArchiveIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>;
+const ZapIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+const SmileIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>;
+const GearIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+const NotionIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.887l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.887.747-.933z"/></svg>;
+const RefreshIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>;
+const BookIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>;
+const ExternalLinkIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+const DicesIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M8 8h.01"/><path d="M16 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></svg>;
+const HashIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>;
+
+const BATCH_SIZE = 5;
+
+/* ── 타임존 왜곡 없는 로컬 날짜 문자열 추출 함수 (YYYY-MM-DD) ── */
+const getLocalYMD = (dateObj) => {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+/* ── 로컬스토리지 & URL 파라미터 연동 ── */
+const LS_CONFIG = 'cozy_test_config';
+const cleanUrlValue = (value) => (value || '').trim();
+const loadConfig = () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const proxyUrl = cleanUrlValue(params.get('proxy') || params.get('proxyUrl'));
+        const apiKey = cleanUrlValue(params.get('key') || params.get('apiKey'));
+        const testDbId = cleanUrlValue(params.get('test') || params.get('testDbId'));
+        const subjectDbId = cleanUrlValue(params.get('subject') || params.get('subjectDbId'));
+
+        if (proxyUrl && apiKey && testDbId) {
+            const urlConfig = {
+                proxyUrl,
+                apiKey,
+                testDbId,
+                subjectDbId,
+                saved: true,
+                fromUrl: true
+            };
+            localStorage.setItem(LS_CONFIG, JSON.stringify(urlConfig));
+            return urlConfig;
+        }
+        return JSON.parse(localStorage.getItem(LS_CONFIG)) || { proxyUrl:'', apiKey:'', testDbId:'', subjectDbId:'', saved: false };
+    } catch {
+        return { proxyUrl:'', apiKey:'', testDbId:'', subjectDbId:'', saved: false };
+    }
+};
+
+/* ── 📝 실시간 학습 노트 제목 로딩 컴포넌트 ── */
+const DynamicNoteLink = ({ pageId, proxyUrl, apiKey }) => {
+    const [title, setTitle] = useState('데이터 불러오는 중...');
+    
+    useEffect(() => {
+        let isMounted = true;
+        fetch(`${proxyUrl}/v1/pages/${pageId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'x-notion-version': '2022-06-28'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!isMounted) return;
+            if (data && data.properties) {
+                const titleProp = Object.values(data.properties).find(p => p.type === 'title');
+                const text = titleProp?.title?.[0]?.plain_text || '이름 없는 문서';
+                setTitle(text);
+            } else {
+                setTitle('문서를 찾을 수 없음');
+            }
+        })
+        .catch(() => {
+            if (isMounted) setTitle('불러오기 실패');
+        });
+        return () => { isMounted = false; };
+    }, [pageId, proxyUrl, apiKey]);
+
+    const url = `https://notion.so/${pageId.replace(/-/g, '')}`;
+
+    return (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-between gap-2 text-[13px] font-bold text-gray-700 dark:text-gray-300 hover:text-latte-500 dark:hover:text-latte-400 transition-colors bg-white dark:bg-[#252525] px-3 py-2.5 rounded-xl shadow-sm border border-[#EBE8DE] dark:border-[#333] group w-full"
+        >
+            <span className="truncate underline underline-offset-4 decoration-[#D1CBBF] dark:decoration-gray-600 group-hover:decoration-latte-500 dark:group-hover:decoration-latte-400">{title}</span>
+            <ExternalLinkIcon />
+        </a>
+    );
+};
+
+const App = () => {
+    /* ── 다크모드 상태 관리 ── */
+    const [isDark, setIsDark] = useState(() => {
+        const saved = localStorage.getItem('cozy_test_dark');
+        return saved === 'true';
+    });
+
+    useEffect(() => {
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('cozy_test_dark', isDark);
+    }, [isDark]);
+
+    /* ── 설정 및 데이터 상태 ── */
+    const [config] = useState(loadConfig());
+    const [showSetup, setShowSetup] = useState(!config.saved);
+    
+    const [isLoadingData, setIsLoadingData] = useState(false);
+    const [appState, setAppState] = useState('ready'); // 'ready' -> 'testing' -> 'result'
+    const [allQuestions, setAllQuestions] = useState([]);
+    
+    /* ── 첫 화면 탭 (복습 모드 / 랜덤 모드) ── */
+    const [activeTab, setActiveTab] = useState('random'); 
+    
+    /* ── 랜덤 테스트 설정 상태 ── */
+    const [randomMainSubj, setRandomMainSubj] = useState('전체');
+    const [randomSubSubj, setRandomSubSubj] = useState('전체');
+    const [randomCount, setRandomCount] = useState(10);
+    const [customRandomCount, setCustomRandomCount] = useState('');
+
+    /* ── 테스트 진행 상태 ── */
+    const [testQueue, setTestQueue] = useState([]);
+    const [sessionType, setSessionType] = useState('today'); // 'new', 'today', 'pending', 'random'
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [userInput, setUserInput] = useState('');
+    const [isRevealed, setIsRevealed] = useState(false);
+    const [isShaking, setIsShaking] = useState(false);
+    const [isNoteExpanded, setIsNoteExpanded] = useState(false); 
+    const [results, setResults] = useState({});
+    const [syncingCount, setSyncingCount] = useState(0); 
+    
+    const inputRef = useRef(null);
+    const wrongCountIncrementedIdsRef = useRef(new Set());
+
+    /* ── Notion API 호출 프록시 ── */
+    const notionFetch = useCallback(async (path, options = {}) => {
+        const { proxyUrl, apiKey } = config;
+        if (!proxyUrl || !apiKey) throw new Error('설정이 필요해요');
+        const res = await fetch(`${proxyUrl}${path}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'x-notion-version': '2022-06-28',
+                ...(options.headers || {}),
+            },
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || `API 오류 (${res.status})`);
+        }
+        return res.json();
+    }, [config]);
+
+    /* ── 데이터 로드 ── */
+    const fetchData = useCallback(async () => {
+        if (!config.saved || !config.testDbId) return;
+        setIsLoadingData(true);
+        try {
+            // 과목 DB 매핑
+            const subjectData = {};
+            if (config.subjectDbId) {
+                try {
+                    const subjRes = await notionFetch(`/v1/databases/${config.subjectDbId}/query`, { method: 'POST', body: JSON.stringify({ page_size: 100 }) });
+                    subjRes.results.forEach(page => {
+                        const nameProp = Object.values(page.properties).find(p => p.type === 'title');
+                        const name = nameProp?.title?.[0]?.plain_text || '미선택';
+                        
+                        let parentId = null;
+                        const parentProp = page.properties['상위 항목'];
+                        if (parentProp && parentProp.type === 'relation' && parentProp.relation.length > 0) {
+                            parentId = parentProp.relation[0].id;
+                        }
+                        
+                        subjectData[page.id] = { name, parentId };
+                    });
+                } catch (e) { console.warn("과목 로드 실패", e); }
+            }
+
+            let allFetchedResults = [];
+            let hasMore = true;
+            let cursor = undefined;
+            let pagesFetched = 0;
+            
+            while (hasMore && pagesFetched < 10) { 
+                const bodyParams = { page_size: 100 };
+                if (cursor) bodyParams.start_cursor = cursor;
+                
+                const testRes = await notionFetch(`/v1/databases/${config.testDbId}/query`, {
+                    method: 'POST',
+                    body: JSON.stringify(bodyParams)
+                });
+                
+                if (testRes.results) {
+                    allFetchedResults = allFetchedResults.concat(testRes.results);
+                }
+                hasMore = testRes.has_more;
+                cursor = testRes.next_cursor;
+                pagesFetched++;
+            }
+
+            const parsedQuestions = [];
+            const todayYMD = getLocalYMD(new Date());
+
+            const extractText = (prop) => {
+                if (!prop) return null;
+                if (prop.title && prop.title.length > 0) return prop.title[0].plain_text;
+                if (prop.rich_text && prop.rich_text.length > 0) return prop.rich_text[0].plain_text;
+                if (prop.rollup && prop.rollup.array && prop.rollup.array.length > 0) {
+                    const firstItem = prop.rollup.array[0];
+                    if (firstItem.title && firstItem.title.length > 0) return firstItem.title[0].plain_text;
+                    if (firstItem.rich_text && firstItem.rich_text.length > 0) return firstItem.rich_text[0].plain_text;
+                }
+                return null;
+            };
+
+            allFetchedResults.forEach(page => {
+                const props = page.properties;
+                
+                const answer = extractText(props['정답']) || '';
+                if (!answer.trim()) return;
+
+                const passCount = props['누적 통과 횟수']?.number || 0;
+                const wrongCount = props['누적 오답 횟수']?.number || 0;
+                const wrongRate = passCount > 0 ? wrongCount / passCount : wrongCount;
+                const isMastered = passCount >= 4;
+                const isRetry = props['다시 학습']?.checkbox === true;
+
+                const rawDateProp = props['날짜'];
+                const rawDateIso = rawDateProp?.date?.start || rawDateProp?.formula?.date?.start || rawDateProp?.rollup?.date?.start;
+                let rawYMD = null;
+                if (rawDateIso) {
+                    const rawDateObj = new Date(rawDateIso);
+                    if (!isNaN(rawDateObj.getTime())) rawYMD = getLocalYMD(rawDateObj);
+                }
+
+                const isNewQuestion = passCount === 0 && !isRetry && (rawYMD === null || rawYMD === todayYMD);
+
+                const nextDateProp = props['다음 복습일'];
+                const nextDateIso = nextDateProp?.date?.start || nextDateProp?.formula?.date?.start || nextDateProp?.rollup?.date?.start;
+
+                let category = 'none';
+
+                if (isNewQuestion) {
+                    category = 'new';
+                } else if (nextDateIso) {
+                    const nextDateObj = new Date(nextDateIso);
+                    if (!isNaN(nextDateObj.getTime())) {
+                        const nextYMD = getLocalYMD(nextDateObj);
+                        if (nextYMD === todayYMD) category = 'today'; 
+                        else if (nextYMD < todayYMD) category = 'pending'; 
+                    }
+                }
+
+                const dueProp = props['오늘 복습 필요'];
+                const isDueByProp = dueProp?.checkbox === true || dueProp?.formula?.boolean === true;
+                if (category === 'none' && isDueByProp && !nextDateIso) category = 'pending';
+                if (isMastered) category = 'none';
+
+                const summary = extractText(props['문제 요약']) || '요약 없음';
+                const content = extractText(props['문제 내용']) || '내용 없음';
+		
+		if (category === 'pending') {
+		    const debugNextYMD = nextDateIso ? getLocalYMD(new Date(nextDateIso)) : null;
+
+		    console.log('[밀린 복습 분류]', {
+		        summary,
+ 		       passCount,
+ 		       rawDateIso,
+		        rawYMD,
+		        nextDateIso,
+		        nextYMD: debugNextYMD,
+		        todayYMD,
+		        dueProp,
+ 		       isDueByProp,
+		        category
+		    });
+		}
+
+                let mainSubject = '미분류';
+                let subSubject = '';
+                let displaySubject = '미분류';
+
+                const subjectRelation = props['과목']?.relation;
+                if (subjectRelation && subjectRelation.length > 0) {
+                    const subjectId = subjectRelation[0].id;
+                    const subj = subjectData[subjectId];
+                    
+                    if (subj) {
+                        if (subj.parentId && subjectData[subj.parentId]) {
+                            mainSubject = subjectData[subj.parentId].name;
+                            subSubject = subj.name;
+                            displaySubject = `${mainSubject} - ${subSubject}`;
+                        } else {
+                            mainSubject = subj.name;
+                            displaySubject = mainSubject;
+                        }
+                    } else {
+                        mainSubject = '과목명 불러오기 실패';
+                        displaySubject = '과목명 불러오기 실패';
+                    }
+                }
+
+                let relatedNoteIds = [];
+                const exactRelationKey = Object.keys(props).find(k => {
+                    const norm = k.replace(/\s+/g, '');
+                    return props[k].type === 'relation' && norm === '관련학습노트';
+                });
+                if (exactRelationKey) {
+                    relatedNoteIds = (props[exactRelationKey].relation || []).map(r => r.id);
+                }
+                if (relatedNoteIds.length === 0) {
+                    const rollupKey = Object.keys(props).find(k => {
+                        const norm = k.replace(/\s+/g, '');
+                        return props[k].type === 'rollup' && norm === '관련학습노트';
+                    });
+                    if (rollupKey) {
+                        const arr = props[rollupKey]?.rollup?.array || [];
+                        arr.forEach(item => {
+                            if (item.type === 'relation' && item.relation) {
+                                item.relation.forEach(r => relatedNoteIds.push(r.id));
+                            }
+                        });
+                    }
+                }
+                if (relatedNoteIds.length === 0) {
+                    for (const key in props) {
+                        const normKey = key.replace(/\s+/g, '');
+                        if (
+                            props[key].type === 'relation' && normKey !== '과목' && normKey !== '테스트' && !normKey.includes('알림')
+                        ) {
+                            relatedNoteIds = (props[key].relation || []).map(r => r.id);
+                            if (relatedNoteIds.length > 0) break;
+                        }
+                    }
+                }
+                relatedNoteIds = relatedNoteIds.slice(0, 1);
+
+                parsedQuestions.push({ 
+                    id: page.id, category, 
+                    mainSubject, subSubject, subject: displaySubject,
+                    summary, content, answer, passCount, wrongCount, wrongRate, isMastered, isRetry,
+                    relatedNoteIds 
+                });
+            });
+            
+            setAllQuestions(parsedQuestions);
+            
+        } catch (e) {
+            console.error(e);
+            alert("데이터를 불러오는 중 오류가 발생했습니다: " + e.message);
+        } finally {
+            setIsLoadingData(false);
+        }
+    }, [config, notionFetch]);
+
+    useEffect(() => {
+        if (config.saved) fetchData();
+    }, [config.saved, fetchData]);
+
+    useEffect(() => {
+        if (appState === 'testing' && (testQueue.length === 0 || currentIndex >= testQueue.length)) {
+            setAppState('ready');
+        }
+    }, [appState, testQueue.length, currentIndex]);
+
+    /* ── 과목 트리 파싱 ── */
+    const subjectTree = useMemo(() => {
+        const tree = { '전체': { total: allQuestions.length, subs: {} } };
+        
+        allQuestions.forEach(q => {
+            const main = q.mainSubject || '미분류';
+            const sub = q.subSubject || '';
+
+            if (!tree[main]) tree[main] = { total: 0, subs: {} };
+            tree[main].total++;
+
+            if (sub) {
+                if (!tree[main].subs[sub]) tree[main].subs[sub] = 0;
+                tree[main].subs[sub]++;
+            }
+        });
+        
+        return tree;
+    }, [allQuestions]);
+
+    const availableRandomCount = useMemo(() => {
+        if (!randomMainSubj || randomMainSubj === '전체') return allQuestions.length;
+        const mainData = subjectTree[randomMainSubj];
+        if (!mainData) return 0;
+        
+        if (randomSubSubj && randomSubSubj !== '전체') {
+            return mainData.subs[randomSubSubj] || 0;
+        }
+        return mainData.total;
+    }, [subjectTree, randomMainSubj, randomSubSubj, allQuestions]);
+
+
+    /* ── 테스트 로직 ── */
+    const startReviewTest = (type, limit) => {
+        let sourceQueue = [];
+        if (type === 'new') sourceQueue = allQuestions.filter(q => q.category === 'new');
+        else if (type === 'today') sourceQueue = allQuestions.filter(q => q.category === 'today');
+        else if (type === 'wrongRate') sourceQueue = allQuestions.filter(q => q.wrongRate >= 1).sort((a, b) => b.wrongRate - a.wrongRate || b.wrongCount - a.wrongCount);
+        else if (type === 'mastered') sourceQueue = allQuestions.filter(q => q.isMastered);
+        else sourceQueue = allQuestions.filter(q => q.category === 'pending');
+        
+        const queue = limit ? sourceQueue.slice(0, limit) : [...sourceQueue];
+
+        if (queue.length === 0) {
+            setAppState('ready');
+            return;
+        }
+        
+        setSessionType(type);
+        setTestQueue(queue);
+        setAppState('testing');
+        setCurrentIndex(0);
+        setResults({});
+        wrongCountIncrementedIdsRef.current = new Set();
+        setUserInput('');
+        setIsRevealed(false);
+        setIsNoteExpanded(false); 
+    };
+
+    const continuePendingReview = () => {
+        const completedIds = new Set(testQueue.map(q => q.id));
+        const queue = allQuestions.filter(q => q.category === 'pending' && !completedIds.has(q.id));
+
+        if (queue.length === 0) {
+            setAppState('ready');
+            return;
+        }
+
+        setSessionType('pending');
+        setTestQueue(queue);
+        setAppState('testing');
+        setCurrentIndex(0);
+        setResults({});
+        wrongCountIncrementedIdsRef.current = new Set();
+        setUserInput('');
+        setIsRevealed(false);
+        setIsNoteExpanded(false);
+    };
+
+    const startRandomTest = () => {
+        let filtered = allQuestions;
+        
+        if (randomMainSubj && randomMainSubj !== '전체') {
+            filtered = filtered.filter(q => q.mainSubject === randomMainSubj);
+            if (randomSubSubj && randomSubSubj !== '전체') {
+                filtered = filtered.filter(q => q.subSubject === randomSubSubj);
+            }
+        }
+
+        const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+        const actualCount = Math.min(randomCount, shuffled.length);
+        const finalQueue = shuffled.slice(0, actualCount);
+
+        if (finalQueue.length === 0) {
+            setAppState('ready');
+            return;
+        }
+
+        setSessionType('random');
+        setTestQueue(finalQueue);
+        setAppState('testing');
+        setCurrentIndex(0);
+        setResults({});
+        wrongCountIncrementedIdsRef.current = new Set();
+        setUserInput('');
+        setIsRevealed(false);
+        setIsNoteExpanded(false);
+    };
+
+    const handleCheckAnswer = (e) => {
+        if (e) e.preventDefault();
+        if (!userInput.trim()) {
+            setIsShaking(true);
+            setTimeout(() => setIsShaking(false), 300);
+            return;
+        }
+        setIsRevealed(true);
+    };
+
+    const handleEarlyExit = () => {
+        if (currentIndex === 0) {
+            setAppState('ready');
+        } else {
+            const completedQueue = testQueue.slice(0, currentIndex);
+            setTestQueue(completedQueue); 
+            setAppState('result');
+        }
+    };
+
+    const handleResult = (isPass) => {
+        const currentQ = testQueue[currentIndex];
+        
+        setResults(prev => ({ ...prev, [currentQ.id]: isPass }));
+
+        if (sessionType === 'wrongRate') {
+            const currentWrongCount = currentQ.wrongCount || 0;
+            const newWrongCount = isPass ? Math.max(0, currentWrongCount - 1) : currentWrongCount;
+            const newWrongRate = currentQ.passCount > 0 ? newWrongCount / currentQ.passCount : newWrongCount;
+
+            if (isPass && newWrongCount !== currentWrongCount) {
+                setAllQuestions(prev => prev.map(q => (
+                    q.id === currentQ.id
+                        ? { ...q, wrongCount: newWrongCount, wrongRate: newWrongRate }
+                        : q
+                )));
+                setTestQueue(prev => prev.map(q => (
+                    q.id === currentQ.id
+                        ? { ...q, wrongCount: newWrongCount, wrongRate: newWrongRate }
+                        : q
+                )));
+
+                setSyncingCount(c => c + 1);
+                notionFetch(`/v1/pages/${currentQ.id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ properties: { '누적 오답 횟수': { number: newWrongCount } } })
+                }).catch(err => {
+                    console.error("오답률 테스트 업데이트 오류:", err);
+                }).finally(() => {
+                    setSyncingCount(c => Math.max(0, c - 1));
+                });
+            }
+        }
+
+        // 랜덤/마스터 테스트에서는 Notion DB 업데이트 생략
+        if (['new', 'today', 'pending'].includes(sessionType)) {
+            const newPassCount = isPass ? (currentQ.passCount + 1) : 0;
+            let newWrongCount = currentQ.wrongCount || 0;
+            const propertiesToUpdate = {
+                '누적 통과 횟수': { number: newPassCount }
+            };
+            
+            if (isPass) {
+                propertiesToUpdate['날짜'] = { date: { start: getLocalYMD(new Date()) } };
+                propertiesToUpdate['다시 학습'] = { checkbox: false }; 
+                if (currentQ.passCount < 4 && newPassCount >= 4) {
+                    propertiesToUpdate['마스터 날짜'] = { date: { start: getLocalYMD(new Date()) } };
+                }
+            } else {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                propertiesToUpdate['날짜'] = { date: { start: getLocalYMD(tomorrow) } };
+                propertiesToUpdate['다시 학습'] = { checkbox: true };
+
+                if (!wrongCountIncrementedIdsRef.current.has(currentQ.id)) {
+                    newWrongCount += 1;
+                    propertiesToUpdate['누적 오답 횟수'] = { number: newWrongCount };
+                    wrongCountIncrementedIdsRef.current.add(currentQ.id);
+                }
+            }
+
+            setAllQuestions(prev => prev.map(q => (
+                q.id === currentQ.id
+                    ? { ...q, passCount: newPassCount, wrongCount: newWrongCount, isRetry: !isPass }
+                    : q
+            )));
+            
+            setSyncingCount(c => c + 1); 
+            
+            notionFetch(`/v1/pages/${currentQ.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ properties: propertiesToUpdate })
+            }).catch(err => {
+                console.error("DB 업데이트 오류:", err);
+            }).finally(() => {
+                setSyncingCount(c => Math.max(0, c - 1)); 
+            });
+        }
+
+        if (currentIndex + 1 < testQueue.length) {
+            setCurrentIndex(prev => prev + 1);
+            setUserInput('');
+            setIsRevealed(false);
+            setIsNoteExpanded(false); 
+            if (inputRef.current) setTimeout(() => inputRef.current.focus(), 50);
+        } else {
+            if (['new', 'today', 'pending'].includes(sessionType)) {
+                const completedIds = testQueue.map(q => q.id);
+                setAllQuestions(prev => prev.map(q => {
+                    if(completedIds.includes(q.id)) return { ...q, category: 'none' };
+                    return q;
+                }));
+            }
+            setAppState('result');
+        }
+    };
+
+
+    const isUrlConnected = !!config.fromUrl;
+    const connected = !!config.saved && !!config.proxyUrl && !!config.apiKey && !!config.testDbId;
+    const maskValue = (value) => {
+        if (!value) return '연결 대기';
+        if (value.length <= 10) return value;
+        return `${value.slice(0, 6)}...${value.slice(-4)}`;
+    };
+    const connectionRows = [
+        {
+            label: 'URL 파라미터',
+            desc: isUrlConnected ? '임베드 URL로 설정값을 불러오고 있습니다.' : 'proxy/key/test 값을 URL에 포함해주세요.',
+            connected: isUrlConnected,
+            required: true
+        },
+        {
+            label: '테스트 DB',
+            desc: config.testDbId ? maskValue(config.testDbId) : '테스트 문제를 불러오는 필수 DB입니다.',
+            connected: !!config.testDbId,
+            required: true
+        },
+        {
+            label: '과목 DB',
+            desc: config.subjectDbId ? maskValue(config.subjectDbId) : '과목별 분류에 사용하는 선택 DB입니다.',
+            connected: !!config.subjectDbId,
+            required: false
+        }
+    ];
+
+    /* ══════ 화면 0: 설정 화면 ══════ */
+    if (showSetup) return (
+        <div className="w-full max-w-[420px] bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2F2F2F] overflow-hidden soft-shadow transition-colors">
+            <div className="p-10">
+                <div className="flex items-center gap-2 mb-1">
+                    <NotionIcon className="text-gray-800 dark:text-gray-200" />
+                    <span className="text-xs font-bold tracking-widest text-gray-400 dark:text-gray-500 uppercase">Notion 연결</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-3">테스트 DB 연결 상태</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed mb-6">
+                    이 위젯은 입력창 없이 임베드 URL의 파라미터로 Notion 설정값을 자동으로 불러옵니다.
+                </p>
+
+                <div className={`rounded-2xl border p-4 mb-4 ${connected ? 'border-emerald-100 bg-emerald-50/70 dark:bg-emerald-900/10 dark:border-emerald-900/40' : 'border-red-100 bg-red-50/80 dark:bg-red-900/10 dark:border-red-900/40'}`}>
+                    <div className="flex items-start gap-3">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black bg-white dark:bg-[#252525] ${connected ? 'text-emerald-500' : 'text-red-400'}`}>
+                            {connected ? <CheckIcon/> : '!'}
+                        </div>
+                        <div>
+                            <div className={`text-sm font-extrabold ${connected ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                                {connected ? (isUrlConnected ? 'URL로 연결됨' : '저장된 설정으로 연결됨') : 'URL 파라미터가 필요합니다'}
+                            </div>
+                            <div className={`text-[12px] leading-relaxed mt-1 ${connected ? 'text-emerald-700/80 dark:text-emerald-300/80' : 'text-red-500/80 dark:text-red-300/80'}`}>
+                                {connected ? '설정값은 이 화면에서 다시 입력하지 않고 자동으로 읽어옵니다.' : '위젯통합설정 페이지에서 생성한 테스트 위젯 링크를 노션 임베드에 붙여넣어 주세요.'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-2.5 mb-6">
+                    {connectionRows.map(row => (
+                        <div key={row.label} className="flex items-center gap-3 bg-white dark:bg-[#252525] border border-[#EBE8DE] dark:border-[#333] rounded-2xl p-3.5">
+                            <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${row.connected ? 'bg-emerald-400' : row.required ? 'bg-red-400' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-sm font-extrabold text-gray-700 dark:text-gray-100">{row.label}</span>
+                                    <span className={`text-[10px] font-extrabold rounded-full px-2 py-0.5 border ${row.connected ? 'text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-900/40' : row.required ? 'text-red-500 bg-red-50 border-red-100 dark:bg-red-900/20 dark:border-red-900/40' : 'text-gray-400 bg-gray-50 border-gray-100 dark:bg-[#333] dark:border-[#444]'}`}>
+                                        {row.connected ? '연결됨' : row.required ? '필수 누락' : '대기'}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-gray-400 dark:text-gray-500 truncate mt-0.5">{row.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex gap-2">
+                    <button onClick={fetchData} disabled={!connected || isLoadingData}
+                        className={`flex-1 py-3.5 rounded-2xl text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-sm ${connected && !isLoadingData ? 'bg-[#A67B5B] hover:bg-[#8B664B]' : 'bg-[#D1CBBF] cursor-not-allowed'}`}>
+                        {isLoadingData ? <><span className="spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"/><span>불러오는 중...</span></> : <><RefreshIcon/><span>데이터 새로고침</span></>}
+                    </button>
+                    <button onClick={() => setShowSetup(false)} className="px-5 py-3.5 rounded-2xl bg-white dark:bg-[#252525] border border-[#EBE8DE] dark:border-[#333] text-gray-500 dark:text-gray-300 font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#333] transition-colors">
+                        닫기
+                    </button>
+                </div>
+
+                {!connected && (
+                    <p className="text-[11px] text-red-400 dark:text-red-300 mt-4 leading-relaxed">
+                        필수 파라미터: proxy 또는 proxyUrl, key 또는 apiKey, test 또는 testDbId
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+
+    /* ══════ 화면 1: 준비 화면 (메인) ══════ */
+    if (appState === 'ready') {
+        const newQuestions = allQuestions.filter(q => q.category === 'new');
+        const todayQuestions = allQuestions.filter(q => q.category === 'today');
+        const pendingQuestions = allQuestions.filter(q => q.category === 'pending');
+        const wrongRateQuestions = allQuestions.filter(q => q.wrongRate >= 1);
+        const masteredQuestions = allQuestions.filter(q => q.isMastered);
+
+        const hasNew = newQuestions.length > 0;
+        const hasToday = todayQuestions.length > 0;
+        const hasPending = pendingQuestions.length > 0;
+        const hasWrongRate = wrongRateQuestions.length > 0;
+        const hasMastered = masteredQuestions.length > 0;
+        const isPendingOverloaded = pendingQuestions.length > BATCH_SIZE;
+
+        const SubjectButton = ({ active, onClick, children }) => (
+            <button 
+                onClick={onClick}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border 
+                    ${active ? 'bg-latte-500 text-white dark:bg-latte-600 border-latte-500 dark:border-latte-600 shadow-sm' 
+                             : 'bg-white dark:bg-[#2A2A2A] text-gray-600 dark:text-gray-300 border-[#EBE8DE] dark:border-[#333] hover:border-latte-300 dark:hover:border-latte-500 hover:bg-latte-50 dark:hover:bg-latte-900/30'}`}
+            >
+                {children}
+            </button>
+        );
+
+        /* 세부 과목 전용 버튼: 주 과목보다 한 톤 연한 계열 */
+        const SubSubjectButton = ({ active, onClick, children }) => (
+            <button 
+                onClick={onClick}
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border 
+                    ${active ? 'bg-latte-100 dark:bg-latte-900/40 text-latte-900 dark:text-latte-300 border-latte-300 dark:border-latte-700 shadow-sm' 
+                             : 'bg-white dark:bg-[#2A2A2A] text-gray-500 dark:text-gray-400 border-[#EBE8DE] dark:border-[#333] hover:border-latte-300 dark:hover:border-latte-500 hover:bg-latte-50 dark:hover:bg-latte-900/30'}`}
+            >
+                {children}
+            </button>
+        );
+
+        return (
+            <div className="test-shell bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2F2F2F] p-8 flex flex-col justify-start min-h-[580px] soft-shadow relative overflow-y-auto transition-colors">
+                <div className="test-toolbar">
+                    <button onClick={() => setIsDark(!isDark)} className="text-gray-300 dark:text-gray-500 hover:text-latte-500 dark:hover:text-latte-400 transition-colors" title="다크모드">
+                        {isDark ? <ThemeSunIcon /> : <ThemeMoonIcon />}
+                    </button>
+                    <button onClick={fetchData} className="text-gray-300 dark:text-gray-500 hover:text-latte-500 dark:hover:text-latte-400 transition-colors" title="데이터 새로고침">
+                        <RefreshIcon />
+                    </button>
+                    <button onClick={() => setShowSetup(true)} className="text-gray-300 dark:text-gray-500 hover:text-latte-500 dark:hover:text-latte-400 transition-colors" title="설정">
+                        <GearIcon />
+                    </button>
+                </div>
+
+                <div className="mb-5 text-center mt-2">
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">단어 테스트</h1>
+                </div>
+                
+                {/* 탭 메뉴 */}
+                <div className="flex bg-[#EBE8DE]/40 dark:bg-[#2F2F2F]/40 p-1.5 rounded-2xl mb-6 relative transition-colors">
+                    <button 
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all z-10 
+                            ${activeTab === 'random' ? 'text-latte-700 dark:text-latte-400 bg-white dark:bg-[#3d3d3d] shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                        onClick={() => setActiveTab('random')}
+                    >
+                        랜덤 모드
+                    </button>
+                    <button 
+                        className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all z-10 
+                            ${activeTab === 'review' ? 'text-latte-700 dark:text-latte-400 bg-white dark:bg-[#3d3d3d] shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                        onClick={() => setActiveTab('review')}
+                    >
+                        복습 모드
+                    </button>
+                </div>
+
+                {isLoadingData ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-10">
+                        <span className="spin w-8 h-8 border-[3px] border-latte-500 border-t-transparent rounded-full mb-3"></span>
+                        <span className="text-sm text-gray-400 dark:text-gray-500">데이터를 불러오는 중...</span>
+                    </div>
+                ) : (
+                    <>
+                        {/* ──────── 랜덤 모드 탭 ──────── */}
+                        {activeTab === 'random' && (
+                            <div className="flex flex-col animate-fade-in">
+
+                                {/* ── Step 1: 과목 선택 ── */}
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center pt-0.5 shrink-0">
+                                        <div className="w-6 h-6 rounded-full bg-latte-500 dark:bg-latte-600 text-white text-[10px] font-black flex items-center justify-center shrink-0">1</div>
+                                        <div className="w-px flex-1 bg-[#EBE8DE] dark:bg-[#333] my-1.5"></div>
+                                    </div>
+                                    <div className="flex-1 pb-4">
+                                        <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2.5 leading-none pt-0.5">과목 선택</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            <SubjectButton 
+                                                active={randomMainSubj === '전체'} 
+                                                onClick={() => { setRandomMainSubj('전체'); setRandomSubSubj('전체'); }}
+                                            >
+                                                전체 ({allQuestions.length})
+                                            </SubjectButton>
+                                            {Object.keys(subjectTree).filter(k => k !== '전체').map(main => (
+                                                <SubjectButton 
+                                                    key={main}
+                                                    active={randomMainSubj === main} 
+                                                    onClick={() => { setRandomMainSubj(main); setRandomSubSubj('전체'); }}
+                                                >
+                                                    {main} ({subjectTree[main].total})
+                                                </SubjectButton>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ── Step 2: 세부 과목 (존재할 때만) ── */}
+                                {randomMainSubj !== '전체' && Object.keys(subjectTree[randomMainSubj]?.subs || {}).length >= 1 && (
+                                    <div className="flex gap-3 animate-fade-in">
+                                        <div className="flex flex-col items-center pt-0.5 shrink-0">
+                                            <div className="w-6 h-6 rounded-full bg-latte-300 dark:bg-latte-800 text-latte-900 dark:text-latte-200 text-[10px] font-black flex items-center justify-center shrink-0">2</div>
+                                            <div className="w-px flex-1 bg-[#EBE8DE] dark:bg-[#333] my-1.5"></div>
+                                        </div>
+                                        <div className="flex-1 pb-4">
+                                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-2.5 leading-none pt-0.5">세부 과목</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                <SubSubjectButton 
+                                                    active={randomSubSubj === '전체'} 
+                                                    onClick={() => setRandomSubSubj('전체')}
+                                                >
+                                                    전체 ({subjectTree[randomMainSubj].total})
+                                                </SubSubjectButton>
+                                                {Object.keys(subjectTree[randomMainSubj].subs).map(sub => (
+                                                    <SubSubjectButton 
+                                                        key={sub}
+                                                        active={randomSubSubj === sub} 
+                                                        onClick={() => setRandomSubSubj(sub)}
+                                                    >
+                                                        {sub} ({subjectTree[randomMainSubj].subs[sub]})
+                                                    </SubSubjectButton>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── Step 3: 문제 개수 ── */}
+                                <div className="flex gap-3">
+                                    <div className="flex flex-col items-center pt-0.5 shrink-0">
+                                        <div className="w-6 h-6 rounded-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 text-[10px] font-black flex items-center justify-center shrink-0">3</div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-2.5">
+                                            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-200 leading-none pt-0.5">문제 개수</h3>
+                                            <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#2A2A2A] px-2 py-1 rounded-md">최대 {availableRandomCount}개</span>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 mb-2">
+                                            {[10, 20, 30].map(n => (
+                                                <button 
+                                                    key={n}
+                                                    onClick={() => { setRandomCount(n); setCustomRandomCount(''); }}
+                                                    className={`py-2.5 rounded-xl text-sm font-bold transition-all border 
+                                                        ${randomCount === n && customRandomCount === '' ? 'bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 border-gray-800 dark:border-gray-200' : 'bg-white dark:bg-[#2A2A2A] text-gray-600 dark:text-gray-400 border-[#EBE8DE] dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#333]'}
+                                                        ${n > availableRandomCount ? 'opacity-30 cursor-not-allowed' : ''}`}
+                                                    disabled={n > availableRandomCount}
+                                                >
+                                                    {n}개
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#2A2A2A] rounded-xl px-3 py-2 border border-[#EBE8DE] dark:border-[#333] transition-colors">
+                                            <span className="text-xs font-bold text-gray-400 shrink-0">직접 입력</span>
+                                            <input 
+                                                type="number"
+                                                value={customRandomCount}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setCustomRandomCount(val);
+                                                    if(val && !isNaN(val)) setRandomCount(Number(val));
+                                                }}
+                                                placeholder="N"
+                                                className="flex-1 min-w-0 text-sm font-bold text-center bg-transparent text-gray-800 dark:text-gray-100 focus:outline-none placeholder:text-gray-300 dark:placeholder:text-gray-600 placeholder:font-normal"
+                                                min="1"
+                                                max={availableRandomCount}
+                                            />
+                                            <span className="text-xs font-bold text-gray-400 shrink-0">개</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 테스트 시작 버튼 */}
+                                <button 
+                                    onClick={startRandomTest}
+                                    disabled={availableRandomCount === 0 || randomCount <= 0 || isNaN(randomCount)}
+                                    className={`w-full py-4 mt-5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 shadow-sm
+                                        ${availableRandomCount > 0 && randomCount > 0 ? 'bg-gray-800 dark:bg-gray-200 hover:bg-gray-700 dark:hover:bg-gray-300 text-white dark:text-gray-900' : 'bg-gray-200 dark:bg-[#333] text-gray-400 dark:text-gray-600 cursor-not-allowed'}`}
+                                >
+                                    <DicesIcon />
+                                    {availableRandomCount > 0 && randomCount > 0
+                                        ? `${Math.min(randomCount, availableRandomCount)}개 랜덤 시작`
+                                        : '문제가 없습니다'}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* ──────── 복습 모드 탭 ──────── */}
+                        {activeTab === 'review' && (
+                            <div className="review-grid animate-fade-in pb-4">
+                                <div className="bg-white dark:bg-[#252525] rounded-3xl p-5 border-2 border-latte-100 dark:border-latte-900/30 flex flex-col relative overflow-hidden soft-shadow transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${hasNew ? 'bg-latte-50 dark:bg-latte-900/50 text-latte-500 dark:text-latte-400' : 'bg-gray-50 dark:bg-[#333] text-gray-300 dark:text-gray-600'}`}>
+                                                <ZapIcon />
+                                            </div>
+                                            <div>
+                                                <h2 className={`font-bold ${hasNew ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>오늘의 테스트</h2>
+                                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{hasNew ? '새롭게 익혀야 할 단어들' : '새로운 문제가 없어요!'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black ${hasNew ? 'text-latte-500 dark:text-latte-400' : 'text-gray-300 dark:text-gray-600'}`}>{newQuestions.length}</div>
+                                    </div>
+                                    <button onClick={() => startReviewTest('new')} disabled={!hasNew} className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 ${hasNew ? 'bg-latte-500 dark:bg-latte-600 hover:bg-latte-700 dark:hover:bg-latte-500 text-white shadow-sm' : 'bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
+                                        {hasNew ? '오늘의 테스트 시작' : '완료됨'}
+                                    </button>
+                                </div>
+
+                                <div className="bg-white dark:bg-[#252525] rounded-3xl p-5 border border-gray-200 dark:border-[#333] flex flex-col relative overflow-hidden transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${hasToday ? 'bg-[#F0F4ED] dark:bg-[#849F71]/20 text-[#849F71]' : 'bg-gray-50 dark:bg-[#333] text-gray-300 dark:text-gray-600'}`}>
+                                                <SunIcon />
+                                            </div>
+                                            <div>
+                                                <h2 className={`font-bold ${hasToday ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>오늘의 복습</h2>
+                                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{hasToday ? '잊어버리기 전에 다시 한번!' : '오늘 복습은 끝났어요!'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black ${hasToday ? 'text-[#849F71]' : 'text-gray-300 dark:text-gray-600'}`}>{todayQuestions.length}</div>
+                                    </div>
+                                    <button onClick={() => startReviewTest('today')} disabled={!hasToday} className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 ${hasToday ? 'bg-[#849F71] hover:bg-[#738C62] text-white shadow-sm' : 'bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
+                                        {hasToday ? '오늘의 복습 시작' : '완료됨'}
+                                    </button>
+                                </div>
+
+                                <div className="wide-card bg-[#F4F0EA] dark:bg-[#1E1E1E] rounded-3xl p-5 border border-[#EBE8DE] dark:border-[#2F2F2F] flex flex-col transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${hasPending ? 'bg-white dark:bg-[#2A2A2A] text-latte-700 dark:text-latte-400 shadow-sm' : 'bg-[#EBE8DE] dark:bg-[#333] text-gray-400 dark:text-gray-500'}`}>
+                                                <ArchiveIcon />
+                                            </div>
+                                            <div>
+                                                <h2 className={`font-bold ${hasPending ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>밀린 복습</h2>
+                                                <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{hasPending ? '여유가 될 때 조금씩 해결해요' : '밀린 문제가 없어요!'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black ${hasPending ? 'text-gray-800 dark:text-gray-100' : 'text-gray-300 dark:text-gray-600'}`}>{pendingQuestions.length}</div>
+                                    </div>
+                                    {hasPending ? (
+                                        <div className="flex gap-2">
+                                            {isPendingOverloaded ? (
+                                                <>
+                                                    <button onClick={() => startReviewTest('pending', BATCH_SIZE)} className="flex-[2] py-3.5 rounded-2xl bg-white dark:bg-[#2A2A2A] hover:bg-latte-50 dark:hover:bg-latte-900/30 text-latte-700 dark:text-latte-400 font-bold text-sm transition-colors shadow-sm flex justify-center items-center gap-1 border border-[#EBE8DE] dark:border-[#333]"><ZapIcon /> {BATCH_SIZE}개만 풀기</button>
+                                                    <button onClick={() => startReviewTest('pending')} className="flex-1 py-3.5 rounded-2xl bg-gray-200 dark:bg-[#333] hover:bg-gray-300 dark:hover:bg-[#444] text-gray-600 dark:text-gray-300 font-bold text-sm transition-colors text-center">전체</button>
+                                                </>
+                                            ) : (
+                                                <button onClick={() => startReviewTest('pending')} className="w-full py-3.5 rounded-2xl bg-white dark:bg-[#2A2A2A] hover:bg-latte-50 dark:hover:bg-latte-900/30 text-latte-700 dark:text-latte-400 font-bold text-sm transition-colors shadow-sm border border-[#EBE8DE] dark:border-[#333]">밀린 복습 시작</button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="w-full py-3.5 rounded-2xl font-bold text-sm bg-[#EBE8DE]/50 dark:bg-[#333]/50 text-gray-400 dark:text-gray-600 text-center cursor-not-allowed">깔끔합니다 ✨</div>
+                                    )}
+                                </div>
+
+                                <div className="bg-white dark:bg-[#252525] rounded-3xl p-5 border border-[#FFE1DC] dark:border-[#4A2A25] flex flex-col relative overflow-hidden transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${hasWrongRate ? 'bg-[#FFF5F2] dark:bg-[#4A2A25]/50 text-[#E07A5F]' : 'bg-gray-50 dark:bg-[#333] text-gray-300 dark:text-gray-600'}`}>
+                                                <XIcon />
+                                            </div>
+                                            <div>
+                                                <h2 className={`font-bold ${hasWrongRate ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>오답률 높은 문제</h2>
+                                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{hasWrongRate ? '오답률 1 이상만 모았어요' : '오답률 높은 문제가 없어요!'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black ${hasWrongRate ? 'text-[#E07A5F]' : 'text-gray-300 dark:text-gray-600'}`}>{wrongRateQuestions.length}</div>
+                                    </div>
+                                    <button onClick={() => startReviewTest('wrongRate')} disabled={!hasWrongRate} className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 ${hasWrongRate ? 'bg-[#E07A5F] hover:bg-[#cf684f] text-white shadow-sm' : 'bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
+                                        {hasWrongRate ? '오답률 높은 문제 시작' : '문제 없음'}
+                                    </button>
+                                </div>
+
+                                <div className="bg-white dark:bg-[#252525] rounded-3xl p-5 border border-[#DDEBDD] dark:border-[#2D3C31] flex flex-col relative overflow-hidden transition-colors">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${hasMastered ? 'bg-[#F3F8F5] dark:bg-[#1F2A24] text-[#849F71]' : 'bg-gray-50 dark:bg-[#333] text-gray-300 dark:text-gray-600'}`}>
+                                                <SmileIcon />
+                                            </div>
+                                            <div>
+                                                <h2 className={`font-bold ${hasMastered ? 'text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500'}`}>마스터한 문제</h2>
+                                                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">{hasMastered ? '마스터한 문제만 가볍게 점검해요' : '마스터한 문제가 아직 없어요!'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-2xl font-black ${hasMastered ? 'text-[#849F71]' : 'text-gray-300 dark:text-gray-600'}`}>{masteredQuestions.length}</div>
+                                    </div>
+                                    <button onClick={() => startReviewTest('mastered')} disabled={!hasMastered} className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 ${hasMastered ? 'bg-[#849F71] hover:bg-[#738C62] text-white shadow-sm' : 'bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
+                                        {hasMastered ? '마스터 문제 시작' : '문제 없음'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    /* ══════ 화면 2: 테스트 진행 화면 ══════ */
+    if (appState === 'testing') {
+        const currentQ = testQueue[currentIndex];
+
+        if (!currentQ) return null;
+        
+        const normalizeAnswer = (value) => value.replace(/\s+/g, '').toLowerCase();
+        const normalizedUserInput = normalizeAnswer(userInput);
+        const answerOptions = currentQ.answer.split(',').map(normalizeAnswer);
+        const isExactMatch = answerOptions.includes(normalizedUserInput);
+        
+        let sessionLabel = '밀린 복습';
+        let sessionIcon = '📦';
+        if (sessionType === 'new') { sessionLabel = '오늘의 테스트'; sessionIcon = '⚡'; }
+        else if (sessionType === 'today') { sessionLabel = '오늘의 복습'; sessionIcon = '☀️'; }
+        else if (sessionType === 'random') { sessionLabel = '랜덤 테스트'; sessionIcon = '🎲'; }
+        else if (sessionType === 'wrongRate') { sessionLabel = '오답률 높은 문제'; sessionIcon = '❌'; }
+        else if (sessionType === 'mastered') { sessionLabel = '마스터 문제'; sessionIcon = '😊'; }
+
+        
+        const wrongRateExitCount = sessionType === 'wrongRate'
+            ? Math.max(0, currentQ.passCount > 0 ? (currentQ.wrongCount || 0) - currentQ.passCount + 1 : (currentQ.wrongCount || 0))
+            : 0;
+        const wrongRateExitAfterPass = Math.max(0, wrongRateExitCount - 1);
+        const displayWrongRate = currentQ.passCount > 0
+            ? ((currentQ.wrongCount || 0) / currentQ.passCount).toFixed(2)
+            : String(currentQ.wrongCount || 0);
+        return (
+            <div className="w-full max-w-[420px] bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2F2F2F] flex flex-col min-h-[580px] max-h-[90vh] soft-shadow overflow-y-auto relative transition-colors">
+                <div className="pt-8 px-8 pb-4 relative">
+                    <div className="absolute top-0 left-0 h-1.5 bg-latte-100 dark:bg-[#333] w-full">
+                        <div 
+                            className="h-full bg-latte-500 dark:bg-latte-600 transition-all duration-300 ease-out" 
+                            style={{ width: `${((currentIndex) / testQueue.length) * 100}%` }}
+                        ></div>
+                    </div>
+                    <div className="flex justify-between items-center mb-4">
+                        <span className="px-3 py-1 bg-white dark:bg-[#2A2A2A] border border-[#EBE8DE] dark:border-[#333] rounded-full text-[11px] font-bold text-latte-700 dark:text-latte-300 flex items-center gap-1 transition-colors">
+                            <span>{sessionIcon}</span> {sessionLabel}
+                            {syncingCount > 0 && (
+                                <span className="spin inline-block w-2.5 h-2.5 border-2 border-latte-300 border-t-transparent rounded-full ml-1" title="DB에 저장 중..." />
+                            )}
+                        </span>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm font-bold text-latte-300 dark:text-latte-500">
+                                {currentIndex + 1} / {testQueue.length}
+                            </span>
+                            <button 
+                                onClick={handleEarlyExit} 
+                                className="text-[10px] text-gray-400 dark:text-gray-500 border border-[#EBE8DE] dark:border-[#333] bg-white dark:bg-[#2A2A2A] px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-[#333] transition-colors"
+                            >
+                                그만 풀기
+                            </button>
+                        </div>
+                    </div>
+                    <div className="text-[11px] font-bold text-gray-400 dark:text-gray-500">과목: {currentQ.subject}</div>
+                </div>
+
+                <div className="px-8 flex-1 flex flex-col">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 leading-snug mb-3 mt-1">
+                        {currentQ.summary}
+                    </h2>
+                    
+                    <p className="text-sm text-gray-500 dark:text-gray-300 leading-relaxed bg-white dark:bg-[#252525] p-4 rounded-2xl border border-[#EBE8DE] dark:border-[#333] transition-colors">
+                        {currentQ.content}
+                    </p>
+
+                    {sessionType === 'wrongRate' && (
+                        <div className="mt-3 rounded-2xl border border-[#FFE1DC] dark:border-[#4A2A25] bg-[#FFF5F2] dark:bg-[#2A211F] p-4 transition-colors">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <div className="text-[11px] font-extrabold text-[#E07A5F] dark:text-[#F1A38E]">오답률 회복 목표</div>
+                                    <div className="mt-1 text-sm font-bold text-gray-800 dark:text-gray-100">
+                                        {wrongRateExitCount > 0
+                                            ? `${wrongRateExitCount}번 더 맞히면 오답률 테스트에서 제외됩니다.`
+                                            : '이번 문제는 이미 제외 기준에 도달했어요.'}
+                                    </div>
+                                </div>
+                                <div className="shrink-0 rounded-xl bg-white dark:bg-[#35231F] px-3 py-2 text-right border border-[#FFE1DC] dark:border-[#4A2A25]">
+                                    <div className="text-[10px] font-bold text-gray-400 dark:text-gray-500">현재 오답률</div>
+                                    <div className="text-base font-black text-[#E07A5F] dark:text-[#F1A38E]">{displayWrongRate}</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {currentQ.relatedNoteIds && currentQ.relatedNoteIds.length > 0 && (
+                        <div className="mt-3 bg-[#F4F0EA] dark:bg-[#2A2A2A] border border-[#EBE8DE] dark:border-[#333] rounded-2xl overflow-hidden transition-colors">
+                            <button
+                                type="button"
+                                onClick={() => setIsNoteExpanded(!isNoteExpanded)}
+                                className="w-full px-4 py-3 flex items-center justify-between text-[12px] font-bold text-latte-700 dark:text-latte-400 hover:bg-[#EBE8DE]/50 dark:hover:bg-[#333]/50 transition-colors"
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    <BookIcon />
+                                    <span>관련 학습 노트</span>
+                                </div>
+                                <svg className={`w-4 h-4 text-latte-500 dark:text-latte-600 transition-transform duration-300 ${isNoteExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div className={`toggle-content ${isNoteExpanded ? 'open' : ''}`}>
+                                <div className="toggle-inner">
+                                    <div className="px-4 pb-3 pt-1 flex flex-col gap-2">
+                                        {isNoteExpanded && currentQ.relatedNoteIds.map((pageId) => (
+                                            <DynamicNoteLink 
+                                                key={pageId} 
+                                                pageId={pageId} 
+                                                proxyUrl={config.proxyUrl} 
+                                                apiKey={config.apiKey} 
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mt-auto mb-8">
+                        {!isRevealed ? (
+                            <form onSubmit={handleCheckAnswer} className="relative mt-8">
+                                <label className="text-[11px] font-bold text-latte-300 dark:text-latte-600 uppercase tracking-widest block mb-2">정답을 입력하세요</label>
+                                <div className={`relative ${isShaking ? 'animate-shake' : ''}`}>
+                                    <input 
+                                        ref={inputRef}
+                                        type="text" 
+                                        value={userInput}
+                                        onChange={(e) => setUserInput(e.target.value)}
+                                        placeholder="✏️ 여기에 정답 입력..."
+                                        className="w-full bg-transparent text-lg font-bold text-gray-800 dark:text-gray-100 pb-2 input-underline placeholder:text-gray-300 dark:placeholder:text-gray-600 placeholder:font-normal"
+                                        autoFocus
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <button type="submit" className="w-full py-3.5 mt-6 rounded-2xl bg-gray-800 dark:bg-gray-200 hover:bg-gray-700 dark:hover:bg-gray-300 text-white dark:text-gray-900 font-bold text-sm transition-colors shadow-sm">
+                                    정답 확인
+                                </button>
+                            </form>
+                        ) : (
+                            <div className="mt-6 animate-fade-in">
+                                <div className="p-5 rounded-2xl bg-white dark:bg-[#252525] border-2 border-latte-100 dark:border-[#333] flex flex-col gap-2 relative overflow-hidden transition-colors">
+                                    <div className="text-[11px] font-bold text-latte-500 dark:text-latte-600 uppercase tracking-widest">실제 정답</div>
+                                    <div className="text-2xl font-black text-gray-800 dark:text-gray-100">{currentQ.answer}</div>
+                                    
+                                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#333]">
+                                        <div className="text-[11px] font-bold text-gray-400 dark:text-gray-500 mb-1">내가 적은 답</div>
+                                        <div className={`text-base font-bold ${isExactMatch ? 'text-green-500' : 'text-red-400'}`}>
+                                            {userInput || '(미입력)'}
+                                        </div>
+                                    </div>
+                                    
+                                    {isExactMatch && (
+                                        <div className="absolute top-4 right-4 text-green-500 bg-green-50 dark:bg-green-500/10 p-2 rounded-full">
+                                            <CheckIcon />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {sessionType === 'wrongRate' && (
+                                    <div className={`mt-3 rounded-2xl px-4 py-3 text-[12px] font-bold border ${isExactMatch ? 'bg-[#F3F8F5] dark:bg-[#1F2A24] border-[#DDEBDD] dark:border-[#2D3C31] text-[#4a7c5e] dark:text-[#A7D7B8]' : 'bg-[#FFF5F2] dark:bg-[#2A211F] border-[#FFE1DC] dark:border-[#4A2A25] text-[#E07A5F] dark:text-[#F1A38E]'}`}>
+                                        {isExactMatch
+                                            ? (wrongRateExitAfterPass > 0 ? `좋아요. 통과하면 제외까지 ${wrongRateExitAfterPass}번 남아요.` : '좋아요. 통과하면 이 문제는 오답률 테스트에서 제외됩니다.')
+                                            : '다시 학습을 눌러도 누적 오답 횟수는 유지됩니다.'}
+                                    </div>
+                                )}
+                                <div className="flex gap-3 mt-6">
+                                    <button 
+                                        onClick={() => handleResult(false)}
+                                        className="flex-1 py-3.5 rounded-2xl bg-white dark:bg-[#2A2A2A] border border-red-200 dark:border-red-900/50 text-red-500 font-bold text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-1.5"
+                                    >
+                                        <XIcon /> 다시 학습
+                                    </button>
+                                    <button 
+                                        onClick={() => handleResult(true)}
+                                        className="flex-1 py-3.5 rounded-2xl bg-[#849F71] text-white font-bold text-sm hover:bg-[#738C62] transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                                    >
+                                        <CheckIcon /> 통과
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /* ══════ 화면 3: 결과 미니 대시보드 ══════ */
+    if (appState === 'result') {
+        const passCount = Object.values(results).filter(Boolean).length;
+        const scorePct = testQueue.length > 0 ? Math.round((passCount / testQueue.length) * 100) : 0;
+        
+        const remainingPending = allQuestions.filter(q => q.category === 'pending' && !testQueue.find(tq => tq.id === q.id));
+        const wrongRateRecoveredCount = sessionType === 'wrongRate'
+            ? testQueue.filter(q => results[q.id] && (q.passCount > 0 ? (q.wrongCount || 0) < q.passCount : (q.wrongCount || 0) < 1)).length
+            : 0;
+        const wrongRateReducedCount = sessionType === 'wrongRate' ? passCount : 0;
+
+        return (
+            <div className="w-full max-w-[420px] bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2F2F2F] flex flex-col max-h-[90vh] min-h-[580px] soft-shadow overflow-hidden transition-colors">
+                <div className="p-8 pb-4 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-latte-50 dark:bg-latte-900/30 text-latte-500 dark:text-latte-400 mb-4">
+                        {scorePct === 100 ? '🎉' : <SmileIcon />}
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1">수고하셨습니다!</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">방금 진행한 결과를 요약해 드릴게요.</p>
+                </div>
+
+                <div className="px-8 pb-6 border-b border-[#EBE8DE] dark:border-[#2F2F2F]">
+                    <div className="flex bg-white dark:bg-[#252525] rounded-2xl border border-[#EBE8DE] dark:border-[#333] p-4 divide-x divide-[#EBE8DE] dark:divide-[#333] transition-colors">
+                        <div className="flex-1 flex flex-col items-center">
+                            <span className="text-[11px] font-bold text-gray-400 dark:text-gray-500 mb-1">진행한 문제</span>
+                            <span className="text-lg font-extrabold text-gray-800 dark:text-gray-100">{testQueue.length}</span>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center">
+                            <span className="text-[11px] font-bold text-[#849F71] dark:text-[#A3B895] mb-1">통과</span>
+                            <span className="text-lg font-extrabold text-[#849F71] dark:text-[#A3B895]">{passCount}</span>
+                        </div>
+                        <div className="flex-1 flex flex-col items-center">
+                            <span className="text-[11px] font-bold text-red-400 dark:text-red-300 mb-1">다시 학습</span>
+                            <span className="text-lg font-extrabold text-red-400 dark:text-red-300">{testQueue.length - passCount}</span>
+                        </div>
+                    </div>
+                </div>
+
+                    {sessionType === 'wrongRate' && (
+                        <div className="mx-8 mt-3 rounded-2xl border border-[#FFE1DC] dark:border-[#4A2A25] bg-[#FFF5F2] dark:bg-[#2A211F] p-4 text-center">
+                            <div className="text-[11px] font-bold text-[#E07A5F] dark:text-[#F1A38E]">오답률 회복 결과</div>
+                            <div className="mt-1 text-sm font-extrabold text-gray-800 dark:text-gray-100">
+                                누적 오답 횟수 {wrongRateReducedCount}개 감소 · {wrongRateRecoveredCount}개 제외 기준 도달
+                            </div>
+                        </div>
+                    )}
+                                <div className="flex-1 overflow-y-auto p-8 pt-6">
+                    <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 mb-3 tracking-wide">문항별 상세 결과</h3>
+                    <div className="space-y-2.5">
+                        {testQueue.map((q) => {
+                            const isPass = results[q.id];
+                            return (
+                                <div key={q.id} className="bg-white dark:bg-[#252525] p-3.5 rounded-2xl border border-[#EBE8DE] dark:border-[#333] flex items-center gap-3 transition-colors">
+                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isPass ? 'bg-green-50 dark:bg-green-900/30 text-green-500 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-400 dark:text-red-400'}`}>
+                                        {isPass ? <CheckIcon/> : <XIcon/>}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-[11px] text-latte-500 dark:text-latte-400 font-bold truncate">{q.answer}</div>
+                                        <div className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">{q.summary}</div>
+                                        {sessionType === 'wrongRate' && isPass && (
+                                            <div className="text-[10px] font-bold text-[#E07A5F] dark:text-[#F1A38E] mt-0.5">
+                                                {Math.max(0, q.passCount > 0 ? (q.wrongCount || 0) - q.passCount + 1 : (q.wrongCount || 0)) > 0
+                                                    ? `제외까지 ${Math.max(0, q.passCount > 0 ? (q.wrongCount || 0) - q.passCount + 1 : (q.wrongCount || 0))}번 남음`
+                                                    : '오답률 테스트 제외 기준 도달'}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="p-6 pt-0 flex flex-col gap-3">
+                    {sessionType === 'random' && (
+                        <button 
+                            onClick={startRandomTest}
+                            className="w-full py-4 rounded-2xl bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 font-bold text-sm hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors shadow-sm flex items-center justify-center gap-2"
+                        >
+                            <DicesIcon /> 같은 설정으로 한 번 더
+                        </button>
+                    )}
+
+                    {sessionType === 'pending' && remainingPending.length > 0 && (
+                        <button 
+                            onClick={continuePendingReview}
+                            className="w-full py-4 rounded-2xl bg-latte-50 dark:bg-[#2A2A2A] text-latte-700 dark:text-latte-400 font-bold text-sm transition-colors border border-latte-100 dark:border-[#333] flex items-center justify-center gap-2"
+                        >
+                            <ZapIcon /> 아직 남은 {remainingPending.length}개 이어서 하기
+                        </button>
+                    )}
+                    
+                    <button 
+                        onClick={() => { setAppState('ready'); }}
+                        className={`w-full py-4 rounded-2xl font-bold text-sm transition-colors shadow-sm text-center 
+                            ${sessionType === 'random' ? 'bg-white dark:bg-[#2A2A2A] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-[#333] hover:bg-gray-50 dark:hover:bg-[#333]' : 'bg-latte-500 dark:bg-latte-600 text-white hover:bg-latte-700 dark:hover:bg-latte-500'}`}
+                    >
+                        홈으로 돌아가기
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
+
+
