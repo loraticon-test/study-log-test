@@ -1086,7 +1086,15 @@ function App() {
 
   const getQuestRewards = (questId) => Object.entries(DECO_ITEMS).reduce((rewards, [tab, items]) => {
     (items || []).filter(item => item.unlock === questId).forEach(item => {
-      rewards.push({ tab: DECO_TAB_LABELS[tab] || tab, label: item.label });
+      rewards.push({
+        tab,
+        tabLabel: DECO_TAB_LABELS[tab] || tab,
+        id: item.id,
+        label: item.label,
+        emoji: item.emoji,
+        color: item.color,
+        thumbSrc: getDecoThumbSrc(tab, item.id)
+      });
     });
     return rewards;
   }, []);
@@ -1475,11 +1483,6 @@ function App() {
             </div>
           ) : (
           <>
-          {previewDeco && (
-            <button onClick={()=>setPreviewDeco(null)} style={{width:'100%',border:'none',borderRadius:'.75rem',padding:'.5rem .65rem',marginBottom:'.65rem',background:drawerUi.lockBg,color:drawerUi.accent,fontFamily:'inherit',fontSize:'.62rem',fontWeight:800,cursor:'pointer'}}>
-              되돌리기
-            </button>
-          )}
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(64px,1fr))',gap:'.55rem'}}>
             {DECO_ITEMS[decoTab]?.map(item => {
               const unlocked = isUnlocked(item);
@@ -1571,8 +1574,21 @@ function App() {
                     {q.name}
                   </div>
                   {rewards.length > 0 && (
-                    <div style={{fontSize:'.58rem',color:drawerUi.muted,marginTop:'.12rem',lineHeight:1.35}}>
-                      보상 · {rewards.map(reward => `${reward.tab} ${reward.label}`).join(' · ')}
+                    <div style={{display:'flex',alignItems:'center',gap:'.35rem',marginTop:'.22rem',minWidth:0}}>
+                      <span style={{fontSize:'.58rem',color:drawerUi.muted,flexShrink:0}}>보상</span>
+                      <div style={{display:'flex',alignItems:'center',gap:'.22rem',minWidth:0,overflowX:'auto',paddingBottom:'.05rem'}}>
+                        {rewards.map(reward => (
+                          <div key={`${q.id}-${reward.tab}-${reward.id}`} title={`${reward.tabLabel} · ${reward.label}`} style={{width:'1.45rem',height:'1.45rem',borderRadius:'.42rem',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',background:drawerUi.panelBg,border:`1px solid ${drawerUi.panelBorder}`}}>
+                            {reward.tab === 'bg'
+                              ? <span aria-label={reward.label} style={{width:'.88rem',height:'.88rem',borderRadius:'.3rem',background:reward.color,border:'1px solid rgba(0,0,0,.1)'}}/>
+                              : reward.thumbSrc
+                                ? <img src={reward.thumbSrc} alt={reward.label} draggable="false" style={{width:'100%',height:'100%',objectFit:'contain'}} onError={(e)=>{ e.currentTarget.style.display='none'; const fallback=e.currentTarget.nextElementSibling; if(fallback) fallback.style.display='block'; }} />
+                                : null
+                            }
+                            {reward.tab !== 'bg' && <span style={{display:reward.thumbSrc ? 'none' : 'block',fontSize:'.75rem'}}>{reward.emoji || '🎁'}</span>}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {done && questDone[q.id] && (
