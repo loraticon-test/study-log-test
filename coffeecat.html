@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>냥이 카페 시계</title>
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Pretendard Variable"', 'Pretendard', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: {
+            latte: { 50:'#F4F0EA', 100:'#EBE8DE', 200:'#DDD8CE', 300:'#D1CBBF', 500:'#A67B5B', 700:'#8B664B', 900:'#5C3A21' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css');
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap');
+    html, body { margin:0; padding:0; background:transparent !important; }
+    body { font-family: "Pretendard Variable", Pretendard, sans-serif; }
+    button, input, textarea, select { font-family: inherit; }
+    #root { background:transparent !important; }
+    html.dark, html.dark body, html.dark #root {
+      background:#191919 !important;
+      background-color:#191919 !important;
+    }
+
+    /* ── 드로어 ── */
+    .drawer-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.15); z-index:40; opacity:0; pointer-events:none; transition:opacity .28s ease; }
+    .drawer-backdrop.open { opacity:1; pointer-events:auto; }
+    .drawer { position:fixed; bottom:0; left:0; right:0; z-index:50; border-radius:1.5rem 1.5rem 0 0; background:#FDFBF7; box-shadow:none; transform:translateY(100%); transition:transform .32s cubic-bezier(.32,1,.46,1), box-shadow .2s ease; max-height:70vh; display:flex; flex-direction:column; }
+    .drawer.open { transform:translateY(0); box-shadow:0 -6px 32px rgba(92,58,33,.13); }
+    .drawer-handle { width:2.5rem; height:.28rem; background:#D1CBBF; border-radius:9px; margin:.75rem auto .5rem; flex-shrink:0; }
+    .dark .drawer-backdrop { background:rgba(0,0,0,.35); }
+    .dark .drawer { background:#191919; border-top:1px solid #2F2F2F; }
+    .dark .drawer.open { box-shadow:0 -8px 32px rgba(0,0,0,.35); }
+    .dark .drawer-handle { background:#3D3D3D; }
+
+    /* ── 프리뷰 모드 ── */
+    .widget-content { transition:opacity .3s, filter .3s; }
+    .icon-btn { width:2rem; height:2rem; border-radius:50%; border:none; background:var(--icon-bg); color:var(--icon-color); cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:background .2s, transform .2s, color .2s; }
+    .icon-btn:hover { transform:translateY(-1px); background:var(--icon-bg-hover); }
+    .icon-svg { width:1rem; height:1rem; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* ── 탭 ── */
+    .tab-btn { flex:1; padding:.45rem 0; font-size:.7rem; font-weight:700; border-radius:9999px; transition:all .18s; color:#B5A898; }
+    .tab-btn.active { background:#F4F0EA; color:#8B664B; }
+    .dark .tab-btn { color:#8B949E; }
+    .dark .tab-btn.active { background:#252525; color:#D4A373; }
+
+    /* ── 아이템 그리드 ── */
+    .item-btn { border-radius:1rem; border:2px solid transparent; transition:all .18s; background:#F8F5F0; aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; padding:.28rem; }
+    .item-thumb { width:100%; flex:1; min-height:0; border-radius:.7rem; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .item-thumb img { width:100%; height:100%; object-fit:contain; display:block; }
+    .item-fallback { font-size:1.45rem; line-height:1; }
+    .item-label { width:100%; font-size:.55rem; font-weight:800; color:#8B664B; margin-top:.16rem; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-btn.selected { border-color:#A67B5B; background:#F4F0EA; }
+    .item-btn.locked { opacity:.45; cursor:not-allowed; }
+    .item-btn .lock-icon { position:absolute; top:.28rem; right:.28rem; width:1.05rem; height:1.05rem; border-radius:9999px; background:rgba(253,251,247,.9); color:#A67B5B; font-size:.58rem; display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(92,58,33,.12); }
+    .dark .item-btn { background:#252525; }
+    .dark .item-btn.selected { border-color:#A67B5B; background:#2F2F2F; }
+    .dark .item-btn .lock-icon { background:rgba(25,25,25,.88); color:#D4A373; box-shadow:none; }
+    .dark .item-label { color:#D4A373; }
+    .dark input::placeholder { color:#737373; }
+
+    /* ── 퀘스트 ── */
+    .quest-row { display:flex; align-items:center; gap:.6rem; padding:.5rem .75rem; border-radius:.75rem; background:#F8F5F0; margin-bottom:.35rem; }
+    .quest-check { width:1.1rem; height:1.1rem; border-radius:50%; border:2px solid #D1CBBF; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:.55rem; }
+    .quest-check.done { background:#A67B5B; border-color:#A67B5B; color:white; }
+    .cat-badge { font-size:.55rem; font-weight:700; padding:.1rem .4rem; border-radius:9999px; }
+    .dark .quest-row { background:#252525; }
+    .dark .quest-check { border-color:#3D3D3D; }
+
+    /* ── 토스트 ── */
+    .toast { position:fixed; top:1.2rem; left:50%; transform:translateX(-50%) translateY(-2rem); background:#5C3A21; color:#FDF8F3; padding:.5rem 1.1rem; border-radius:9999px; font-size:.72rem; font-weight:700; z-index:200; opacity:0; pointer-events:none; transition:all .3s; white-space:nowrap; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ── 시계 ── */
+    .clock-digits { font-family:'Fredoka', Pretendard, ui-sans-serif, system-ui, sans-serif; font-size:2.15rem; font-weight:500; letter-spacing:.08em; color:#5C3A21; font-variant-numeric:tabular-nums; line-height:1; }
+
+    /* ── 설정 패널 ── */
+    .setup-overlay { position:fixed; inset:0; z-index:100; background:rgba(253,248,243,.97); display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+    .setup-box { width:100%; max-width:360px; background:#fff; border-radius:1.5rem; padding:1.5rem; box-shadow:0 4px 24px rgba(92,58,33,.1); }
+    .setup-input { width:100%; background:#F8F5F0; border:1.5px solid #EBE8DE; border-radius:.75rem; padding:.6rem .85rem; font-size:.78rem; font-family:inherit; color:#3d2b1a; outline:none; box-sizing:border-box; }
+    .setup-input:focus { border-color:#A67B5B; }
+    .setup-btn { width:100%; padding:.65rem; border-radius:.85rem; background:#A67B5B; color:#fff; font-weight:700; font-size:.82rem; font-family:inherit; border:none; cursor:pointer; margin-top:.5rem; }
+    .setup-btn:hover { background:#8B664B; }
+
+    @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)} }
+    .pop { animation:pop .5s ease; }
+    @keyframes coffeeFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+    @keyframes coffeeFloatSoft { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-.7px)} }
+    @keyframes coffeeDrinkSway { 0%,100%{transform:translateY(0) scaleX(1)} 50%{transform:translateY(1.5px) scaleX(1.006)} }
+    @keyframes sodaBubbleRise {
+      0%{opacity:0;transform:translateY(9px) scale(.65)}
+      18%{opacity:.95}
+      72%{opacity:.85}
+      100%{opacity:0;transform:translateY(-16px) scale(1.18)}
+    }
+    @keyframes sodaBubbleTwinkle { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.55)} }
+    .coffee-layer-cat, .coffee-layer-accessory { animation:coffeeFloat 4.8s ease-in-out infinite; }
+    .coffee-head-group { animation:coffeeFloat 4.8s ease-in-out infinite; }
+    .coffee-head-group .coffee-layer-cat,
+    .coffee-head-group .coffee-layer-accessory { animation:none; }
+    .coffee-cup-bingsu .coffee-layer-cat,
+    .coffee-cup-bingsu .coffee-layer-accessory { animation:coffeeFloatSoft 6.4s ease-in-out infinite; }
+    .coffee-cup-bingsu .coffee-head-group { animation:coffeeFloatSoft 6.4s ease-in-out infinite; }
+    .coffee-layer-drink { animation:coffeeDrinkSway 5.6s ease-in-out infinite; transform-origin:center 44%; }
+    .soda-bubbles { animation:coffeeDrinkSway 5.6s ease-in-out infinite; transform-origin:center 44%; }
+    .soda-bubble { animation:sodaBubbleRise 2.4s ease-in-out infinite, sodaBubbleTwinkle 1.2s ease-in-out infinite; transform-origin:center; }
+    .soda-bubble:nth-child(2) { animation-delay:.45s,.15s; }
+    .soda-bubble:nth-child(3) { animation-delay:.9s,.3s; }
+    .soda-bubble:nth-child(4) { animation-delay:1.25s,.45s; }
+    .soda-bubble:nth-child(5) { animation-delay:1.65s,.6s; }
+    @media (prefers-reduced-motion: reduce) {
+      .pop, .coffee-layer-cat, .coffee-layer-accessory, .coffee-layer-drink, .soda-bubbles, .soda-bubble { animation:none !important; }
+    }
+    @keyframes sparkle { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 퀘스트 정의 (93개)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const QUESTS = [
+  // 연속공부
+  ...Array.from({length:30},(_,i)=>({ id:`streak_${i+1}`, name:`${i+1}일 연속 공부`, cat:'연속공부', check:(d)=>d.streak>=(i+1) })),
+  // 집중시간 (단순)
+  ...[25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120].map(m=>({
+    id:`daily_${m}m`, name:`하루 ${m}분 이상 집중`, cat:'집중시간', check:(d)=>d.todayMinutes>=m
+  })),
+  // 집중시간 (2시간 누적)
+  ...[2,3,5,10,20,30].map((n,i)=>({
+    id:`daily_120m_${n}times`, name:`하루 2시간 이상 ${n}회 달성`, cat:'집중시간', check:(d)=>d.days120Count>=n
+  })),
+  // 누적시간
+  ...[1,5,10,20,30,50,75,100,150,200,300,500,750,1000].map(h=>({
+    id:`total_${h}h`, name:`누적 ${h}시간 달성`, cat:'누적시간', check:(d)=>d.totalMinutes>=(h*60)
+  })),
+  // 출석
+  { id:'weekday_full', name:'이번 주 개근 (월~금)', cat:'출석', check:(d)=>d.weekdayFull },
+  { id:'week_full',    name:'완벽한 한 주 (월~일)', cat:'출석', check:(d)=>d.weekFull },
+  { id:'month_full',   name:'한 달 개근',            cat:'출석', check:(d)=>d.monthFull },
+  ...[10,30,50,100,200,365].map(n=>({ id:`attend_${n}`, name:`누적 출석 ${n}일`, cat:'출석', check:(d)=>d.attendDays>=n })),
+  // 뽀모도로
+  ...[1,5,10,30,50,100].map(n=>({ id:`pomo_${n}`, name:`뽀모도로 ${n}회`, cat:'뽀모도로', check:(d)=>d.pomoCount>=n })),
+  { id:'pomo_200', name:'뽀모도로 마스터', cat:'뽀모도로', check:(d)=>d.pomoCount>=200 },
+  // 커피
+  { id:'coffee_first',   name:'첫 커피',         cat:'커피', check:(d)=>d.coffeeCount>=1 },
+  { id:'coffee_3types',  name:'커피 3종 탐험',   cat:'커피', check:(d)=>d.coffeeTypes>=3 },
+  { id:'coffee_5types',  name:'커피 5종 마스터', cat:'커피', check:(d)=>d.coffeeTypes>=5 },
+  { id:'coffee_10',      name:'커피 10잔',        cat:'커피', check:(d)=>d.coffeeCount>=10 },
+  { id:'coffee_50',      name:'커피 50잔',        cat:'커피', check:(d)=>d.coffeeCount>=50 },
+  { id:'coffee_100',     name:'커피 100잔',       cat:'커피', check:(d)=>d.coffeeCount>=100 },
+  { id:'coffee_addict',  name:'카페인 중독',      cat:'커피', check:(d)=>d.coffeeCount>=200 },
+];
+
+const QUEST_CAT_COLOR = {
+  '연속공부':'#E8A87C', '집중시간':'#81B29A', '누적시간':'#7BA7C4',
+  '출석':'#C08CB8', '뽀모도로':'#E07A5F', '커피':'#A67B5B'
+};
+const QUEST_CAT_BG = {
+  '연속공부':'#FDF1E8', '집중시간':'#EBF4F0', '누적시간':'#EAF1F7',
+  '출석':'#F5ECF6', '뽀모도로':'#FDECEA', '커피':'#F4F0EA'
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 꾸미기 아이템 정의 (잠금 해제 조건 = 퀘스트 ID)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const DECO_ITEMS = {
+  cat: [
+    { id:'cat_white',   label:'흰 냥이',    emoji:'🐱', unlock:null },
+    { id:'cat_orange',  label:'치즈 냥이',  emoji:'🐈', unlock:null },
+    { id:'cat_black',   label:'까만 냥이',  emoji:'🐈‍⬛', unlock:null },
+    { id:'cat_calico',  label:'삼색 냥이',  emoji:'🐾', unlock:null },
+    { id:'cat_gray',    label:'회색 냥이',  emoji:'😺', unlock:null },
+    { id:'cat_siamese', label:'샴 냥이',    emoji:'🐱', unlock:null },
+  ],
+  drink: [
+    { id:'drink_lemon',  label:'아메리카노', emoji:'☕', unlock:null },
+    { id:'drink_ice_americano', label:'아이스 아메리카노', emoji:'🧊', unlock:null },
+    { id:'drink_matcha', label:'녹차라떼',  emoji:'🍵', unlock:null },
+    { id:'drink_strawberry_aid', label:'딸기에이드', emoji:'🍓', unlock:null },
+    { id:'drink_white_chocolate_latte', label:'화이트초코라떼', emoji:'🤍', unlock:null },
+    { id:'drink_hot_chocolate', label:'핫초코', emoji:'🍫', unlock:null },
+    { id:'drink_blue',   label:'블루 레몬 에이드', emoji:'💙', unlock:null },
+    { id:'drink_lemon_soda', label:'레몬 에이드', emoji:'🍋', unlock:null },
+    { id:'drink_green_grape_soda', label:'청포도 에이드', emoji:'🍇', unlock:null },
+    { id:'drink_melon_soda', label:'멜론소다', emoji:'🍈', unlock:null },
+    { id:'drink_cherryblossom_strawberry_latte', label:'벚꽃 딸기라떼', emoji:'🌸', unlock:null },
+    { id:'drink_chamomile_tea', label:'카모마일 티', emoji:'🌼', unlock:null },
+    { id:'drink_coke', label:'콜라', emoji:'🥤', unlock:null },
+    { id:'drink_soda_watermelon_punch', label:'수박 펀치', emoji:'🍉', unlock:null },
+    { id:'drink_oolong_tea', label:'우롱차', emoji:'🍵', unlock:null },
+    { id:'drink_black_tea', label:'홍차', emoji:'🫖', unlock:null },
+    { id:'drink_tea_green_plum', label:'매실차', emoji:'🍵', unlock:null },
+    { id:'drink_tea_milk_taro', label:'타로 밀크티', emoji:'🧋', unlock:null },
+    { id:'drink_bingsu_mango', label:'망고 빙수', emoji:'🥭', unlock:null },
+    { id:'drink_clear_soda', label:'클리어 소다', emoji:'🫧', unlock:null },
+    { id:'drink_bingsu_redbean', label:'팥빙수', emoji:'🍧', unlock:null },
+    { id:'drink_juice_tomato', label:'토마토 주스', emoji:'🍅', unlock:null },
+    { id:'drink_bingsu_fruits', label:'과일 빙수', emoji:'🍧', unlock:null },
+    { id:'drink_frappuccino', label:'프라푸치노', emoji:'🥤', unlock:null },
+    { id:'drink_coffee_vienna', label:'비엔나 커피', emoji:'☕', unlock:null },
+    { id:'drink_juice_orange', label:'오렌지 주스', emoji:'🍊', unlock:null },
+  ],
+  catAcc: [
+    { id:'acc_none',     label:'없음',       emoji:'✕',  unlock:null },
+    { id:'acc_ribbon',   label:'리본',       emoji:'🎀', unlock:'daily_60m' },
+    { id:'acc_hat',      label:'밀짚 모자',  emoji:'👒', unlock:'streak_3' },
+    { id:'acc_glasses',  label:'선글라스',   emoji:'🕶️', unlock:'streak_10' },
+    { id:'acc_sunglasses_yellow', label:'노란 선글라스', emoji:'🕶️', unlock:null },
+    { id:'acc_sunglasses_green', label:'초록 선글라스', emoji:'🕶️', unlock:null },
+    { id:'acc_crown',    label:'왕관',       emoji:'👑', unlock:'streak_30' },
+    { id:'acc_santa',    label:'산타 모자',  emoji:'🎅', unlock:null },
+    { id:'acc_icecream_cherry', label:'체리 아이스크림', emoji:'🍨', unlock:null },
+    { id:'acc_cherryblossom', label:'벚꽃', emoji:'🌸', unlock:null },
+    { id:'acc_beard_brown', label:'갈색 수염', emoji:'🧔', unlock:null },
+    { id:'acc_chamomile', label:'카모마일', emoji:'🌼', unlock:null },
+    { id:'acc_pizza', label:'피자', emoji:'🍕', unlock:null },
+    { id:'acc_pudding', label:'푸딩', emoji:'🍮', unlock:null },
+    { id:'acc_towel', label:'수건', emoji:'🧺', unlock:null },
+    { id:'acc_toy_duck', label:'장난감 오리', emoji:'🐤', unlock:null },
+    { id:'acc_hat_party', label:'파티 모자', emoji:'🎉', unlock:null },
+    { id:'acc_tomato', label:'토마토', emoji:'🍅', unlock:null },
+    { id:'acc_hat_gentleman', label:'신사 모자', emoji:'🎩', unlock:null },
+    { id:'acc_hat_gat', label:'갓', emoji:'🎩', unlock:null },
+    { id:'acc_hat_cap', label:'캡 모자', emoji:'🧢', unlock:null },
+  ],
+  cupDeco: [
+    { id:'deco_none',    label:'없음',       emoji:'✕',  unlock:null },
+    { id:'deco_left_gingercat', label:'진저캣', emoji:'🍪', unlock:null },
+    { id:'deco_left_beach_umbrella_yellow', label:'노란 파라솔', emoji:'🏖️', unlock:null },
+    { id:'deco_left_beach_umbrella_green', label:'초록 파라솔', emoji:'🏖️', unlock:null },
+    { id:'deco_left_beach_umbrella_red', label:'빨간 파라솔', emoji:'🏖️', unlock:null },
+    { id:'deco_left_cherryblossom_cookie', label:'벚꽃 쿠키', emoji:'🌸', unlock:null },
+    { id:'deco_left_cookie_greentea', label:'녹차 쿠키', emoji:'🍪', unlock:null },
+    { id:'deco_left_straw_red', label:'빨간 빨대', emoji:'🥤', unlock:null },
+    { id:'deco_left_teaspoon', label:'티스푼', emoji:'🥄', unlock:null },
+    { id:'deco_left_spoon', label:'스푼', emoji:'🥄', unlock:null },
+    { id:'deco_left_tteok_bingsu', label:'빙수 떡', emoji:'🍡', unlock:null },
+    { id:'deco_left_honeycomb', label:'벌꿀집', emoji:'🍯', unlock:null },
+    { id:'deco_left_icecream_stick_chocolate', label:'초코 아이스크림바', emoji:'🍦', unlock:null },
+    { id:'deco_left_icecream_stick_grapefruit', label:'자몽 아이스크림바', emoji:'🍦', unlock:null },
+    { id:'deco_left_icecream_stick_melon', label:'멜론 아이스크림바', emoji:'🍦', unlock:null },
+    { id:'deco_left_icecream_stick_strawberry', label:'딸기 아이스크림바', emoji:'🍦', unlock:null },
+    { id:'deco_left_icecream_stick_vanilla', label:'바닐라 아이스크림바', emoji:'🍦', unlock:null },
+    { id:'deco_left_melon', label:'멜론', emoji:'🍈', unlock:null },
+    { id:'deco_left_chocolate_dipped_cookie_stick', label:'초코 쿠키스틱', emoji:'🍪', unlock:null },
+    { id:'deco_left_icecream_scoop_vanilla', label:'바닐라 아이스크림', emoji:'🍦', unlock:null },
+    { id:'deco_left_icecream_scoop_strawberry', label:'딸기 아이스크림', emoji:'🍓', unlock:null },
+    { id:'deco_left_icecream_scoop_chocolate', label:'초코 아이스크림', emoji:'🍫', unlock:null },
+    { id:'deco_left_icecream_scoop_greentea', label:'녹차 아이스크림', emoji:'🍵', unlock:null },
+    { id:'deco_left_straw_green', label:'초록 빨대', emoji:'🥤', unlock:null },
+  ],
+  cupDeco2: [
+    { id:'deco_none',    label:'없음',       emoji:'✕',  unlock:null },
+    { id:'deco_right_holly_berry', label:'홀리베리', emoji:'🎄', unlock:null },
+    { id:'deco_right_chamomile', label:'카모마일', emoji:'🌼', unlock:null },
+    { id:'deco_right_flower_jasmine', label:'자스민 꽃', emoji:'🌼', unlock:null },
+    { id:'deco_right_cookie_cat_paw_print', label:'발자국 쿠키', emoji:'🍪', unlock:null },
+    { id:'deco_right_peppermint', label:'페퍼민트', emoji:'🌿', unlock:null },
+    { id:'deco_right_whipped_cream', label:'휘핑크림', emoji:'🍦', unlock:null },
+    { id:'deco_right_sherbet_vanilla', label:'바닐라 샤베트', emoji:'🍨', unlock:null },
+    { id:'deco_right_tteok_injeolmi', label:'인절미 떡', emoji:'🍡', unlock:null },
+    { id:'deco_right_cookie_chocolate_cream', label:'초코 크림 쿠키', emoji:'🍪', unlock:null },
+    { id:'deco_right_croffle', label:'크로플', emoji:'🧇', unlock:null },
+    { id:'deco_right_croffle_with_icecream', label:'아이스크림 크로플', emoji:'🧇', unlock:null },
+    { id:'deco_right_honeycomb', label:'벌꿀집', emoji:'🍯', unlock:null },
+    { id:'deco_right_chocolate_one_piece', label:'초콜릿 조각', emoji:'🍫', unlock:null },
+    { id:'deco_right_orange', label:'오렌지', emoji:'🍊', unlock:null },
+    { id:'deco_right_chocolate', label:'초콜릿', emoji:'🍫', unlock:null },
+  ],
+  bg: [
+    { id:'bg_cream',   label:'크림',    color:'#FDFBF7', unlock:null },
+    { id:'bg_mint',    label:'민트',    color:'#EBF4F0', unlock:'daily_90m' },
+    { id:'bg_rose',    label:'로즈',    color:'#FDF0F2', unlock:'streak_7' },
+    { id:'bg_sky',     label:'스카이',  color:'#EAF1F7', unlock:'total_10h' },
+    { id:'bg_lavender',label:'라벤더',  color:'#F2EDF7', unlock:'total_30h' },
+    { id:'bg_peach',   label:'피치',    color:'#FEF3EC', unlock:'pomo_10' },
+    { id:'bg_dark',    label:'다크',    color:'#2D2420', unlock:'streak_30' },
+  ],
+};
+
+const DECO_TAB_LABELS = { cat:'냥이', drink:'음료', catAcc:'냥 악세서리', cupDeco:'컵 데코', cupDeco2:'컵 데코2', bg:'배경', preset:'프리셋' };
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// LocalStorage 키
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const LS = {
+  CONFIG:   'nyan_clock_config',
+  DECO:     'nyan_clock_deco',
+  UI_ON:    'nyan_clock_ui',
+  DARK_MODE:'nyan_clock_dark_mode',
+  RECORD_MONTHS:'nyan_clock_record_months',
+  PRESETS:'nyan_clock_deco_presets',
+};
+function loadLS(key, def) { try { const v=localStorage.getItem(key); return v!=null?JSON.parse(v):def; } catch{ return def; } }
+function saveLS(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch{} }
+
+const DEFAULT_DECO = {
+  cat:'cat_white', drink:'drink_lemon', catAcc:'acc_none', cupDeco:'deco_none', cupDeco2:'deco_none', bg:'bg_cream'
+};
+const normalizeDeco = (saved) => {
+  const next = { ...DEFAULT_DECO, ...(saved || {}) };
+  if (next.cupDeco === 'deco_gingercat') next.cupDeco = 'deco_left_gingercat';
+  if (next.cupDeco2 === 'deco_gingercat' || next.cupDeco2 === 'deco_left_gingercat') next.cupDeco2 = 'deco_none';
+  return next;
+};
+const RECORD_MONTH_OPTIONS = [
+  { value:'3', label:'3개월' },
+  { value:'6', label:'6개월' },
+  { value:'12', label:'12개월' },
+  { value:'24', label:'24개월' },
+  { value:'all', label:'전체' },
+];
+const MAX_DECO_PRESETS = 12;
+const ymdLocal = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+};
+const makeMonthlyRanges = (periodMonths) => {
+  if (periodMonths === 'all') return null;
+  const n = Math.max(1, parseInt(periodMonths, 10) || 12);
+  const tomorrow = new Date();
+  tomorrow.setHours(0,0,0,0);
+  tomorrow.setDate(tomorrow.getDate()+1);
+  const start = new Date(tomorrow.getFullYear(), tomorrow.getMonth() - (n - 1), 1);
+  const ranges = [];
+  let cursor = new Date(start);
+  while (cursor < tomorrow) {
+    const next = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+    const rangeEnd = next < tomorrow ? next : tomorrow;
+    ranges.push({ start: ymdLocal(cursor), end: ymdLocal(rangeEnd) });
+    cursor = next;
+  }
+  return ranges.reverse();
+};
+
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// URL 파라미터 설정 로드
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const cleanUrlValue = (value) => (value || '').trim();
+const loadUrlConfig = () => {
+  const params = new URLSearchParams(window.location.search);
+  const proxyUrl   = cleanUrlValue(params.get('proxyUrl'));
+  const apiKey     = cleanUrlValue(params.get('apiKey'));
+  const recordDbId = cleanUrlValue(params.get('recordDbId'));
+  const questDbId  = cleanUrlValue(params.get('questDbId'));
+
+  // 위젯통합설정 페이지에서 생성한 URL처럼 핵심 파라미터가 있으면 연결된 상태로 봅니다.
+  if (proxyUrl && apiKey && recordDbId) {
+    return { proxyUrl, apiKey, recordDbId, questDbId, saved:true, fromUrl:true };
+  }
+  return null;
+};
+const loadInitialConfig = () => loadUrlConfig() || loadLS(LS.CONFIG, null);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 일러스트 SVG (커피잔 + 고양이 레이어 합성)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const COFFEECAT_ASSET_BASE = window.COFFEECAT_ASSET_BASE || (window.location.protocol === 'file:' ? 'file:///C:/Users/JK/Desktop/assets' : './assets');
+
+const COFFEECAT_IMAGES = {
+  cupDown: `${COFFEECAT_ASSET_BASE}/images/coffeecat/0_cup_down/down.webp`,
+  cupUp: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up.webp`,
+  cat: {
+    cat_white: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/white.webp`,
+    cat_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/orange.webp`,
+    cat_black: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/black.webp`,
+    cat_calico: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/calico.webp`,
+    cat_gray: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/gray.webp`,
+    cat_siamese: `${COFFEECAT_ASSET_BASE}/images/coffeecat/4_cat/siamese.webp`,
+  },
+  drink: {
+    drink_lemon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_americano.webp`,
+    drink_ice_americano: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_americano_ice.webp`,
+    drink_matcha: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_greentea.webp`,
+    drink_strawberry_aid: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_strawberry.webp`,
+    drink_white_chocolate_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_white_chocolate.webp`,
+    drink_hot_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/chocolate_hot.webp`,
+    drink_blue: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_blue_lemon.webp`,
+    drink_lemon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_lemon.webp`,
+    drink_green_grape_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_green_grape.webp`,
+    drink_melon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_melon.webp`,
+    drink_cherryblossom_strawberry_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_cherryblossom_strawberry.webp`,
+    drink_chamomile_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_chamomile.webp`,
+    drink_coke: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_coke.webp`,
+    drink_soda_watermelon_punch: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_watermelon_punch.webp`,
+    drink_oolong_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_oolong.webp`,
+    drink_black_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_black.webp`,
+    drink_tea_green_plum: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_green_plum.webp`,
+    drink_tea_milk_taro: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_milk_taro.webp`,
+    drink_bingsu_mango: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/bingsu_mango.webp`,
+    drink_clear_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_clear.webp`,
+    drink_bingsu_redbean: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/bingsu_redbean.webp`,
+    drink_juice_tomato: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/juice_tomato.webp`,
+    drink_bingsu_fruits: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/bingsu_fruits.webp`,
+    drink_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/frappe_frappuccino.webp`,
+    drink_coffee_vienna: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_vienna.webp`,
+    drink_juice_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/juice_orange.webp`,
+  },
+  cupUpByDrink: {
+    drink_melon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up_melon_soda.webp`,
+    drink_bingsu_redbean: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up_bingsu_redbean.webp`,
+    drink_bingsu_fruits: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up_bingsu_fruits.webp`,
+    drink_coffee_vienna: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up_coffee_vienna.webp`,
+  },
+  accessory: {
+    acc_ribbon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/ribbon.webp`,
+    acc_hat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat.webp`,
+    acc_glasses: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/glasses.webp`,
+    acc_sunglasses_yellow: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/sunglasses_yellow.webp`,
+    acc_sunglasses_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/sunglasses_green.webp`,
+    acc_crown: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/crown.webp`,
+    acc_santa: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat_santa.webp`,
+    acc_icecream_cherry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/icecream_cherry.webp`,
+    acc_cherryblossom: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/cherryblossom.webp`,
+    acc_beard_brown: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/beard_brown.webp`,
+    acc_chamomile: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/chamomile.webp`,
+    acc_pizza: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/pizza.webp`,
+    acc_pudding: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/pudding.webp`,
+    acc_towel: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/towel.webp`,
+    acc_toy_duck: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/toy_duck.webp`,
+    acc_hat_party: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat_party.webp`,
+    acc_tomato: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/tomato.webp`,
+    acc_hat_gentleman: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat_gentleman.webp`,
+    acc_hat_gat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat_gat.webp`,
+    acc_hat_cap: `${COFFEECAT_ASSET_BASE}/images/coffeecat/5_accessory/hat_cap.webp`,
+  },
+  decoLeft: {
+    deco_left_gingercat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/gingercat.webp`,
+    deco_left_beach_umbrella_yellow: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/beach_umbrella_yellow.webp`,
+    deco_left_beach_umbrella_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/beach_umbrella_green.webp`,
+    deco_left_beach_umbrella_red: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/beach_umbrella_red.webp`,
+    deco_left_cherryblossom_cookie: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/cherryblossom_cookie.webp`,
+    deco_left_cookie_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/cookie_greentea.webp`,
+    deco_left_straw_red: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/straw_red.webp`,
+    deco_left_teaspoon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/teaspoon.webp`,
+    deco_left_spoon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/spoon.webp`,
+    deco_left_tteok_bingsu: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/tteok_bingsu.webp`,
+    deco_left_honeycomb: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/honeycomb.webp`,
+    deco_left_icecream_stick_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_stick_chocolate.webp`,
+    deco_left_icecream_stick_grapefruit: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_stick_grapefruit.webp`,
+    deco_left_icecream_stick_melon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_stick_melon.webp`,
+    deco_left_icecream_stick_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_stick_strawberry.webp`,
+    deco_left_icecream_stick_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_stick_vanilla.webp`,
+    deco_left_melon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/melon.webp`,
+    deco_left_chocolate_dipped_cookie_stick: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/chocolate_dipped_cookie_stick.webp`,
+    deco_left_icecream_scoop_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_scoop_vanilla.webp`,
+    deco_left_icecream_scoop_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_scoop_strawberry.webp`,
+    deco_left_icecream_scoop_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_scoop_chocolate.webp`,
+    deco_left_icecream_scoop_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/icecream_scoop_greentea.webp`,
+    deco_left_straw_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_left/straw_green.webp`,
+  },
+  decoRight: {
+    deco_right_holly_berry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/holly_berry.webp`,
+    deco_right_chamomile: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/chamomile.webp`,
+    deco_right_flower_jasmine: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/flower_jasmine.webp`,
+    deco_right_cookie_cat_paw_print: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/cookie_cat_paw_print.webp`,
+    deco_right_peppermint: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/peppermint.webp`,
+    deco_right_whipped_cream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/whipped_cream.webp`,
+    deco_right_sherbet_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/sherbet_vanilla.webp`,
+    deco_right_tteok_injeolmi: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/tteok_injeolmi.webp`,
+    deco_right_cookie_chocolate_cream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/cookie_chocolate_cream.webp`,
+    deco_right_croffle: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/croffle.webp`,
+    deco_right_croffle_with_icecream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/croffle_with_icecream.webp`,
+    deco_right_honeycomb: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/honeycomb.webp`,
+    deco_right_chocolate_one_piece: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/chocolate_one_piece.webp`,
+    deco_right_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/orange.webp`,
+    deco_right_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/2_deco_right/chocolate.webp`,
+  },
+};
+
+const COFFEECAT_THUMBS = {
+  cat: {
+    cat_white: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/white.webp`,
+    cat_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/orange.webp`,
+    cat_black: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/black.webp`,
+    cat_calico: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/calico.webp`,
+    cat_gray: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/gray.webp`,
+    cat_siamese: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/cat/siamese.webp`,
+  },
+  drink: {
+    drink_lemon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_americano.webp`,
+    drink_ice_americano: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_americano_ice.webp`,
+    drink_matcha: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_greentea.webp`,
+    drink_strawberry_aid: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_strawberry.webp`,
+    drink_white_chocolate_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_white_chocolate.webp`,
+    drink_hot_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/chocolate_hot.webp`,
+    drink_blue: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_blue_lemon.webp`,
+    drink_lemon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_lemon.webp`,
+    drink_green_grape_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_green_grape.webp`,
+    drink_melon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_melon.webp`,
+    drink_cherryblossom_strawberry_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_cherryblossom_strawberry.webp`,
+    drink_chamomile_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_chamomile.webp`,
+    drink_coke: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_coke.webp`,
+    drink_soda_watermelon_punch: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_watermelon_punch.webp`,
+    drink_oolong_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_oolong.webp`,
+    drink_black_tea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_black.webp`,
+    drink_tea_green_plum: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_green_plum.webp`,
+    drink_tea_milk_taro: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_milk_taro.webp`,
+    drink_bingsu_mango: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/bingsu_mango.webp`,
+    drink_clear_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_clear.webp`,
+    drink_bingsu_redbean: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/bingsu_redbean.webp`,
+    drink_juice_tomato: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/juice_tomato.webp`,
+    drink_bingsu_fruits: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/bingsu_fruits.webp`,
+    drink_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/frappe_frappuccino.webp`,
+    drink_coffee_vienna: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_vienna.webp`,
+    drink_juice_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/juice_orange.webp`,
+  },
+  decoLeft: {
+    deco_left_gingercat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/gingercat.webp`,
+    deco_left_beach_umbrella_yellow: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/beach_umbrella_yellow.webp`,
+    deco_left_beach_umbrella_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/beach_umbrella_green.webp`,
+    deco_left_beach_umbrella_red: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/beach_umbrella_red.webp`,
+    deco_left_cherryblossom_cookie: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/cherryblossom_cookie.webp`,
+    deco_left_cookie_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/cookie_greentea.webp`,
+    deco_left_straw_red: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/straw_red.webp`,
+    deco_left_teaspoon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/teaspoon.webp`,
+    deco_left_spoon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/spoon.webp`,
+    deco_left_tteok_bingsu: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/tteok_bingsu.webp`,
+    deco_left_honeycomb: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/honeycomb.webp`,
+    deco_left_icecream_stick_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_stick_chocolate.webp`,
+    deco_left_icecream_stick_grapefruit: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_stick_grapefruit.webp`,
+    deco_left_icecream_stick_melon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_stick_melon.webp`,
+    deco_left_icecream_stick_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_stick_strawberry.webp`,
+    deco_left_icecream_stick_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_stick_vanilla.webp`,
+    deco_left_melon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/melon.webp`,
+    deco_left_chocolate_dipped_cookie_stick: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/chocolate_dipped_cookie_stick.webp`,
+    deco_left_icecream_scoop_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_scoop_vanilla.webp`,
+    deco_left_icecream_scoop_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_scoop_strawberry.webp`,
+    deco_left_icecream_scoop_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_scoop_chocolate.webp`,
+    deco_left_icecream_scoop_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/icecream_scoop_greentea.webp`,
+    deco_left_straw_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/straw_green.webp`,
+  },
+  decoRight: {
+    deco_right_holly_berry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/holly_berry.webp`,
+    deco_right_chamomile: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/chamomile.webp`,
+    deco_right_flower_jasmine: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/flower_jasmine.webp`,
+    deco_right_cookie_cat_paw_print: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/cookie_cat_paw_print.webp`,
+    deco_right_peppermint: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/peppermint.webp`,
+    deco_right_whipped_cream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/whipped_cream.webp`,
+    deco_right_sherbet_vanilla: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/sherbet_vanilla.webp`,
+    deco_right_tteok_injeolmi: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/tteok_injeolmi.webp`,
+    deco_right_cookie_chocolate_cream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/cookie_chocolate_cream.webp`,
+    deco_right_croffle: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/croffle.webp`,
+    deco_right_croffle_with_icecream: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/croffle_with_icecream.webp`,
+    deco_right_honeycomb: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/honeycomb.webp`,
+    deco_right_chocolate_one_piece: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/chocolate_one_piece.webp`,
+    deco_right_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/orange.webp`,
+    deco_right_chocolate: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_right/chocolate.webp`,
+  },
+  accessory: {
+    acc_sunglasses_yellow: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/sunglasses_yellow.webp`,
+    acc_sunglasses_green: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/sunglasses_green.webp`,
+    acc_santa: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/hat_santa.webp`,
+    acc_icecream_cherry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/icecream_cherry.webp`,
+    acc_cherryblossom: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/cherryblossom.webp`,
+    acc_beard_brown: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/beard_brown.webp`,
+    acc_chamomile: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/chamomile.webp`,
+    acc_pizza: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/pizza.webp`,
+    acc_pudding: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/pudding.webp`,
+    acc_towel: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/towel.webp`,
+    acc_toy_duck: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/toy_duck.webp`,
+    acc_hat_party: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/hat_party.webp`,
+    acc_tomato: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/tomato.webp`,
+    acc_hat_gentleman: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/hat_gentleman.webp`,
+    acc_hat_gat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/hat_gat.webp`,
+    acc_hat_cap: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/accessory/hat_cap.webp`,
+  },
+};
+
+const getDecoThumbSrc = (tab, itemId) => {
+  if (tab === 'cat') return COFFEECAT_THUMBS.cat[itemId] || COFFEECAT_IMAGES.cat[itemId];
+  if (tab === 'drink') return COFFEECAT_THUMBS.drink[itemId] || COFFEECAT_IMAGES.drink[itemId];
+  if (tab === 'catAcc') return COFFEECAT_THUMBS.accessory?.[itemId] || COFFEECAT_IMAGES.accessory[itemId];
+  if (tab === 'cupDeco') return COFFEECAT_THUMBS.decoLeft?.[itemId] || COFFEECAT_IMAGES.decoLeft[itemId];
+  if (tab === 'cupDeco2') return COFFEECAT_THUMBS.decoRight?.[itemId] || COFFEECAT_IMAGES.decoRight[itemId];
+  return null;
+};
+
+// WebP 레이어 합성 (아래 -> 위: 컵 아래, 음료, 컵 위, 데코1, 고양이, 데코2, 액세서리)
+const TRANSPARENT_IMAGE = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+const DECO_RIGHT_UNDER_CAT = new Set([
+  'deco_right_cookie_chocolate_cream',
+  'deco_right_honeycomb',
+  'deco_right_orange',
+  'deco_right_chocolate',
+]);
+const CupSVG = ({ catItem, drinkItem, catAccItem, cupDecoItem, cupDeco2Item }) => {
+  const isSodaDrink = ['drink_blue', 'drink_lemon_soda', 'drink_green_grape_soda', 'drink_strawberry_aid', 'drink_melon_soda', 'drink_coke', 'drink_soda_watermelon_punch', 'drink_clear_soda'].includes(drinkItem);
+  const isBingsuDrink = ['drink_bingsu_mango', 'drink_bingsu_redbean', 'drink_bingsu_fruits'].includes(drinkItem);
+  const cupUpSrc = COFFEECAT_IMAGES.cupUpByDrink[drinkItem] || COFFEECAT_IMAGES.cupUp;
+  const decoRightLayer = { key:'deco2', src:COFFEECAT_IMAGES.decoRight[cupDeco2Item], alt:'' };
+  const isDecoRightUnderCat = DECO_RIGHT_UNDER_CAT.has(cupDeco2Item);
+  const catLayer = { key:'cat', src:COFFEECAT_IMAGES.cat[catItem] || COFFEECAT_IMAGES.cat.cat_white, alt:'커피냥' };
+  const accessoryLayer = { key:'accessory', src:COFFEECAT_IMAGES.accessory[catAccItem], alt:'' };
+  const layers = [
+    { key:'cup-down', src:COFFEECAT_IMAGES.cupDown, alt:'' },
+    { key:'drink', src:COFFEECAT_IMAGES.drink[drinkItem] || COFFEECAT_IMAGES.drink.drink_lemon, alt:'' },
+    { key:'cup-up', src:cupUpSrc, alt:'' },
+    { key:'deco', src:COFFEECAT_IMAGES.decoLeft[cupDecoItem], alt:'' },
+    ...(isDecoRightUnderCat ? [decoRightLayer] : []),
+    ...(isDecoRightUnderCat ? [{ key:'head-group', children:[catLayer, accessoryLayer] }] : [catLayer]),
+    ...(isDecoRightUnderCat ? [] : [decoRightLayer]),
+    ...(isDecoRightUnderCat ? [] : [accessoryLayer]),
+  ].filter(layer => layer.children || layer.src || layer.key === 'accessory');
+
+  return (
+    <div className={isBingsuDrink ? 'coffee-cup-bingsu' : undefined} style={{position:'relative',width:'100%',height:'100%',overflow:'visible'}} aria-label="커피냥 이미지">
+      {layers.map((layer, index) => (
+        layer.children ? (
+          <div
+            key={layer.key}
+            className="coffee-head-group"
+            style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',userSelect:'none',zIndex:index}}
+          >
+            {layer.children.map((child, childIndex) => (
+              <img
+                key={child.key}
+                className={`coffee-layer coffee-layer-${child.key}`}
+                src={child.src || TRANSPARENT_IMAGE}
+                alt={child.alt}
+                draggable="false"
+                onError={(e)=>{ e.currentTarget.style.display = 'none'; }}
+                style={{
+                  position:'absolute',
+                  inset:0,
+                  width:'100%',
+                  height:'100%',
+                  objectFit:'contain',
+                  pointerEvents:'none',
+                  userSelect:'none',
+                  opacity:child.src ? 1 : 0,
+                  zIndex:childIndex,
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <img
+            key={layer.key}
+            className={`coffee-layer coffee-layer-${layer.key}`}
+            src={layer.src || TRANSPARENT_IMAGE}
+            alt={layer.alt}
+            draggable="false"
+            onError={(e)=>{ e.currentTarget.style.display = 'none'; }}
+            style={{
+              position:'absolute',
+              inset:0,
+              width:'100%',
+              height:'100%',
+              objectFit:'contain',
+              pointerEvents:'none',
+              userSelect:'none',
+              opacity:layer.src ? 1 : 0,
+              zIndex:index,
+            }}
+          />
+        )
+      ))}
+      {isSodaDrink && (
+        <svg
+          className="soda-bubbles"
+          viewBox="0 0 256 256"
+          aria-hidden="true"
+          focusable="false"
+          style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none',zIndex:1,overflow:'visible'}}
+        >
+          <circle className="soda-bubble" cx="112" cy="128" r="3.8" fill="rgba(255,255,255,.92)" stroke="rgba(121,197,232,.72)" strokeWidth="1.2" />
+          <circle className="soda-bubble" cx="133" cy="119" r="2.8" fill="rgba(255,255,255,.9)" stroke="rgba(121,197,232,.68)" strokeWidth="1" />
+          <circle className="soda-bubble" cx="151" cy="132" r="3.3" fill="rgba(255,255,255,.9)" stroke="rgba(121,197,232,.66)" strokeWidth="1" />
+          <circle className="soda-bubble" cx="122" cy="145" r="2.4" fill="rgba(255,255,255,.88)" stroke="rgba(121,197,232,.6)" strokeWidth=".9" />
+          <circle className="soda-bubble" cx="144" cy="149" r="2.6" fill="rgba(255,255,255,.88)" stroke="rgba(121,197,232,.6)" strokeWidth=".9" />
+        </svg>
+      )}
+    </div>
+  );
+};
+const toDate = (iso) => iso ? iso.slice(0,10) : null;
+const today  = () => new Date().toISOString().slice(0,10);
+
+function computeStats(records) {
+  const todayStr = today();
+  // 날짜별 분 집계
+  const dayMap = {};
+  let totalMinutes = 0;
+  let pomoCount = 0;
+  let coffeeCount = 0;
+  const coffeeSet = new Set();
+
+  for (const r of records) {
+    const d = toDate(r.date);
+    if (!d) continue;
+    const m = r.minutes || 0;
+    dayMap[d] = (dayMap[d] || 0) + m;
+    totalMinutes += m;
+    if (r.mode === '뽀모도로') pomoCount++;
+    if (r.coffee) { coffeeCount++; coffeeSet.add(r.coffee); }
+  }
+
+  const todayMinutes = dayMap[todayStr] || 0;
+  const attendDays   = Object.keys(dayMap).length;
+
+  // 연속 공부
+  let streak = 0;
+  const d = new Date(todayStr);
+  while (true) {
+    const k = d.toISOString().slice(0,10);
+    if (!dayMap[k]) break;
+    streak++;
+    d.setDate(d.getDate()-1);
+  }
+
+  // 2시간 이상인 날 카운트
+  const days120Count = Object.values(dayMap).filter(m=>m>=120).length;
+
+  // 출석 관련
+  const now = new Date(todayStr);
+  const dow = now.getDay(); // 0=일
+
+  // 이번 주 월~금
+  let weekdayFull = true;
+  for (let i=1;i<=5;i++) {
+    const dd = new Date(now); dd.setDate(now.getDate() - ((dow-i+7)%7));
+    if (dd > now) { weekdayFull=false; break; }
+    if (!dayMap[dd.toISOString().slice(0,10)]) { weekdayFull=false; break; }
+  }
+  // 이번 주 월~일
+  let weekFull = true;
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-((dow+6)%7));
+  for (let i=0;i<7;i++) {
+    const dd = new Date(weekStart); dd.setDate(weekStart.getDate()+i);
+    if (dd > now) break;
+    if (!dayMap[dd.toISOString().slice(0,10)]) { weekFull=false; break; }
+  }
+  // 이번 달 개근
+  let monthFull = true;
+  const y=now.getFullYear(), mo=now.getMonth();
+  for (let i=1;i<=now.getDate();i++) {
+    const dd = new Date(y,mo,i).toISOString().slice(0,10);
+    if (!dayMap[dd]) { monthFull=false; break; }
+  }
+
+  return { todayMinutes, totalMinutes, pomoCount, coffeeCount,
+    coffeeTypes: coffeeSet.size, streak, attendDays, days120Count,
+    weekdayFull, weekFull, monthFull };
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 심플 아이콘
+// index.html과 같은 선 스타일 아이콘을 사용합니다.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const GearIcon = () => (
+  <svg className="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+);
+const MoonIcon = () => (
+  <svg className="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+);
+const SunIcon = () => (
+  <svg className="icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+);
+const CameraIcon = () => (
+  <svg className="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 7h3l2-3h6l2 3h3a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z"/>
+    <circle cx="12" cy="13" r="4"/>
+  </svg>
+);
+const EyeIcon = () => (
+  <svg className="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+const EyeOffIcon = () => (
+  <svg className="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a20.3 20.3 0 0 1 5.06-5.94"/>
+    <path d="M9.9 4.24A10.7 10.7 0 0 1 12 4c7 0 11 8 11 8a20.6 20.6 0 0 1-3.22 4.31"/>
+    <path d="M14.12 14.12A3 3 0 0 1 9.88 9.88"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+  </svg>
+);
+const Icon = ({ name }) => {
+  if (name === 'camera') return <CameraIcon/>;
+  if (name === 'eye') return <EyeIcon/>;
+  if (name === 'eyeOff') return <EyeOffIcon/>;
+  if (name === 'settings') return <GearIcon/>;
+  if (name === 'moon') return <MoonIcon/>;
+  return <SunIcon/>;
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 메인 앱
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function App() {
+  const initialConfig = useMemo(() => loadInitialConfig(), []);
+  const [config, setConfig] = useState(initialConfig);
+  const [setupForm, setSetupForm] = useState(() => ({
+    proxyUrl: initialConfig?.proxyUrl || '',
+    apiKey: initialConfig?.apiKey || '',
+    recordDbId: initialConfig?.recordDbId || '',
+    questDbId: initialConfig?.questDbId || ''
+  }));
+  const [showSetup, setShowSetup] = useState(!initialConfig);
+
+  const [records,  setRecords]  = useState([]);
+  const [questDone, setQuestDone] = useState({}); // { questId: dateStr }
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
+
+  const [uiOn,    setUiOn]    = useState(() => loadLS(LS.UI_ON, true));
+  const [darkMode,setDarkMode]= useState(() => loadLS(LS.DARK_MODE, false));
+  const [time,    setTime]    = useState('');
+
+  const [drawer,    setDrawer]    = useState(null); // null | 'deco' | 'quest'
+  const [decoTab,   setDecoTab]   = useState('cat');
+  const [deco, setDeco] = useState(() => normalizeDeco(loadLS(LS.DECO, DEFAULT_DECO)));
+  const [recordMonths, setRecordMonths] = useState(() => loadLS(LS.RECORD_MONTHS, '12'));
+  const [decoPresets, setDecoPresets] = useState(() => loadLS(LS.PRESETS, []));
+  const [presetName, setPresetName] = useState('');
+
+  const [toast,    setToast]    = useState('');
+  const [toastKey, setToastKey] = useState(0);
+  const [questCat, setQuestCat] = useState('전체');
+  const [coffeePop, setCoffeePop] = useState(false);
+  const toastTimer = useRef(null);
+  const coffeePopTimer = useRef(null);
+
+  // ── 시계 ──
+  useEffect(() => {
+    const tick = () => {
+      const n = new Date();
+      setTime(`${String(n.getHours()).padStart(2,'0')} : ${String(n.getMinutes()).padStart(2,'0')}`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // ── 토스트 ──
+  const showToast = useCallback((msg) => {
+    setToast(msg); setToastKey(k=>k+1);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 2800);
+  }, []);
+
+  const triggerCoffeePop = useCallback(() => {
+    setCoffeePop(false);
+    if (coffeePopTimer.current) clearTimeout(coffeePopTimer.current);
+    requestAnimationFrame(() => {
+      setCoffeePop(true);
+      coffeePopTimer.current = setTimeout(() => setCoffeePop(false), 520);
+    });
+  }, []);
+
+  // ── 저장 ──
+  useEffect(() => { saveLS(LS.UI_ON, uiOn); }, [uiOn]);
+  useEffect(() => { saveLS(LS.DARK_MODE, darkMode); }, [darkMode]);
+  useEffect(() => { saveLS(LS.DECO, deco); }, [deco]);
+  useEffect(() => { saveLS(LS.RECORD_MONTHS, recordMonths); }, [recordMonths]);
+  useEffect(() => { saveLS(LS.PRESETS, decoPresets); }, [decoPresets]);
+
+  // ── 데이터 로드 ──
+  const fetchData = useCallback(async (cfg = config, period = recordMonths) => {
+    if (!cfg) return;
+    setLoading(true); setError('');
+    try {
+      // 공부기록
+      // 기록이 많아질 것을 대비해 기본값은 최근 12개월만 월별로 나누어 불러옵니다.
+      // 설정 화면에서 3/6/12/24개월 또는 전체로 변경할 수 있습니다.
+      let allRecs = [];
+      const readRecordPage = async (body) => {
+        let cursor = undefined;
+        do {
+          const pageBody = { ...body, page_size:100 };
+          if (cursor) pageBody.start_cursor = cursor;
+          const res = await fetch(`${cfg.proxyUrl}/v1/databases/${cfg.recordDbId}/query`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'x-notion-version':'2022-06-28'},
+            body: JSON.stringify(pageBody)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || '공부기록 로드 실패');
+          for (const p of data.results) {
+            allRecs.push({
+              date:    p.properties['날짜']?.date?.start || p.created_time,
+              minutes: p.properties['순공시간']?.number || 0,
+              mode:    p.properties['모드']?.select?.name || '',
+              coffee:  p.properties['커피 종류']?.select?.name || '',
+            });
+          }
+          cursor = data.has_more ? data.next_cursor : null;
+        } while (cursor);
+      };
+
+      const ranges = makeMonthlyRanges(period);
+      if (ranges) {
+        for (const r of ranges) {
+          await readRecordPage({
+            sorts:[{property:'날짜',direction:'descending'}],
+            filter:{ property:'날짜', date:{ on_or_after:r.start, before:r.end } }
+          });
+        }
+      } else {
+        await readRecordPage({ sorts:[{property:'날짜',direction:'descending'}] });
+      }
+      setRecords(allRecs);
+
+      // 퀘스트 달성 날짜
+      if (cfg.questDbId) {
+        const qRes = await fetch(`${cfg.proxyUrl}/v1/databases/${cfg.questDbId}/query`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-api-key':cfg.apiKey,'x-notion-version':'2022-06-28'},
+          body: JSON.stringify({ page_size:100 })
+        });
+        const qData = await qRes.json();
+        if (qRes.ok) {
+          const done = {};
+          for (const p of qData.results) {
+            const qid  = p.properties['퀘스트ID']?.title?.[0]?.plain_text || '';
+            const date = p.properties['날짜']?.date?.start || '';
+            if (qid && date) done[qid] = date;
+          }
+          setQuestDone(done);
+        }
+      }
+    } catch(e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [config, recordMonths]);
+
+  useEffect(() => { if (config && !showSetup) fetchData(); }, [config, showSetup]);
+
+  // ── 스탯 & 퀘스트 달성 판정 ──
+  const stats = useMemo(() => computeStats(records), [records]);
+
+  // 조건을 만족했지만 아직 사용자가 직접 완료하지 않은 퀘스트입니다.
+  // 자동 완료/자동 토스트는 하지 않고, 퀘스트 드로어에서 '완료' 버튼을 눌렀을 때만 기록합니다.
+  const claimableQuests = useMemo(() => {
+    if (!records.length) return [];
+    return QUESTS.filter(q => !questDone[q.id] && q.check(stats));
+  }, [stats, questDone]);
+
+  // ── 설정 저장 ──
+  const handleSaveSetup = async () => {
+    const { proxyUrl, apiKey, recordDbId, questDbId } = setupForm;
+    if (!proxyUrl || !apiKey || !recordDbId) { setError('Proxy URL, API Key, 공부기록 DB ID는 필수입니다.'); return; }
+    const cfg = { proxyUrl, apiKey, recordDbId, questDbId };
+    setConfig(cfg); saveLS(LS.CONFIG, cfg);
+    setShowSetup(false);
+    await fetchData(cfg);
+  };
+
+  // ── 꾸미기 선택 ──
+  const bgColor = DECO_ITEMS.bg.find(i=>i.id===deco.bg)?.color || '#FDFBF7';
+  const cardBg  = darkMode ? '#252525' : bgColor;
+  const dark    = darkMode || bgColor === '#2D2420';
+  const textCol = dark ? '#F3F4F6' : '#5C3A21';
+  const subCol  = dark ? '#A3A3A3' : '#A67B5B';
+  const iconBg  = dark ? 'rgba(255,255,255,.08)' : 'rgba(92,58,33,.07)';
+  const iconBgHover = dark ? 'rgba(255,255,255,.13)' : 'rgba(92,58,33,.11)';
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+  }, [dark]);
+
+  // 잠금 해제 여부
+  const isUnlocked = (item) => !item.unlock || !!questDone[item.unlock];
+  const getDecoItems = (key) => DECO_ITEMS[key];
+
+  const getDecoLabel = useCallback((key, value) => {
+    const item = getDecoItems(key)?.find(i => i.id === value);
+    return item?.label || '기본';
+  }, []);
+
+  const saveDecoPreset = useCallback(() => {
+    const name = (presetName || '').trim() || `프리셋 ${decoPresets.length + 1}`;
+    const preset = { id:String(Date.now()), name, deco:{...deco}, createdAt:new Date().toISOString() };
+    setDecoPresets(prev => [preset, ...prev.filter(p => p.name !== name)].slice(0, MAX_DECO_PRESETS));
+    setPresetName('');
+    showToast(`프리셋 '${name}' 저장 완료`);
+  }, [presetName, deco, decoPresets.length, showToast]);
+
+  const applyDecoPreset = useCallback((preset) => {
+    const next = {...DEFAULT_DECO};
+    let skipped = 0;
+    Object.entries(preset.deco || {}).forEach(([key, value]) => {
+      const item = getDecoItems(key)?.find(i => i.id === value);
+      if (!item) return;
+      if (isUnlocked(item)) next[key] = value;
+      else skipped += 1;
+    });
+    setDeco(next);
+    showToast(skipped ? `프리셋 적용 완료 · 잠긴 아이템 ${skipped}개 제외` : `프리셋 '${preset.name}' 적용 완료`);
+  }, [questDone, showToast]);
+
+  const deleteDecoPreset = useCallback((presetId) => {
+    setDecoPresets(prev => prev.filter(p => p.id !== presetId));
+    showToast('프리셋을 삭제했어요.');
+  }, [showToast]);
+
+  // ── 퀘스트 달성 기록 (Notion PATCH) ──
+  // page id 보관용 ref
+  const questPageIds = useRef({});
+  const fetchQuestPageIds = useCallback(async () => {
+    if (!config?.questDbId) return questPageIds.current;
+    try {
+      const res = await fetch(`${config.proxyUrl}/v1/databases/${config.questDbId}/query`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':config.apiKey,'x-notion-version':'2022-06-28'},
+        body: JSON.stringify({ page_size:100 })
+      });
+      const data = await res.json();
+      if (!res.ok) return questPageIds.current;
+      for (const p of data.results) {
+        const qid = p.properties['퀘스트ID']?.title?.[0]?.plain_text || '';
+        if (qid) questPageIds.current[qid] = p.id;
+      }
+      return questPageIds.current;
+    } catch{
+      return questPageIds.current;
+    }
+  }, [config]);
+
+  useEffect(() => { if (config && !showSetup) fetchQuestPageIds(); }, [config, showSetup]);
+
+  const markQuestDone = useCallback(async (questId, questName) => {
+    if (!config?.questDbId) {
+      showToast('퀘스트 DB가 연결되어 있지 않아요.');
+      return;
+    }
+    if (questDone[questId]) return;
+
+    let pageId = questPageIds.current[questId];
+    if (!pageId) {
+      await fetchQuestPageIds();
+      pageId = questPageIds.current[questId];
+    }
+    if (!pageId) {
+      showToast('퀘스트 DB에서 해당 퀘스트ID를 찾지 못했어요.');
+      return;
+    }
+
+    const todayStr = today();
+    try {
+      const res = await fetch(`${config.proxyUrl}/v1/pages/${pageId}`, {
+        method:'PATCH',
+        headers:{'Content-Type':'application/json','x-api-key':config.apiKey,'x-notion-version':'2022-06-28'},
+        body: JSON.stringify({ properties:{ '날짜':{ date:{ start: todayStr } } } })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({}));
+        throw new Error(data.message || '퀘스트 기록 실패');
+      }
+      setQuestDone(prev => ({ ...prev, [questId]: todayStr }));
+      triggerCoffeePop();
+      showToast(`🎉 퀘스트 완료! ${questName || ''}`);
+    } catch(e) {
+      console.warn('퀘스트 기록 실패', e);
+      showToast('퀘스트 완료 기록에 실패했어요.');
+    }
+  }, [config, questDone, fetchQuestPageIds, showToast, triggerCoffeePop]);
+
+  // ── 퀘스트 필터 ──
+  const questCats = ['전체', ...Object.keys(QUEST_CAT_COLOR)];
+  const filteredQuests = questCat === '전체' ? QUESTS : QUESTS.filter(q=>q.cat===questCat);
+  const doneCount = QUESTS.filter(q=>questDone[q.id]).length;
+  const drawerUi = {
+    title: dark ? '#F3F4F6' : '#5C3A21',
+    accent: dark ? '#D4A373' : '#A67B5B',
+    accentStrong: dark ? '#D4A373' : '#8B664B',
+    muted: dark ? '#8B949E' : '#B5A898',
+    text: dark ? '#D1D5DB' : '#5C3A21',
+    panelBg: dark ? '#1E1E1E' : '#FDFBF7',
+    panelAltBg: dark ? '#252525' : '#fff',
+    panelBorder: dark ? '#2F2F2F' : '#F0ECE5',
+    inputBg: dark ? '#252525' : '#fff',
+    chipBg: dark ? '#252525' : '#F4F0EA',
+    progressBg: dark ? '#2F2F2F' : '#EBE8DE',
+    lockBg: dark ? 'rgba(224,122,95,.14)' : '#FEF0ED',
+    deleteBg: dark ? 'rgba(255,255,255,.08)' : 'rgba(92,58,33,.08)',
+    previewBorder: dark ? '1px solid rgba(255,255,255,.08)' : '1px solid rgba(92,58,33,.06)',
+  };
+
+  const connectionRows = [
+    {
+      label:'공부기록 DB',
+      icon:'📘',
+      connected:!!config?.recordDbId,
+      desc:'날짜, 순공시간, 모드, 커피 종류를 불러옵니다.'
+    },
+    {
+      label:'퀘스트 DB',
+      icon:'🏆',
+      connected:!!config?.questDbId,
+      desc:'퀘스트 달성 날짜와 꾸미기 해금 상태를 관리합니다.'
+    }
+  ];
+  const urlConnected = !!config?.fromUrl;
+  const connected = !!config?.saved || !!config?.recordDbId;
+  const setupUi = {
+    pageBg: dark ? '#191919' : 'transparent',
+    boxBg: dark ? '#252525' : '#fff',
+    boxBorder: dark ? '#2F2F2F' : '#EBE8DE',
+    title: dark ? '#F3F4F6' : '#5C3A21',
+    muted: dark ? '#A3A3A3' : '#B5A898',
+    mutedStrong: dark ? '#D1D5DB' : '#5C3A21',
+    closeBg: dark ? '#333333' : '#F4F0EA',
+    closeHover: dark ? '#3D3D3D' : '#EBE8DE',
+    closeColor: dark ? '#D1D5DB' : '#A67B5B',
+    cardBg: dark ? '#1E1E1E' : '#FDFBF7',
+    cardAltBg: dark ? '#1E1E1E' : '#fff',
+    cardTintBg: dark ? '#24201C' : '#FDF8F1',
+    cardBorder: dark ? '#2F2F2F' : '#F0ECE5',
+    iconBg: dark ? '#252525' : '#fff',
+    pillBg: dark ? 'rgba(255,255,255,.06)' : '#fff',
+    optionBg: dark ? '#333333' : '#F4F0EA',
+    disabledBg: dark ? '#3D3D3D' : '#D1CBBF',
+    disabledColor: dark ? '#8B949E' : '#fff',
+    switchOff: dark ? '#3D3D3D' : '#E7E0D8',
+    errorBg: dark ? 'rgba(224,122,95,.12)' : '#FEF0ED',
+    connectedBg: connected ? (dark ? 'rgba(79,155,99,.12)' : '#F3FAF3') : (dark ? 'rgba(224,122,95,.12)' : '#FEF0ED'),
+    connectedBorder: connected ? (dark ? 'rgba(79,155,99,.28)' : '#D7EAD8') : (dark ? 'rgba(224,122,95,.28)' : '#F5D4CE'),
+    connectedTitle: connected ? (dark ? '#9CC3A8' : '#3E8A53') : (dark ? '#F1A38E' : '#C45F50'),
+    connectedText: connected ? (dark ? '#B8D6C0' : '#5E9E6E') : (dark ? '#F1A38E' : '#D27A6E'),
+  };
+
+  if (showSetup) return (
+    <div style={{width:'100%',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem',boxSizing:'border-box',background:setupUi.pageBg}}>
+      <div style={{width:'100%',maxWidth:'360px',background:setupUi.boxBg,borderRadius:'2rem',padding:'1.65rem',border:`1px solid ${setupUi.boxBorder}`,boxSizing:'border-box',boxShadow:dark ? '0 14px 40px rgba(0,0,0,.32)' : '0 4px 24px rgba(92,58,33,.1)'}}>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:'1rem',marginBottom:'1.1rem'}}>
+          <div>
+            <div style={{fontSize:'.62rem',fontWeight:800,letterSpacing:'.16em',color:'#A67B5B',textTransform:'uppercase',marginBottom:'.28rem'}}>Cat Cafe Clock Settings</div>
+            <div style={{fontWeight:800,fontSize:'1.25rem',color:setupUi.title,display:'flex',alignItems:'center',gap:'.45rem'}}>
+              <Icon name="settings" /> 냥이 카페 시계 설정
+            </div>
+            <div style={{fontSize:'.72rem',color:setupUi.muted,marginTop:'.3rem',lineHeight:1.5}}>
+              이 위젯은 URL 파라미터로 Notion DB 설정값을 불러옵니다.
+            </div>
+          </div>
+          <button onClick={()=>setShowSetup(false)} title="닫기" aria-label="닫기" style={{width:'2rem',height:'2rem',borderRadius:'9999px',border:'none',background:setupUi.closeBg,color:setupUi.closeColor,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontWeight:800,flexShrink:0}}>×</button>
+        </div>
+
+        <div style={{border:`1px solid ${setupUi.connectedBorder}`,background:setupUi.connectedBg,borderRadius:'1.1rem',padding:'.9rem',marginBottom:'.85rem'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'.7rem'}}>
+            <div style={{width:'2.2rem',height:'2.2rem',borderRadius:'9999px',background:setupUi.iconBg,display:'flex',alignItems:'center',justifyContent:'center',color:connected ? '#4F9B63' : '#E07A5F',fontWeight:900,boxShadow:dark ? 'none' : '0 1px 4px rgba(0,0,0,.03)'}}>
+              {connected ? '✓' : '!'}
+            </div>
+            <div>
+              <div style={{fontSize:'.82rem',fontWeight:800,color:setupUi.connectedTitle}}>
+                {urlConnected ? 'URL로 연결됨' : connected ? '저장된 설정으로 연결됨' : 'URL 파라미터가 필요합니다'}
+              </div>
+              <div style={{fontSize:'.68rem',color:setupUi.connectedText,lineHeight:1.45,marginTop:'.1rem'}}>
+                {connected ? '설정값은 이 화면에서 다시 입력하지 않고, 임베드 URL에서 자동으로 읽어옵니다.' : '위젯통합설정 페이지에서 생성한 냥이카페시계 링크를 노션 임베드에 붙여넣어 주세요.'}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{marginBottom:'.95rem'}}>
+          <div style={{fontSize:'.78rem',fontWeight:800,color:setupUi.mutedStrong,marginBottom:'.55rem',display:'flex',alignItems:'center',gap:'.35rem'}}>연결된 DB 목록</div>
+          <div style={{display:'grid',gap:'.5rem'}}>
+            {connectionRows.map(row => (
+              <div key={row.label} style={{display:'flex',alignItems:'center',gap:'.7rem',border:`1px solid ${setupUi.cardBorder}`,background:setupUi.cardBg,borderRadius:'1rem',padding:'.72rem'}}>
+                <div style={{width:'2rem',height:'2rem',borderRadius:'.75rem',background:setupUi.iconBg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'1rem',flexShrink:0}}>{row.icon}</div>
+                <div style={{minWidth:0,flex:1}}>
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'.4rem'}}>
+                    <div style={{fontSize:'.75rem',fontWeight:800,color:setupUi.title,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{row.label}</div>
+                    <span style={{fontSize:'.58rem',fontWeight:800,borderRadius:'9999px',padding:'.14rem .45rem',border:`1px solid ${row.connected ? setupUi.connectedBorder : setupUi.cardBorder}`,color:row.connected ? setupUi.connectedTitle : setupUi.muted,background:setupUi.pillBg,whiteSpace:'nowrap'}}>
+                      {row.connected ? '연결됨' : '대기'}
+                    </span>
+                  </div>
+                  <div style={{fontSize:'.64rem',color:setupUi.muted,marginTop:'.12rem',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{row.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{border:`1px solid ${setupUi.cardBorder}`,background:setupUi.cardAltBg,borderRadius:'1rem',padding:'.85rem',marginBottom:'.9rem'}}>
+          <div style={{fontSize:'.76rem',fontWeight:800,color:setupUi.title,marginBottom:'.25rem'}}>공부 기록 불러오기 기간</div>
+          <div style={{fontSize:'.64rem',color:setupUi.muted,lineHeight:1.45,marginBottom:'.55rem'}}>
+            기록이 많아질 때를 대비해 월별로 나누어 불러옵니다. 기간이 짧을수록 로딩이 빨라집니다.
+          </div>
+          <div style={{display:'flex',gap:'.32rem',flexWrap:'wrap'}}>
+            {RECORD_MONTH_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={()=>setRecordMonths(opt.value)} style={{border:'none',borderRadius:'9999px',padding:'.32rem .62rem',fontSize:'.62rem',fontWeight:800,fontFamily:'inherit',cursor:'pointer',background:recordMonths===opt.value ? '#A67B5B' : setupUi.optionBg,color:recordMonths===opt.value ? '#fff' : (dark ? '#D4A373' : '#8B664B')}}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{border:`1px solid ${setupUi.cardBorder}`,background:setupUi.cardTintBg,borderRadius:'1rem',padding:'.85rem',marginBottom:'.9rem'}}>
+          <div style={{fontSize:'.76rem',fontWeight:800,color:dark ? '#D4A373' : '#8B664B',marginBottom:'.22rem'}}>화면 표시 안내</div>
+          <div style={{fontSize:'.66rem',color:dark ? '#C0A898' : '#A67B5B',lineHeight:1.55}}>
+            데이터가 바로 보이지 않으면 아래 새로고침 버튼으로 Notion 데이터를 다시 불러오세요. 꾸미기, 프리셋, 테두리 표시, 다크모드 상태는 브라우저에 저장됩니다.
+          </div>
+        </div>
+
+        {error && <div style={{fontSize:'.68rem',color:dark ? '#F1A38E' : '#E07A5F',marginBottom:'.75rem',padding:'.55rem .7rem',background:setupUi.errorBg,borderRadius:'.75rem',lineHeight:1.45}}>{error}</div>}
+
+        <div style={{display:'flex',gap:'.5rem'}}>
+          <button onClick={()=>fetchData(config, recordMonths)} disabled={loading || !connected} style={{flex:1,border:'none',borderRadius:'.9rem',background:loading || !connected ? setupUi.disabledBg : '#A67B5B',color:loading || !connected ? setupUi.disabledColor : '#fff',fontWeight:800,fontSize:'.78rem',padding:'.78rem .9rem',fontFamily:'inherit',cursor:loading || !connected ? 'not-allowed' : 'pointer'}}>
+            {loading ? '불러오는 중...' : '데이터 새로고침'}
+          </button>
+          <button onClick={()=>setShowSetup(false)} style={{border:'none',borderRadius:'.9rem',background:setupUi.optionBg,color:dark ? '#D4A373' : '#8B664B',fontWeight:800,fontSize:'.78rem',padding:'.78rem .95rem',fontFamily:'inherit',cursor:'pointer'}}>닫기</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{width:'100%',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem',boxSizing:'border-box',background:'transparent'}}>
+      {/* 토스트 */}
+      <div className={`toast${toast ? ' show' : ''}`} key={toastKey}>{toast}</div>
+
+      {/* 드로어 백드롭 */}
+      <div className={`drawer-backdrop${drawer ? ' open' : ''}`} onClick={()=>setDrawer(null)}/>
+
+      {/* 메인 카드 */}
+      <div style={{
+        width:'340px', borderRadius:'2rem', overflow:'hidden', position:'relative',
+        background: cardBg,
+        boxShadow:'none',
+        border: `1px solid ${dark ? '#2f2f2f' : '#EBE8DE'}`,
+        transition:'background .4s, border .2s',
+        '--icon-bg': iconBg,
+        '--icon-bg-hover': iconBgHover,
+        '--icon-color': subCol,
+      }}>
+        {/* 상단 툴바 */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.85rem 1rem .25rem',position:'relative',zIndex:2}}>
+          <div style={{display:'flex',gap:'.4rem',marginLeft:'auto'}}>
+            <button className="icon-btn" onClick={()=>setDarkMode(v=>!v)} title={darkMode?'라이트 모드':'다크 모드'} aria-label={darkMode?'라이트 모드':'다크 모드'}><Icon name={darkMode?'sun':'moon'} /></button>
+            <button className="icon-btn" onClick={()=>setUiOn(v=>!v)} title={uiOn?'고양이와 컵만 보기':'전체 UI 보기'} aria-label={uiOn?'고양이와 컵만 보기':'전체 UI 보기'}><Icon name={uiOn?'eye':'eyeOff'} /></button>
+            <button className="icon-btn" onClick={()=>setShowSetup(true)} title="설정" aria-label="설정"><Icon name="settings" /></button>
+          </div>
+        </div>
+
+        {/* 일러스트 영역 */}
+        <div className={`widget-content${coffeePop ? ' pop' : ''}`} style={{padding: uiOn ? '.45rem .7rem 0' : '.65rem .7rem 1.35rem', marginTop: uiOn ? '0' : '.25rem', transformOrigin:'center center'}}>
+          <div style={{width:'100%',aspectRatio:'1',maxWidth: uiOn ? '200px' : '205px',margin:'0 auto',transform:'translateX(10px)',transformOrigin:'center center'}}>
+            <CupSVG catItem={deco.cat} drinkItem={deco.drink} catAccItem={deco.catAcc} cupDecoItem={deco.cupDeco} cupDeco2Item={deco.cupDeco2} bgColor={cardBg}/>
+          </div>
+        </div>
+
+        {/* 시계 */}
+        {uiOn && (
+        <div style={{textAlign:'center',padding:'1.5rem 0 .7rem',position:'relative',zIndex:2}}>
+          <div className="clock-digits" style={{color:textCol}}>{time}</div>
+        </div>
+        )}
+
+        {/* 하단 탭 */}
+        {uiOn && (
+        <div className="widget-content" style={{padding:'.3rem .75rem .9rem'}}>
+          {/* 로딩 인디케이터 */}
+          {loading && <div style={{textAlign:'center',fontSize:'.62rem',color:subCol,marginBottom:'.3rem',opacity:.7}}>⏳ 데이터 불러오는 중…</div>}
+          {error   && <div style={{textAlign:'center',fontSize:'.62rem',color:'#E07A5F',marginBottom:'.3rem'}}>{error}</div>}
+
+
+          <div style={{display:'flex',gap:'.4rem'}}>
+            <button className={`tab-btn${drawer==='deco'?' active':''}`}
+              onClick={()=>setDrawer(d=>d==='deco'?null:'deco')}
+              style={{color: drawer==='deco' ? drawerUi.accentStrong : drawerUi.muted}}>
+              꾸미기
+            </button>
+            <button className={`tab-btn${drawer==='quest'?' active':''}`}
+              onClick={()=>setDrawer(d=>d==='quest'?null:'quest')}
+              style={{color: drawer==='quest' ? drawerUi.accentStrong : drawerUi.muted}}>
+              퀘스트 {claimableQuests.length > 0 && <span style={{background:'#E07A5F',color:'#fff',borderRadius:'9999px',padding:'0 .3rem',fontSize:'.6rem',marginLeft:'.2rem'}}>{claimableQuests.length}</span>}
+            </button>
+          </div>
+        </div>
+        )}
+      </div>
+
+      {/* ━━━ 드로어: 꾸미기 ━━━ */}
+      <div className={`drawer${drawer==='deco'?' open':''}`}>
+        <div className="drawer-handle"/>
+        <div style={{padding:'0 1rem .5rem',flexShrink:0}}>
+          <div style={{fontWeight:800,fontSize:'.82rem',color:drawerUi.title,marginBottom:'.6rem'}}>꾸미기</div>
+          {/* 꾸미기 서브탭 */}
+          <div style={{display:'flex',gap:'.3rem',overflowX:'auto',paddingBottom:'.3rem'}}>
+            {Object.entries(DECO_TAB_LABELS).map(([key,label])=>(
+              <button key={key} onClick={()=>setDecoTab(key)}
+                style={{
+                  flexShrink:0, padding:'.28rem .7rem', borderRadius:'9999px', border:'none', cursor:'pointer',
+                  fontSize:'.68rem', fontWeight:700, fontFamily:'inherit',
+                  background: decoTab===key ? '#A67B5B' : drawerUi.chipBg,
+                  color:       decoTab===key ? '#fff'    : drawerUi.accentStrong,
+                  transition:'all .15s',
+                }}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={{overflowY:'auto',flex:1,padding:'0 1rem 1.5rem'}}>
+          {decoTab === 'preset' ? (
+            <div>
+              <div style={{border:`1px solid ${drawerUi.panelBorder}`,background:drawerUi.panelBg,borderRadius:'1rem',padding:'.75rem',marginBottom:'.75rem'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:'.5rem',marginBottom:'.5rem'}}>
+                  <div>
+                    <div style={{fontSize:'.74rem',fontWeight:800,color:drawerUi.title}}>현재 꾸미기 저장</div>
+                    <div style={{fontSize:'.6rem',color:drawerUi.muted,marginTop:'.08rem'}}>카드 미리보기로 저장됩니다.</div>
+                  </div>
+                  <button onClick={saveDecoPreset} style={{border:'none',borderRadius:'9999px',background:'#A67B5B',color:'#fff',fontSize:'.62rem',fontWeight:800,padding:'.38rem .65rem',fontFamily:'inherit',cursor:'pointer',flexShrink:0}}>저장</button>
+                </div>
+                <input value={presetName} onChange={e=>setPresetName(e.target.value)} placeholder="프리셋 이름 (예: 민트 냥이)" style={{width:'100%',boxSizing:'border-box',border:`1px solid ${drawerUi.panelBorder}`,background:drawerUi.inputBg,borderRadius:'.75rem',padding:'.52rem .65rem',fontSize:'.66rem',fontFamily:'inherit',outline:'none',color:drawerUi.text}} />
+              </div>
+
+              {decoPresets.length > 0 ? (
+                <div style={{display:'grid',gridTemplateColumns:'repeat(2, minmax(0,1fr))',gap:'.65rem'}}>
+                  {decoPresets.map(p => {
+                    const pBg = DECO_ITEMS.bg.find(i=>i.id===p.deco?.bg)?.color || '#FDFBF7';
+                    const lockedCount = Object.entries(p.deco || {}).filter(([key,value]) => {
+                      const item = getDecoItems(key)?.find(i=>i.id===value);
+                      return item && !isUnlocked(item);
+                    }).length;
+                    return (
+                      <div key={p.id} style={{border:`1px solid ${drawerUi.panelBorder}`,background:drawerUi.panelAltBg,borderRadius:'1rem',padding:'.55rem',position:'relative',overflow:'hidden'}}>
+                        <button onClick={()=>deleteDecoPreset(p.id)} title="프리셋 삭제" style={{position:'absolute',top:'.45rem',right:'.45rem',zIndex:2,border:'none',background:drawerUi.deleteBg,color:drawerUi.accent,borderRadius:'9999px',width:'1.2rem',height:'1.2rem',fontSize:'.7rem',lineHeight:1,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
+                        <button onClick={()=>applyDecoPreset(p)} title="프리셋 적용" style={{width:'100%',border:'none',background:'transparent',padding:0,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}>
+                          <div style={{height:'6.7rem',borderRadius:'.8rem',background:pBg,display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden',border:drawerUi.previewBorder}}>
+                            <div style={{width:'5.9rem',height:'7.1rem',transform:'translateY(.12rem)'}}>
+                              <CupSVG catItem={p.deco?.cat || DEFAULT_DECO.cat} drinkItem={p.deco?.drink || DEFAULT_DECO.drink} catAccItem={p.deco?.catAcc || DEFAULT_DECO.catAcc} cupDecoItem={p.deco?.cupDeco || DEFAULT_DECO.cupDeco} cupDeco2Item={p.deco?.cupDeco2 || DEFAULT_DECO.cupDeco2} bgColor={pBg}/>
+                            </div>
+                          </div>
+                          <div style={{fontSize:'.68rem',fontWeight:900,color:drawerUi.title,marginTop:'.45rem',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{p.name}</div>
+                          <div style={{fontSize:'.55rem',color:drawerUi.muted,lineHeight:1.45,marginTop:'.15rem'}}>
+                            {getDecoLabel('cat', p.deco?.cat)} · {getDecoLabel('drink', p.deco?.drink)}<br/>
+                            {getDecoLabel('catAcc', p.deco?.catAcc)} · {getDecoLabel('cupDeco', p.deco?.cupDeco)} · {getDecoLabel('cupDeco2', p.deco?.cupDeco2)}
+                          </div>
+                          {lockedCount > 0 && <div style={{display:'inline-flex',marginTop:'.35rem',fontSize:'.52rem',fontWeight:800,color:'#E07A5F',background:drawerUi.lockBg,borderRadius:'9999px',padding:'.14rem .38rem'}}>잠김 {lockedCount}개 제외</div>}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{border:`1px dashed ${drawerUi.panelBorder}`,borderRadius:'1rem',padding:'1rem',textAlign:'center',background:drawerUi.panelBg}}>
+                  <div style={{fontSize:'.78rem',fontWeight:800,color:drawerUi.accentStrong,marginBottom:'.25rem'}}>저장된 프리셋이 없어요</div>
+                  <div style={{fontSize:'.62rem',color:drawerUi.muted,lineHeight:1.5}}>자주 쓰는 꾸미기 조합을 저장해두면 초기화 후에도 빠르게 다시 적용할 수 있어요.</div>
+                </div>
+              )}
+            </div>
+          ) : (
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(64px,1fr))',gap:'.55rem'}}>
+            {DECO_ITEMS[decoTab]?.map(item => {
+              const unlocked = isUnlocked(item);
+              const selected = deco[decoTab] === item.id;
+              const thumbSrc = getDecoThumbSrc(decoTab, item.id);
+              return (
+                <button key={item.id}
+                  className={`item-btn${selected?' selected':''}${!unlocked?' locked':''}`}
+                  title={item.label}
+                  onClick={()=>{ if(!unlocked){showToast(`🔒 퀘스트 달성 후 해금됩니다`);return;} setDeco(d=>({...d,[decoTab]:item.id})); }}
+                >
+                  <div className="item-thumb">
+                    {decoTab === 'bg'
+                      ? <div style={{width:'100%',height:'100%',borderRadius:'.7rem',background:item.color,border:'2px solid rgba(0,0,0,.08)'}}/>
+                      : thumbSrc
+                        ? <img src={thumbSrc} alt="" draggable="false" onError={(e)=>{ e.currentTarget.style.display='none'; const fallback=e.currentTarget.nextElementSibling; if(fallback) fallback.style.display='block'; }} />
+                        : null
+                    }
+                    {decoTab !== 'bg' && <span className="item-fallback" style={{display:thumbSrc ? 'none' : 'block'}}>{item.emoji}</span>}
+                  </div>
+                  <div className="item-label">{item.label}</div>
+                  {!unlocked && (
+                    <div className="lock-icon" aria-label="잠김" title="잠김">🔒</div>
+                  )}
+                  {!unlocked && item.unlock && (
+                    <div style={{position:'absolute',bottom:'-1.4rem',left:'50%',transform:'translateX(-50%)',fontSize:'.52rem',color:drawerUi.muted,whiteSpace:'nowrap',pointerEvents:'none'}}>
+                      {QUESTS.find(q=>q.id===item.unlock)?.name}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          )}
+        </div>
+      </div>
+
+      {/* ━━━ 드로어: 퀘스트 ━━━ */}
+      <div className={`drawer${drawer==='quest'?' open':''}`}>
+        <div className="drawer-handle"/>
+        <div style={{padding:'0 1rem .5rem',flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'.5rem'}}>
+            <div style={{fontWeight:800,fontSize:'.82rem',color:drawerUi.title}}>퀘스트</div>
+            <div style={{fontSize:'.68rem',color:drawerUi.accent,fontWeight:700}}>{doneCount} / {QUESTS.length} 달성</div>
+          </div>
+          {/* 진행도 바 */}
+          <div style={{height:'.35rem',background:drawerUi.progressBg,borderRadius:'9999px',marginBottom:'.6rem',overflow:'hidden'}}>
+            <div style={{height:'100%',width:`${(doneCount/QUESTS.length)*100}%`,background:'linear-gradient(90deg,#E8A87C,#A67B5B)',borderRadius:'9999px',transition:'width .5s ease'}}/>
+          </div>
+          {/* 카테고리 필터 */}
+          <div style={{display:'flex',gap:'.3rem',overflowX:'auto',paddingBottom:'.3rem'}}>
+            {questCats.map(cat=>(
+              <button key={cat} onClick={()=>setQuestCat(cat)}
+                style={{
+                  flexShrink:0, padding:'.25rem .65rem', borderRadius:'9999px', border:'none', cursor:'pointer',
+                  fontSize:'.65rem', fontWeight:700, fontFamily:'inherit',
+                  background: questCat===cat ? (QUEST_CAT_COLOR[cat]||'#A67B5B') : drawerUi.chipBg,
+                  color:       questCat===cat ? '#fff' : drawerUi.accentStrong,
+                  transition:'all .15s',
+                }}>
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{overflowY:'auto',flex:1,padding:'0 1rem 1.5rem'}}>
+          {filteredQuests.map(q => {
+            const done = !!questDone[q.id];
+            const claimable = !done && q.check(stats);
+            return (
+              <div key={q.id} className="quest-row" style={{opacity: done ? 1 : .85}}>
+                <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B'} : {}}>
+                  {done ? '✓' : (claimable ? '!' : '')}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:'.72rem',fontWeight:700,color: done ? drawerUi.accent : drawerUi.text,textDecoration: done?'line-through':'none',lineHeight:1.3}}>
+                    {q.name}
+                  </div>
+                  {done && questDone[q.id] && (
+                    <div style={{fontSize:'.6rem',color:drawerUi.muted,marginTop:'.1rem'}}>{questDone[q.id]} 완료 🎉</div>
+                  )}
+                  {claimable && (
+                    <div style={{fontSize:'.6rem',color:drawerUi.accent,marginTop:'.1rem',fontWeight:700}}>조건 달성 — 완료 버튼을 눌러 기록하세요</div>
+                  )}
+                </div>
+                {claimable ? (
+                  <button
+                    onClick={() => markQuestDone(q.id, q.name)}
+                    style={{
+                      flexShrink:0, border:'none', borderRadius:'9999px', padding:'.25rem .55rem',
+                      background:'#A67B5B', color:'#fff', fontSize:'.6rem', fontWeight:800,
+                      fontFamily:'inherit', cursor:'pointer'
+                    }}
+                  >
+                    완료
+                  </button>
+                ) : (
+                  <span className="cat-badge" style={{background: QUEST_CAT_BG[q.cat], color: QUEST_CAT_COLOR[q.cat]}}>
+                    {q.cat}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
+
+
+
+
