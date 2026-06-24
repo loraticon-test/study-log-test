@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -392,6 +392,14 @@ const fmtMinToHour = (min) => {
     return `${h}시간 ${m}분`;
 };
 const normalizeDate = (d) => { const nd = new Date(d); nd.setHours(0,0,0,0); return nd.getTime(); };
+const formatLocalDate = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const formatLocalDateTime = (d, time) => {
+    const offsetMinutes = -d.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const offsetHours = String(Math.floor(Math.abs(offsetMinutes) / 60)).padStart(2, '0');
+    const offsetMins = String(Math.abs(offsetMinutes) % 60).padStart(2, '0');
+    return `${formatLocalDate(d)}T${time}:00${sign}${offsetHours}:${offsetMins}`;
+};
 const getDayKOR = (idx) => ['일', '월', '화', '수', '목', '금', '토'][idx];
 const formatKORDate = (d) => `${d.getMonth()+1}월 ${d.getDate()}일 ${getDayKOR(d.getDay())}`;
 const formatKORDateShort = (dateValue) => {
@@ -1296,8 +1304,7 @@ const App = () => {
     const handleMoveTodo = async (todo, targetDateNum) => {
         if (!config.saved || !config.todoDbId) return;
         const targetDate = new Date(targetDateNum);
-        const targetISO = new Date(targetDate.getTime() - (targetDate.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
-        const targetDateStart = todo.timeStr ? `${targetISO}T${todo.timeStr}:00` : targetISO;
+        const targetDateStart = todo.timeStr ? formatLocalDateTime(targetDate, todo.timeStr) : formatLocalDate(targetDate);
         setTodos(prev => prev.map(t => t.id === todo.id ? { ...t, date: targetDateNum } : t));
         try {
             await fetch(`${config.proxyUrl}/v1/pages/${todo.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-api-key': config.apiKey, 'x-notion-version': '2022-06-28' }, body: JSON.stringify({ properties: { [todoProps.date]: { date: { start: targetDateStart } } } }) });
@@ -1352,11 +1359,10 @@ const App = () => {
         const subjectParent = subjectObj ? subjectObj.parentName : null;
         setNewTodoTitle(''); setNewTodoSubjectId(''); setNewTodoTime(''); setIsAddingTodo(false);
         const tempId = 'temp-' + Date.now();
-        const localISOTime = (new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000))).toISOString().slice(0, 10);
         const [hours, minutes] = time ? time.split(':').map(Number) : [0, 0];
         const timeStr = time || null;
         const timeSortValue = time ? hours * 60 + minutes : 9999;
-        const dateStart = time ? `${localISOTime}T${time}:00` : localISOTime;
+        const dateStart = time ? formatLocalDateTime(new Date(todayNum), time) : formatLocalDate(new Date(todayNum));
         const newTodo = { id: tempId, title, done: false, date: todayNum, timeStr, timeSortValue, subjectId, subjectName, subjectParent };
         setTodos(prev => [newTodo, ...prev]);
         try {
