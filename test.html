@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko" class="light">
 <head>
     <meta charset="UTF-8">
@@ -275,6 +275,9 @@ const App = () => {
     const [randomSubSubj, setRandomSubSubj] = useState('전체');
     const [randomCount, setRandomCount] = useState(10);
     const [customRandomCount, setCustomRandomCount] = useState('');
+
+    /* ── 복습 과목 선택 펼침 상태 ── */
+    const [reviewSubjectPicker, setReviewSubjectPicker] = useState(null);
 
     /* ── 테스트 진행 상태 ── */
     const [testQueue, setTestQueue] = useState([]);
@@ -555,13 +558,17 @@ const App = () => {
 
 
     /* ── 테스트 로직 ── */
-    const startReviewTest = (type, limit) => {
+    const startReviewTest = (type, limit, mainSubject) => {
         let sourceQueue = [];
         if (type === 'new') sourceQueue = allQuestions.filter(q => q.category === 'new');
         else if (type === 'today') sourceQueue = allQuestions.filter(q => q.category === 'today');
         else if (type === 'wrongRate') sourceQueue = allQuestions.filter(q => q.wrongRate >= 1).sort((a, b) => b.wrongRate - a.wrongRate || b.wrongCount - a.wrongCount);
         else if (type === 'mastered') sourceQueue = allQuestions.filter(q => q.isMastered);
         else sourceQueue = allQuestions.filter(q => q.category === 'pending');
+
+        if (mainSubject && mainSubject !== '전체') {
+            sourceQueue = sourceQueue.filter(q => q.mainSubject === mainSubject);
+        }
         
         const queue = limit ? sourceQueue.slice(0, limit) : [...sourceQueue];
 
@@ -579,6 +586,7 @@ const App = () => {
         setUserInput('');
         setIsRevealed(false);
         setIsNoteExpanded(false); 
+        setReviewSubjectPicker(null);
     };
 
     const continuePendingReview = () => {
@@ -857,6 +865,17 @@ const App = () => {
         const hasMastered = masteredQuestions.length > 0;
         const isPendingOverloaded = pendingQuestions.length > BATCH_SIZE;
 
+        const getSubjectCounts = (questions) => Object.entries(
+            questions.reduce((counts, q) => {
+                const subject = q.mainSubject || '미분류';
+                counts[subject] = (counts[subject] || 0) + 1;
+                return counts;
+            }, {})
+        ).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ko'));
+
+        const todaySubjectCounts = getSubjectCounts(todayQuestions);
+        const pendingSubjectCounts = getSubjectCounts(pendingQuestions);
+
         const SubjectButton = ({ active, onClick, children }) => (
             <button 
                 onClick={onClick}
@@ -879,6 +898,44 @@ const App = () => {
                 {children}
             </button>
         );
+
+        const ReviewSubjectPicker = ({ type, subjects, accent = 'latte' }) => {
+            const isOpen = reviewSubjectPicker === type;
+            if (subjects.length < 2) return null;
+
+            const isToday = accent === 'green';
+            return (
+                <div className="mt-3">
+                    <button
+                        onClick={() => setReviewSubjectPicker(isOpen ? null : type)}
+                        className={`w-full py-2 text-xs font-bold rounded-xl border transition-colors ${isToday
+                            ? 'border-[#DDEBDD] dark:border-[#2D3C31] text-[#6F8960] dark:text-[#A5BE96] hover:bg-[#F0F4ED] dark:hover:bg-[#2D3C31]/40'
+                            : 'border-[#E4D7C9] dark:border-[#3B332B] text-latte-700 dark:text-latte-400 hover:bg-white/70 dark:hover:bg-[#2A2A2A]'}`}
+                        aria-expanded={isOpen}
+                    >
+                        {isOpen ? '과목 선택 닫기' : '과목별로 풀기'}
+                    </button>
+                    {isOpen && (
+                        <div className="mt-2 p-3 rounded-2xl bg-white/70 dark:bg-[#252525] border border-[#EBE8DE] dark:border-[#333] animate-fade-in">
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium mb-2">원하는 과목만 바로 시작할 수 있어요</p>
+                            <div className="flex flex-wrap gap-2">
+                                {subjects.map(({ name, count }) => (
+                                    <button
+                                        key={name}
+                                        onClick={() => startReviewTest(type, undefined, name)}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold border transition-colors ${isToday
+                                            ? 'bg-[#F0F4ED] dark:bg-[#2D3C31]/50 text-[#6F8960] dark:text-[#B5CBA7] border-[#DDEBDD] dark:border-[#3D5142] hover:bg-[#DDEBDD] dark:hover:bg-[#3D5142]'
+                                            : 'bg-latte-50 dark:bg-latte-900/20 text-latte-700 dark:text-latte-400 border-latte-100 dark:border-latte-800 hover:bg-latte-100 dark:hover:bg-latte-900/40'}`}
+                                    >
+                                        {name} <span className="opacity-70">{count}개</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
 
         return (
             <div className="test-shell bg-[#FDFBF7] dark:bg-[#191919] rounded-[2.5rem] border border-[#EBE8DE] dark:border-[#2F2F2F] p-8 flex flex-col justify-start min-h-[580px] soft-shadow relative overflow-y-auto transition-colors">
@@ -1081,6 +1138,7 @@ const App = () => {
                                     <button onClick={() => startReviewTest('today')} disabled={!hasToday} className={`w-full py-3.5 rounded-2xl font-bold text-sm transition-colors flex justify-center items-center gap-2 ${hasToday ? 'bg-[#849F71] hover:bg-[#738C62] text-white shadow-sm' : 'bg-gray-50 dark:bg-[#333] text-gray-400 dark:text-gray-500 cursor-not-allowed'}`}>
                                         {hasToday ? '오늘의 복습 시작' : '완료됨'}
                                     </button>
+                                    {hasToday && <ReviewSubjectPicker type="today" subjects={todaySubjectCounts} accent="green" />}
                                 </div>
 
                                 <div className="wide-card bg-[#F4F0EA] dark:bg-[#1E1E1E] rounded-3xl p-5 border border-[#EBE8DE] dark:border-[#2F2F2F] flex flex-col transition-colors">
@@ -1110,6 +1168,7 @@ const App = () => {
                                     ) : (
                                         <div className="w-full py-3.5 rounded-2xl font-bold text-sm bg-[#EBE8DE]/50 dark:bg-[#333]/50 text-gray-400 dark:text-gray-600 text-center cursor-not-allowed">깔끔합니다 ✨</div>
                                     )}
+                                    {hasPending && <ReviewSubjectPicker type="pending" subjects={pendingSubjectCounts} />}
                                 </div>
 
                                 <div className="bg-white dark:bg-[#252525] rounded-3xl p-5 border border-[#FFE1DC] dark:border-[#4A2A25] flex flex-col relative overflow-hidden transition-colors">
