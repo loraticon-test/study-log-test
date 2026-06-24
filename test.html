@@ -1390,13 +1390,19 @@ const App = () => {
                     <div className="space-y-2.5">
                         {testQueue.map((q) => {
                             const isPass = results[q.id];
+                            const isNewlyMastered = isPass && q.passCount < 4 && q.passCount + 1 >= 4;
                             return (
                                 <div key={q.id} className="bg-white dark:bg-[#252525] p-3.5 rounded-2xl border border-[#EBE8DE] dark:border-[#333] flex items-center gap-3 transition-colors">
                                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${isPass ? 'bg-green-50 dark:bg-green-900/30 text-green-500 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/30 text-red-400 dark:text-red-400'}`}>
                                         {isPass ? <CheckIcon/> : <XIcon/>}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[11px] text-latte-500 dark:text-latte-400 font-bold truncate">{q.answer}</div>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <div className="text-[11px] text-latte-500 dark:text-latte-400 font-bold truncate">{q.answer}</div>
+                                            {isNewlyMastered && (
+                                                <span className="flex-shrink-0 rounded-full bg-[#EEF6E9] dark:bg-[#2A3B2B] px-1.5 py-0.5 text-[9px] font-extrabold text-[#6E9560] dark:text-[#B4D4A8]">🏆 마스터 달성!</span>
+                                            )}
+                                        </div>
                                         <div className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">{q.summary}</div>
                                         {sessionType === 'wrongRate' && isPass && (
                                             <div className="text-[10px] font-bold text-[#E07A5F] dark:text-[#F1A38E] mt-0.5">
