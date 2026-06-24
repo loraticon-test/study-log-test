@@ -589,7 +589,7 @@ const App = () => {
     const [newTodoTitle, setNewTodoTitle] = useState('');
     const [newTodoSubjectId, setNewTodoSubjectId] = useState('');
     const [newTodoTime, setNewTodoTime] = useState('');
-    const [todoProps, setTodoProps] = useState({ title: '이름', done: '완료', date: '날짜', subject: '과목' });
+    const [todoProps, setTodoProps] = useState({ title: '이름', done: '완료', date: '날짜', subject: '과목', time: null });
 
     const [subjects, setSubjects] = useState([]);
     const [records, setRecords] = useState([]);
@@ -851,12 +851,15 @@ const App = () => {
                 if (todoRes.ok) {
                     const todoData = await todoRes.json();
                     
-                    let tKey = '이름', cKey = '완료', dKey = '날짜', sKey = '과목';
+                    let tKey = '이름', cKey = '완료', dKey = '날짜', sKey = '과목', timeKey = null;
                     if (todoData.results.length > 0) {
                         const props = todoData.results[0].properties;
                         tKey = Object.keys(props).find(k => props[k].type === 'title') || tKey;
                         cKey = Object.keys(props).find(k => props[k].type === 'checkbox') || cKey;
                         dKey = Object.keys(props).find(k => props[k].type === 'date') || dKey;
+                        timeKey = Object.keys(props).find(k => k === '시간' && props[k].type === 'number')
+                            || Object.keys(props).find(k => k.includes('시간') && props[k].type === 'number')
+                            || null;
                         
                         if (props['과목'] && props['과목'].type === 'relation') {
                             sKey = '과목';
@@ -866,7 +869,7 @@ const App = () => {
                                 || '과목'; 
                         }
                         
-                        setTodoProps({ title: tKey, done: cKey, date: dKey, subject: sKey });
+                        setTodoProps({ title: tKey, done: cKey, date: dKey, subject: sKey, time: timeKey });
                     }
 
                     const parsedTodos = todoData.results.map(page => {
@@ -1362,12 +1365,14 @@ const App = () => {
         const [hours, minutes] = time ? time.split(':').map(Number) : [0, 0];
         const timeStr = time || null;
         const timeSortValue = time ? hours * 60 + minutes : 9999;
+        const timeNumber = minutes === 0 ? hours : hours * 100 + minutes;
         const dateStart = time ? formatLocalDateTime(new Date(todayNum), time) : formatLocalDate(new Date(todayNum));
         const newTodo = { id: tempId, title, done: false, date: todayNum, timeStr, timeSortValue, subjectId, subjectName, subjectParent };
         setTodos(prev => [newTodo, ...prev]);
         try {
             const properties = { [todoProps.title]: { title: [{ text: { content: title } }] }, [todoProps.date]: { date: { start: dateStart } } };
             if (todoProps.subject && subjectId) properties[todoProps.subject] = { relation: [{ id: subjectId }] };
+            if (time && todoProps.time) properties[todoProps.time] = { number: timeNumber };
 
             const dashboardRelationProp = config.dashboardRelationProp || '대시보드 통계용';
             const dashboardPageId = await getDashboardPageId(config);
