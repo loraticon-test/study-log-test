@@ -185,24 +185,31 @@ const QUESTS = [
 ];
 
 const QUEST_CAT_COLOR = {
-  '연속공부':'#E8A87C', '집중시간':'#81B29A', '누적시간':'#7BA7C4',
+  '반복':'#81B29A', '연속공부':'#E8A87C', '누적시간':'#7BA7C4',
   '커피':'#A67B5B'
 };
 const QUEST_CAT_BG = {
-  '연속공부':'#FDF1E8', '집중시간':'#EBF4F0', '누적시간':'#EAF1F7',
+  '반복':'#EBF4F0', '연속공부':'#FDF1E8', '누적시간':'#EAF1F7',
   '커피':'#F4F0EA'
 };
 
-// 체험판은 10일 안에 완주할 수 있는 7개의 핵심 퀘스트만 보여 준다.
+// 체험판은 10일 안에 완주할 수 있는 핵심 퀘스트만 보여 준다.
 QUESTS.splice(0, QUESTS.length,
-  { id:'daily_25m',    name:'하루 25분 집중', cat:'집중시간', check:(d)=>d.todayMinutes>=25 },
+  { id:'daily_25m',    name:'오늘 25분 집중', cat:'반복', repeat:'daily', check:(d)=>d.todayMinutes>=25 },
+  { id:'weekly_streak_5', name:'이번 주 연속 공부 5일', cat:'반복', repeat:'weekly', target:5, progress:(d)=>Math.min(d.weeklyStreak, 5), check:(d)=>d.weeklyStreak>=5 },
+  { id:'coffee_first', name:'첫 커피', cat:'커피', check:(d)=>d.coffeeCount>=1 },
+  { id:'streak_2',     name:'2일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=2 },
   { id:'streak_3',     name:'3일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=3 },
-  { id:'total_3h',     name:'누적 3시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=180 },
-  { id:'daily_60m',    name:'하루 60분 집중', cat:'집중시간', check:(d)=>d.todayMinutes>=60 },
-  { id:'total_5h',     name:'누적 5시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=300 },
+  { id:'streak_4',     name:'4일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=4 },
+  { id:'streak_5',     name:'5일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=5 },
+  { id:'streak_6',     name:'6일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=6 },
   { id:'streak_7',     name:'7일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=7 },
+  { id:'total_3h',     name:'누적 3시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=180 },
+  { id:'total_5h',     name:'누적 5시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=300 },
   { id:'total_10h',    name:'누적 10시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=600 },
 );
+const DAILY_QUEST_IDS = new Set(['daily_25m']);
+const WEEKLY_QUEST_IDS = new Set(['weekly_streak_5']);
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 꾸미기 아이템 정의 (잠금 해제 조건 = 퀘스트 ID)
@@ -332,7 +339,7 @@ DECO_ITEMS.cat = [
 ];
 DECO_ITEMS.drink = [
   { id:'drink_lemon', label:'아메리카노', emoji:'☕', unlock:null },
-  { id:'drink_ice_americano', label:'아이스 아메리카노', emoji:'🧊', unlock:'daily_60m' },
+  { id:'drink_ice_americano', label:'아이스 아메리카노', emoji:'🧊', unlock:'weekly_streak_5' },
   { id:'drink_bingsu_redbean', label:'팥빙수', emoji:'🍧', unlock:'total_10h' },
 ];
 DECO_ITEMS.catAcc = [
@@ -349,13 +356,13 @@ DECO_ITEMS.catAcc.splice(0, DECO_ITEMS.catAcc.length,
 );
 DECO_ITEMS.cupDeco = [
   { id:'deco_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'deco_left_straw_red', label:'빨간 빨대', emoji:'🥤', unlock:'daily_25m' },
+  { id:'deco_left_straw_red', label:'빨간 빨대', emoji:'🥤', unlock:'weekly_streak_5' },
   { id:'deco_left_teaspoon', label:'티스푼', emoji:'🥄', unlock:'total_3h' },
-  { id:'deco_left_icecream_scoop_chocolate', label:'초코 아이스크림', emoji:'🍫', unlock:'daily_60m' },
+  { id:'deco_left_icecream_scoop_chocolate', label:'초코 아이스크림', emoji:'🍫', unlock:'total_5h' },
 ];
 DECO_ITEMS.cupDeco2 = [
   { id:'deco_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'deco_right_cookie_cat_paw_print', label:'발자국 쿠키', emoji:'🍪', unlock:'daily_25m' },
+  { id:'deco_right_cookie_cat_paw_print', label:'발자국 쿠키', emoji:'🍪', unlock:'weekly_streak_5' },
   { id:'deco_right_whipped_cream', label:'휘핑크림', emoji:'🍦', unlock:'total_5h' },
   { id:'deco_right_croffle', label:'크로플', emoji:'🧇', unlock:'total_10h' },
 ];
@@ -366,7 +373,7 @@ DECO_ITEMS.cupDeco2 = DECO_ITEMS.cupDeco2.map(item =>
 );
 DECO_ITEMS.bg = [
   { id:'bg_cream', label:'크림', color:'#FDFBF7', unlock:null },
-  { id:'bg_mint', label:'민트', color:'#EBF4F0', unlock:'daily_60m' },
+  { id:'bg_mint', label:'민트', color:'#EBF4F0', unlock:'streak_3' },
   { id:'bg_rose', label:'로즈', color:'#FDF0F2', unlock:'streak_7' },
 ];
 
@@ -773,6 +780,15 @@ const CupSVG = ({ catItem, drinkItem, catAccItem, cupDecoItem, cupDeco2Item }) =
 };
 const toDate = (iso) => iso ? iso.slice(0,10) : null;
 const today  = () => new Date().toISOString().slice(0,10);
+const isThisWeek = (dateStr) => {
+  if (!dateStr) return false;
+  const now = new Date(today());
+  const target = new Date(dateStr);
+  const dow = now.getDay();
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-((dow+6)%7)); weekStart.setHours(0,0,0,0);
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+7);
+  return target >= weekStart && target < weekEnd;
+};
 
 function computeStats(records) {
   const todayStr = today();
@@ -796,22 +812,40 @@ function computeStats(records) {
   const todayMinutes = dayMap[todayStr] || 0;
   const attendDays   = Object.keys(dayMap).length;
 
-  // 연속 공부
+  const isStudyDay = (dateKey) => (dayMap[dateKey] || 0) >= 25;
+
+  // 연속 공부: 일일 퀘스트 기준과 맞추기 위해 하루 25분 이상인 날만 센다.
   let streak = 0;
   const d = new Date(todayStr);
   while (true) {
     const k = d.toISOString().slice(0,10);
-    if (!dayMap[k]) break;
+    if (!isStudyDay(k)) break;
     streak++;
     d.setDate(d.getDate()-1);
+  }
+
+  // 이번 주 안에서 가장 긴 연속 공부일
+  const now = new Date(todayStr);
+  const dow = now.getDay(); // 0=일
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-((dow+6)%7));
+  let weeklyStreak = 0;
+  let currentWeeklyStreak = 0;
+  for (let i=0;i<7;i++) {
+    const dd = new Date(weekStart); dd.setDate(weekStart.getDate()+i);
+    if (dd > now) break;
+    const k = dd.toISOString().slice(0,10);
+    if (isStudyDay(k)) {
+      currentWeeklyStreak++;
+      weeklyStreak = Math.max(weeklyStreak, currentWeeklyStreak);
+    } else {
+      currentWeeklyStreak = 0;
+    }
   }
 
   // 2시간 이상인 날 카운트
   const days120Count = Object.values(dayMap).filter(m=>m>=120).length;
 
   // 출석 관련
-  const now = new Date(todayStr);
-  const dow = now.getDay(); // 0=일
 
   // 이번 주 월~금
   let weekdayFull = true;
@@ -822,7 +856,6 @@ function computeStats(records) {
   }
   // 이번 주 월~일
   let weekFull = true;
-  const weekStart = new Date(now); weekStart.setDate(now.getDate()-((dow+6)%7));
   for (let i=0;i<7;i++) {
     const dd = new Date(weekStart); dd.setDate(weekStart.getDate()+i);
     if (dd > now) break;
@@ -837,7 +870,7 @@ function computeStats(records) {
   }
 
   return { todayMinutes, totalMinutes, pomoCount, coffeeCount,
-    coffeeTypes: coffeeSet.size, streak, attendDays, days120Count,
+    coffeeTypes: coffeeSet.size, streak, weeklyStreak, attendDays, days120Count,
     weekdayFull, weekFull, monthFull };
 }
 
@@ -1047,12 +1080,17 @@ function App() {
   // ── 스탯 & 퀘스트 달성 판정 ──
   const stats = useMemo(() => computeStats(records), [records]);
 
-  // 조건을 만족했지만 아직 사용자가 직접 완료하지 않은 퀘스트입니다.
-  // 자동 완료/자동 토스트는 하지 않고, 퀘스트 드로어에서 '완료' 버튼을 눌렀을 때만 기록합니다.
+  const isQuestDone = useCallback((questId) => {
+    const quest = QUESTS.find(q => q.id === questId);
+    if (DAILY_QUEST_IDS.has(questId)) return !!quest?.check(stats);
+    if (WEEKLY_QUEST_IDS.has(questId)) return isThisWeek(questDone[questId]);
+    return !!questDone[questId];
+  }, [questDone, stats]);
+
   const claimableQuests = useMemo(() => {
     if (!records.length) return [];
-    return QUESTS.filter(q => !questDone[q.id] && q.check(stats));
-  }, [stats, questDone]);
+    return QUESTS.filter(q => !isQuestDone(q.id) && q.check(stats));
+  }, [stats, isQuestDone]);
 
   // ── 설정 저장 ──
   const handleSaveSetup = async () => {
@@ -1078,7 +1116,9 @@ function App() {
   }, [dark]);
 
   // 잠금 해제 여부
-  const isUnlocked = (item) => !item.unlock || !!questDone[item.unlock];
+  const isUnlocked = (item) => (
+    !item.unlock || (DAILY_QUEST_IDS.has(item.unlock) ? isQuestDone(item.unlock) : !!questDone[item.unlock])
+  );
   const getDecoItems = (key) => DECO_ITEMS[key];
 
   const getQuestRewards = (questId) => Object.entries(DECO_ITEMS).reduce((rewards, [tab, items]) => {
@@ -1157,10 +1197,12 @@ function App() {
   useEffect(() => { if (config && !showSetup) fetchQuestPageIds(); }, [config, showSetup]);
 
   const markQuestDone = useCallback(async (questId, questName) => {
+    if (DAILY_QUEST_IDS.has(questId)) return;
     if (!config?.questDbId) {
       showToast('퀘스트 DB가 연결되어 있지 않아요.');
       return;
     }
+    const todayStr = today();
     if (questDone[questId]) return;
 
     let pageId = questPageIds.current[questId];
@@ -1173,7 +1215,6 @@ function App() {
       return;
     }
 
-    const todayStr = today();
     try {
       const res = await fetch(`${config.proxyUrl}/v1/pages/${pageId}`, {
         method:'PATCH',
@@ -1196,7 +1237,7 @@ function App() {
   // ── 퀘스트 필터 ──
   const questCats = ['전체', ...Object.keys(QUEST_CAT_COLOR)];
   const filteredQuests = questCat === '전체' ? QUESTS : QUESTS.filter(q=>q.cat===questCat);
-  const doneCount = QUESTS.filter(q=>questDone[q.id]).length;
+  const doneCount = QUESTS.filter(q=>isQuestDone(q.id)).length;
   const drawerUi = {
     title: dark ? '#F3F4F6' : '#5C3A21',
     accent: dark ? '#D4A373' : '#A67B5B',
@@ -1558,9 +1599,11 @@ function App() {
 
         <div style={{overflowY:'auto',flex:1,padding:'0 1rem 1.5rem'}}>
           {filteredQuests.map(q => {
-            const done = !!questDone[q.id];
+            const done = isQuestDone(q.id);
             const claimable = !done && q.check(stats);
             const rewards = getQuestRewards(q.id);
+            const progressValue = q.progress ? q.progress(stats) : null;
+            const progressTarget = q.target || 0;
             return (
               <div key={q.id} className="quest-row" style={{opacity: done ? 1 : .85}}>
                 <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B'} : {}}>
@@ -1570,6 +1613,14 @@ function App() {
                   <div style={{fontSize:'.72rem',fontWeight:700,color: done ? drawerUi.accent : drawerUi.text,textDecoration: done?'line-through':'none',lineHeight:1.3}}>
                     {q.name}
                   </div>
+                  {progressTarget > 0 && (
+                    <div style={{display:'flex',alignItems:'center',gap:'.18rem',marginTop:'.22rem'}}>
+                      {Array.from({length:progressTarget},(_,i)=>(
+                        <span key={i} style={{width:'.5rem',height:'.5rem',borderRadius:'9999px',background:i < progressValue ? drawerUi.accent : drawerUi.progressBg,border:`1px solid ${i < progressValue ? drawerUi.accent : drawerUi.panelBorder}`,display:'inline-block'}}/>
+                      ))}
+                      <span style={{fontSize:'.58rem',color:drawerUi.muted,marginLeft:'.18rem'}}>{progressValue} / {progressTarget}</span>
+                    </div>
+                  )}
                   {rewards.length > 0 && (
                     <div style={{display:'flex',alignItems:'center',gap:'.35rem',marginTop:'.22rem',minWidth:0}}>
                       <span style={{fontSize:'.58rem',color:drawerUi.muted,flexShrink:0}}>보상</span>
