@@ -197,16 +197,21 @@ const QUEST_CAT_BG = {
 QUESTS.splice(0, QUESTS.length,
   { id:'daily_25m',    name:'오늘 25분 집중', cat:'반복', repeat:'daily', check:(d)=>d.todayMinutes>=25 },
   { id:'weekly_streak_5', name:'이번 주 연속 공부 5일', cat:'반복', repeat:'weekly', target:5, progress:(d)=>Math.min(d.weeklyStreak, 5), check:(d)=>d.weeklyStreak>=5 },
-  { id:'coffee_first', name:'첫 커피', cat:'커피', check:(d)=>d.coffeeCount>=1 },
   { id:'streak_2',     name:'2일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=2 },
   { id:'streak_3',     name:'3일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=3 },
   { id:'streak_4',     name:'4일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=4 },
   { id:'streak_5',     name:'5일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=5 },
   { id:'streak_6',     name:'6일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=6 },
   { id:'streak_7',     name:'7일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=7 },
+  { id:'total_25m',    name:'누적 25분 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=25 },
+  { id:'total_1h',     name:'누적 1시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=60 },
+  { id:'total_2h',     name:'누적 2시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=120 },
   { id:'total_3h',     name:'누적 3시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=180 },
-  { id:'total_5h',     name:'누적 5시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=300 },
-  { id:'total_10h',    name:'누적 10시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=600 },
+  { id:'drink_tea_milk', name:'타이머에서 밀크티 사용 기록', cat:'커피', check:(d)=>d.drinkIds.has('drink_tea_milk') },
+  { id:'drink_soda_strawberry', name:'타이머에서 딸기라떼 사용 기록', cat:'커피', check:(d)=>d.drinkIds.has('drink_soda_strawberry') },
+  { id:'drink_latte_greentea', name:'타이머에서 말차라떼 사용 기록', cat:'커피', check:(d)=>d.drinkIds.has('drink_latte_greentea') },
+  { id:'drink_frappe_frappuccino', name:'타이머에서 카페라떼 사용 기록', cat:'커피', check:(d)=>d.drinkIds.has('drink_frappe_frappuccino') },
+  { id:'drink_chocolate_hot', name:'타이머에서 초코라떼 사용 기록', cat:'커피', check:(d)=>d.drinkIds.has('drink_chocolate_hot') },
 );
 const DAILY_QUEST_IDS = new Set(['daily_25m']);
 const WEEKLY_QUEST_IDS = new Set(['weekly_streak_5']);
@@ -334,47 +339,33 @@ const DECO_TAB_LABELS = { cat:'냥이', drink:'음료', catAcc:'냥 악세서리
 // 체험판 꾸미기·썸네일 목록: 실제 제공되는 에셋과 10일 퀘스트 보상만 노출한다.
 DECO_ITEMS.cat = [
   { id:'cat_white', label:'흰 냥이', emoji:'🐱', unlock:null },
-  { id:'cat_orange', label:'치즈 냥이', emoji:'🐈', unlock:'streak_3' },
-  { id:'cat_calico', label:'삼색 냥이', emoji:'🐾', unlock:'streak_7' },
+  { id:'cat_orange', label:'치즈 냥이', emoji:'🐈', unlock:'total_3h' },
+  { id:'cat_calico', label:'삼색 냥이', emoji:'🐾', unlock:'streak_6' },
 ];
 DECO_ITEMS.drink = [
   { id:'drink_lemon', label:'아메리카노', emoji:'☕', unlock:null },
-  { id:'drink_ice_americano', label:'아이스 아메리카노', emoji:'🧊', unlock:'weekly_streak_5' },
-  { id:'drink_bingsu_redbean', label:'팥빙수', emoji:'🍧', unlock:'total_10h' },
+  { id:'drink_americano_ice', label:'아이스 아메리카노', emoji:'🧊', unlock:'total_25m' },
+  { id:'drink_bingsu_redbean', label:'팥빙수', emoji:'🍧', unlock:'total_2h' },
+  { id:'drink_soda_watermelon_punch', label:'수박화채', emoji:'🍉', unlock:'streak_7' },
 ];
 DECO_ITEMS.catAcc = [
   { id:'acc_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'acc_hat_cap', label:'캡 모자', emoji:'🧢', unlock:'total_3h' },
-  { id:'acc_sunglasses_yellow', label:'노란 선글라스', emoji:'🕶️', unlock:'total_5h' },
-  { id:'acc_hat_party', label:'파티 모자', emoji:'🎉', unlock:'total_10h' },
+  { id:'acc_mochi_strawberry', label:'딸기 찹쌀떡', emoji:'🍓', unlock:'total_1h' },
+  { id:'acc_toy_duck', label:'장난감 오리', emoji:'🐤', unlock:'weekly_streak_5' },
+  { id:'acc_icecream_cherry', label:'체리 아이스크림', emoji:'🍨', unlock:'streak_2' },
 ];
-DECO_ITEMS.catAcc.splice(0, DECO_ITEMS.catAcc.length,
-  { id:'acc_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'acc_cookie_dubai_chewy', label:'두바이 쫀득 쿠키', emoji:'🍪', unlock:'total_3h' },
-  { id:'acc_icecream_cherry', label:'체리 아이스크림', emoji:'🍨', unlock:'total_5h' },
-  { id:'acc_mochi_strawberry', label:'딸기 찹쌀떡', emoji:'🍓', unlock:'total_10h' },
-);
 DECO_ITEMS.cupDeco = [
   { id:'deco_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'deco_left_straw_red', label:'빨간 빨대', emoji:'🥤', unlock:'weekly_streak_5' },
-  { id:'deco_left_teaspoon', label:'티스푼', emoji:'🥄', unlock:'total_3h' },
-  { id:'deco_left_icecream_scoop_chocolate', label:'초코 아이스크림', emoji:'🍫', unlock:'total_5h' },
+  { id:'deco_left_straw_red', label:'빨간 빨대', emoji:'🥤', unlock:'streak_3' },
+  { id:'deco_left_teaspoon', label:'티스푼', emoji:'🥄', unlock:'streak_5' },
+  { id:'deco_left_beach_umbrella_red', label:'빨간 파라솔', emoji:'🏖️', unlock:'streak_7' },
 ];
 DECO_ITEMS.cupDeco2 = [
   { id:'deco_none', label:'없음', emoji:'✕', unlock:null },
-  { id:'deco_right_cookie_cat_paw_print', label:'발자국 쿠키', emoji:'🍪', unlock:'weekly_streak_5' },
-  { id:'deco_right_whipped_cream', label:'휘핑크림', emoji:'🍦', unlock:'total_5h' },
-  { id:'deco_right_croffle', label:'크로플', emoji:'🧇', unlock:'total_10h' },
+  { id:'deco_right_tteok_injeolmi', label:'인절미 떡', emoji:'🍡', unlock:'streak_4' },
 ];
-DECO_ITEMS.cupDeco2 = DECO_ITEMS.cupDeco2.map(item =>
-  item.id === 'deco_right_whipped_cream'
-    ? { id:'deco_right_tteok_injeolmi', label:'인절미 떡', emoji:'🍡', unlock:'total_5h' }
-    : item
-);
 DECO_ITEMS.bg = [
   { id:'bg_cream', label:'크림', color:'#FDFBF7', unlock:null },
-  { id:'bg_mint', label:'민트', color:'#EBF4F0', unlock:'streak_3' },
-  { id:'bg_rose', label:'로즈', color:'#FDF0F2', unlock:'streak_7' },
 ];
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -471,6 +462,7 @@ const COFFEECAT_IMAGES = {
   drink: {
     drink_lemon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_americano.webp`,
     drink_ice_americano: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_americano_ice.webp`,
+    drink_americano_ice: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_americano_ice.webp`,
     drink_matcha: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_greentea.webp`,
     drink_strawberry_aid: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_strawberry.webp`,
     drink_white_chocolate_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_white_chocolate.webp`,
@@ -495,6 +487,11 @@ const COFFEECAT_IMAGES = {
     drink_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/frappe_frappuccino.webp`,
     drink_coffee_vienna: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/coffee_vienna.webp`,
     drink_juice_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/juice_orange.webp`,
+    drink_tea_milk: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/tea_milk.webp`,
+    drink_soda_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/soda_strawberry.webp`,
+    drink_latte_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/latte_greentea.webp`,
+    drink_frappe_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/frappe_frappuccino.webp`,
+    drink_chocolate_hot: `${COFFEECAT_ASSET_BASE}/images/coffeecat/1_drink/chocolate_hot.webp`,
   },
   cupUpByDrink: {
     drink_melon_soda: `${COFFEECAT_ASSET_BASE}/images/coffeecat/3_cup_up/up_melon_soda.webp`,
@@ -582,6 +579,7 @@ const COFFEECAT_THUMBS = {
   drink: {
     drink_lemon: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_americano.webp`,
     drink_ice_americano: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_americano_ice.webp`,
+    drink_americano_ice: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_americano_ice.webp`,
     drink_matcha: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_greentea.webp`,
     drink_strawberry_aid: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_strawberry.webp`,
     drink_white_chocolate_latte: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_white_chocolate.webp`,
@@ -606,6 +604,11 @@ const COFFEECAT_THUMBS = {
     drink_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/frappe_frappuccino.webp`,
     drink_coffee_vienna: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/coffee_vienna.webp`,
     drink_juice_orange: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/juice_orange.webp`,
+    drink_tea_milk: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/tea_milk.webp`,
+    drink_soda_strawberry: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/soda_strawberry.webp`,
+    drink_latte_greentea: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/latte_greentea.webp`,
+    drink_frappe_frappuccino: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/frappe_frappuccino.webp`,
+    drink_chocolate_hot: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/drink/chocolate_hot.webp`,
   },
   decoLeft: {
     deco_left_gingercat: `${COFFEECAT_ASSET_BASE}/images/coffeecat/thumbs/deco_left/gingercat.webp`,
@@ -780,6 +783,27 @@ const CupSVG = ({ catItem, drinkItem, catAccItem, cupDecoItem, cupDeco2Item }) =
 };
 const toDate = (iso) => iso ? iso.slice(0,10) : null;
 const today  = () => new Date().toISOString().slice(0,10);
+const DRINK_ID_ALIASES = {
+  '밀크티':'drink_tea_milk',
+  '딸기라떼':'drink_soda_strawberry',
+  '말차라떼':'drink_latte_greentea',
+  '카페라떼':'drink_frappe_frappuccino',
+  '초코라떼':'drink_chocolate_hot',
+  '타로 밀크티':'drink_tea_milk',
+  '녹차라떼':'drink_latte_greentea',
+  '프라푸치노':'drink_frappe_frappuccino',
+  '핫초코':'drink_chocolate_hot',
+  drink_tea_milk_taro:'drink_tea_milk',
+  drink_matcha:'drink_latte_greentea',
+  drink_strawberry_aid:'drink_soda_strawberry',
+  drink_frappuccino:'drink_frappe_frappuccino',
+  drink_hot_chocolate:'drink_chocolate_hot',
+};
+const normalizeDrinkId = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return DRINK_ID_ALIASES[raw] || raw;
+};
 const isThisWeek = (dateStr) => {
   if (!dateStr) return false;
   const now = new Date(today());
@@ -798,6 +822,7 @@ function computeStats(records) {
   let pomoCount = 0;
   let coffeeCount = 0;
   const coffeeSet = new Set();
+  const drinkIds = new Set();
 
   for (const r of records) {
     const d = toDate(r.date);
@@ -806,7 +831,12 @@ function computeStats(records) {
     dayMap[d] = (dayMap[d] || 0) + m;
     totalMinutes += m;
     if (r.mode === '뽀모도로') pomoCount++;
-    if (r.coffee) { coffeeCount++; coffeeSet.add(r.coffee); }
+    if (r.coffee) {
+      coffeeCount++;
+      coffeeSet.add(r.coffee);
+      const drinkId = normalizeDrinkId(r.coffee);
+      if (drinkId) drinkIds.add(drinkId);
+    }
   }
 
   const todayMinutes = dayMap[todayStr] || 0;
@@ -870,7 +900,7 @@ function computeStats(records) {
   }
 
   return { todayMinutes, totalMinutes, pomoCount, coffeeCount,
-    coffeeTypes: coffeeSet.size, streak, weeklyStreak, attendDays, days120Count,
+    coffeeTypes: coffeeSet.size, drinkIds, streak, weeklyStreak, attendDays, days120Count,
     weekdayFull, weekFull, monthFull };
 }
 
