@@ -1630,8 +1630,26 @@ function App() {
             const rewards = getQuestRewards(q.id);
             const progressValue = q.progress ? q.progress(stats) : null;
             const progressTarget = q.target || 0;
+            const completeQuest = () => {
+              if (claimable) markQuestDone(q.id, q.name);
+            };
             return (
-              <div key={q.id} className="quest-row" style={{opacity: done ? 1 : .85}}>
+              <div
+                key={q.id}
+                className="quest-row"
+                onClick={completeQuest}
+                onKeyDown={(e) => {
+                  if (!claimable) return;
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    completeQuest();
+                  }
+                }}
+                role={claimable ? 'button' : undefined}
+                tabIndex={claimable ? 0 : undefined}
+                title={claimable ? '눌러서 퀘스트 완료' : undefined}
+                style={{opacity: done ? 1 : .85, cursor: claimable ? 'pointer' : 'default'}}
+              >
                 <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B'} : {}}>
                   {done ? '✓' : (claimable ? '!' : '')}
                 </div>
@@ -1669,12 +1687,15 @@ function App() {
                     <div style={{fontSize:'.6rem',color:drawerUi.muted,marginTop:'.1rem'}}>{questDone[q.id]} 완료 🎉</div>
                   )}
                   {claimable && (
-                    <div style={{fontSize:'.6rem',color:drawerUi.accent,marginTop:'.1rem',fontWeight:700}}>조건 달성 — 완료 버튼을 눌러 기록하세요</div>
+                    <div style={{fontSize:'.6rem',color:drawerUi.accent,marginTop:'.1rem',fontWeight:700}}>퀘스트 완료 · 눌러서 보상 받기</div>
                   )}
                 </div>
                 {claimable ? (
                   <button
-                    onClick={() => markQuestDone(q.id, q.name)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      completeQuest();
+                    }}
                     style={{
                       flexShrink:0, border:'none', borderRadius:'9999px', padding:'.25rem .55rem',
                       background:'#A67B5B', color:'#fff', fontSize:'.6rem', fontWeight:800,
