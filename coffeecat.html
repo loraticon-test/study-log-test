@@ -186,16 +186,15 @@ const QUESTS = [
 
 const QUEST_CAT_COLOR = {
   '연속공부':'#E8A87C', '집중시간':'#81B29A', '누적시간':'#7BA7C4',
-  '출석':'#C08CB8', '뽀모도로':'#E07A5F', '커피':'#A67B5B'
+  '커피':'#A67B5B'
 };
 const QUEST_CAT_BG = {
   '연속공부':'#FDF1E8', '집중시간':'#EBF4F0', '누적시간':'#EAF1F7',
-  '출석':'#F5ECF6', '뽀모도로':'#FDECEA', '커피':'#F4F0EA'
+  '커피':'#F4F0EA'
 };
 
-// 체험판은 10일 안에 완주할 수 있는 8개의 핵심 퀘스트만 보여 준다.
+// 체험판은 10일 안에 완주할 수 있는 7개의 핵심 퀘스트만 보여 준다.
 QUESTS.splice(0, QUESTS.length,
-  { id:'coffee_first', name:'첫 집중 시작', cat:'시작', check:(d)=>d.coffeeCount>=1 },
   { id:'daily_25m',    name:'하루 25분 집중', cat:'집중시간', check:(d)=>d.todayMinutes>=25 },
   { id:'streak_3',     name:'3일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=3 },
   { id:'total_3h',     name:'누적 3시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=180 },
@@ -204,8 +203,6 @@ QUESTS.splice(0, QUESTS.length,
   { id:'streak_7',     name:'7일 연속 공부', cat:'연속공부', check:(d)=>d.streak>=7 },
   { id:'total_10h',    name:'누적 10시간 달성', cat:'누적시간', check:(d)=>d.totalMinutes>=600 },
 );
-QUEST_CAT_COLOR['시작'] = '#A67B5B';
-QUEST_CAT_BG['시작'] = '#F4F0EA';
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 꾸미기 아이템 정의 (잠금 해제 조건 = 퀘스트 ID)
@@ -1491,7 +1488,7 @@ function App() {
               const handleItemClick = () => {
                 if (!unlocked) {
                   setPreviewDeco(current => ({...(current || deco), [decoTab]:item.id}));
-                  showToast(`${item.label} ${QUESTS.find(q=>q.id===item.unlock)?.name} 달성 후 얻을 수 있어요`);
+                  showToast(`${QUESTS.find(q=>q.id===item.unlock)?.name} 달성 후 얻을 수 있어요`);
                   return;
                 }
                 setPreviewDeco(null);
