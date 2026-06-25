@@ -1647,11 +1647,17 @@ function App() {
                 }}
                 role={claimable ? 'button' : undefined}
                 tabIndex={claimable ? 0 : undefined}
-                title={claimable ? '눌러서 퀘스트 완료' : undefined}
-                style={{opacity: done ? 1 : .85, cursor: claimable ? 'pointer' : 'default'}}
+                title={claimable ? '눌러서 아이템 받기' : undefined}
+                style={{
+                  opacity: done ? 1 : .85,
+                  cursor: claimable ? 'pointer' : 'default',
+                  background: claimable ? (dark ? '#33291E' : '#FFF8ED') : undefined,
+                  borderColor: claimable ? (dark ? '#A67B5B' : '#E6C49A') : undefined,
+                  boxShadow: claimable ? (dark ? '0 0 0 1px rgba(212,163,115,.18)' : '0 0 0 1px rgba(230,196,154,.45)') : undefined
+                }}
               >
-                <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B'} : {}}>
-                  {done ? '✓' : (claimable ? '!' : '')}
+                <div className={`quest-check${done?' done':''}`} style={claimable ? {borderColor:'#A67B5B', color:'#A67B5B', background:dark ? 'rgba(212,163,115,.12)' : '#FFF2DC'} : {}}>
+                  {done ? '✓' : (claimable ? '★' : '')}
                 </div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:'.72rem',fontWeight:700,color: done ? drawerUi.accent : drawerUi.text,textDecoration: done?'line-through':'none',lineHeight:1.3}}>
@@ -1687,7 +1693,7 @@ function App() {
                     <div style={{fontSize:'.6rem',color:drawerUi.muted,marginTop:'.1rem'}}>{questDone[q.id]} 완료 🎉</div>
                   )}
                   {claimable && (
-                    <div style={{fontSize:'.6rem',color:drawerUi.accent,marginTop:'.1rem',fontWeight:700}}>퀘스트 완료 · 눌러서 보상 받기</div>
+                    <div style={{fontSize:'.6rem',color:drawerUi.accent,marginTop:'.1rem',fontWeight:800}}>퀘스트 완료 · 아이템 받기</div>
                   )}
                 </div>
                 {claimable ? (
@@ -1702,7 +1708,7 @@ function App() {
                       fontFamily:'inherit', cursor:'pointer'
                     }}
                   >
-                    완료
+                    받기
                   </button>
                 ) : (
                   <span className="cat-badge" style={{background: QUEST_CAT_BG[q.cat], color: QUEST_CAT_COLOR[q.cat]}}>
