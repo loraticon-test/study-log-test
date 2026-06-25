@@ -1262,7 +1262,18 @@ function App() {
 
   // ── 퀘스트 필터 ──
   const questCats = ['전체', ...Object.keys(QUEST_CAT_COLOR)];
-  const filteredQuests = questCat === '전체' ? QUESTS : QUESTS.filter(q=>q.cat===questCat);
+  const filteredQuests = (questCat === '전체' ? QUESTS : QUESTS.filter(q=>q.cat===questCat))
+    .map((quest, index) => ({ quest, index }))
+    .sort((a, b) => {
+      const aDone = isQuestDone(a.quest.id);
+      const bDone = isQuestDone(b.quest.id);
+      const aClaimable = !aDone && a.quest.check(stats);
+      const bClaimable = !bDone && b.quest.check(stats);
+      const aRank = aClaimable ? 0 : (aDone ? 2 : 1);
+      const bRank = bClaimable ? 0 : (bDone ? 2 : 1);
+      return aRank - bRank || a.index - b.index;
+    })
+    .map(entry => entry.quest);
   const doneCount = QUESTS.filter(q=>isQuestDone(q.id)).length;
   const drawerUi = {
     title: dark ? '#F3F4F6' : '#5C3A21',
