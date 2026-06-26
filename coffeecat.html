@@ -1161,6 +1161,9 @@ function App() {
     });
     return rewards;
   }, []);
+  const getQuestRewardText = (rewards) => (
+    rewards.length ? rewards.map(reward => reward.label).filter(Boolean).join(', ') : '보상'
+  );
 
   useEffect(() => {
     if (drawer !== 'deco') setPreviewDeco(null);
@@ -1222,7 +1225,7 @@ function App() {
 
   useEffect(() => { if (config && !showSetup) fetchQuestPageIds(); }, [config, showSetup]);
 
-  const markQuestDone = useCallback(async (questId, questName) => {
+  const markQuestDone = useCallback(async (questId, rewardText) => {
     if (DAILY_QUEST_IDS.has(questId)) return;
     if (!config?.questDbId) {
       showToast('퀘스트 DB가 연결되어 있지 않아요.');
@@ -1253,7 +1256,7 @@ function App() {
       }
       setQuestDone(prev => ({ ...prev, [questId]: todayStr }));
       triggerCoffeePop();
-      showToast(`🎉 퀘스트 완료! ${questName || ''}`);
+      showToast(`🎉퀘스트 완료 (${rewardText || '보상'})을 얻었어요.`);
     } catch(e) {
       console.warn('퀘스트 기록 실패', e);
       showToast('퀘스트 완료 기록에 실패했어요.');
@@ -1642,7 +1645,7 @@ function App() {
             const progressValue = q.progress ? q.progress(stats) : null;
             const progressTarget = q.target || 0;
             const completeQuest = () => {
-              if (claimable) markQuestDone(q.id, q.name);
+              if (claimable) markQuestDone(q.id, getQuestRewardText(rewards));
             };
             return (
               <div
