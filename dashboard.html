@@ -752,6 +752,15 @@ const App = () => {
                 return res.json();
             };
 
+            const getDatabaseSchema = async (databaseId) => {
+                const res = await fetch(`${currentConfig.proxyUrl}/v1/databases/${databaseId}`, {
+                    method: 'GET',
+                    headers: { 'x-api-key': currentConfig.apiKey, 'x-notion-version': '2022-06-28' }
+                });
+                if (!res.ok) return null;
+                return res.json();
+            };
+
             const getFinalRollupNumber = async (pageId, property) => {
                 if (!pageId || !property?.id) return null;
                 let cursor = null;
@@ -844,6 +853,28 @@ const App = () => {
             setRecords(parsedRecords);
 
             if (currentConfig.todoDbId) {                
+                let tKey = '이름', cKey = '완료', dKey = '날짜', sKey = '과목', timeKey = '시간';
+                try {
+                    const todoDbSchema = await getDatabaseSchema(currentConfig.todoDbId);
+                    const schemaProps = todoDbSchema?.properties || {};
+                    tKey = Object.keys(schemaProps).find(k => schemaProps[k].type === 'title') || tKey;
+                    cKey = Object.keys(schemaProps).find(k => schemaProps[k].type === 'checkbox') || cKey;
+                    dKey = Object.keys(schemaProps).find(k => schemaProps[k].type === 'date') || dKey;
+                    timeKey = Object.keys(schemaProps).find(k => k === '시간' && schemaProps[k].type === 'number')
+                        || Object.keys(schemaProps).find(k => k.includes('시간') && schemaProps[k].type === 'number')
+                        || timeKey;
+
+                    if (schemaProps['과목'] && schemaProps['과목'].type === 'relation') {
+                        sKey = '과목';
+                    } else {
+                        sKey = Object.keys(schemaProps).find(k => k.includes('과목') && schemaProps[k].type === 'relation')
+                            || Object.keys(schemaProps).find(k => schemaProps[k].type === 'relation')
+                            || sKey;
+                    }
+                } catch (e) {
+                    console.warn('투두 DB 속성 확인 실패:', e);
+                }
+
                 const todoRes = await fetch(`${currentConfig.proxyUrl}/v1/databases/${currentConfig.todoDbId}/query`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': currentConfig.apiKey, 'x-notion-version': '2022-06-28' },
                     body: JSON.stringify({ sorts: [{ property: '날짜', direction: 'descending' }], page_size: 100 })
@@ -851,7 +882,6 @@ const App = () => {
                 if (todoRes.ok) {
                     const todoData = await todoRes.json();
                     
-                    let tKey = '이름', cKey = '완료', dKey = '날짜', sKey = '과목', timeKey = null;
                     if (todoData.results.length > 0) {
                         const props = todoData.results[0].properties;
                         tKey = Object.keys(props).find(k => props[k].type === 'title') || tKey;
@@ -859,18 +889,17 @@ const App = () => {
                         dKey = Object.keys(props).find(k => props[k].type === 'date') || dKey;
                         timeKey = Object.keys(props).find(k => k === '시간' && props[k].type === 'number')
                             || Object.keys(props).find(k => k.includes('시간') && props[k].type === 'number')
-                            || null;
+                            || timeKey;
                         
                         if (props['과목'] && props['과목'].type === 'relation') {
                             sKey = '과목';
                         } else {
                             sKey = Object.keys(props).find(k => k.includes('과목') && props[k].type === 'relation') 
                                 || Object.keys(props).find(k => props[k].type === 'relation') 
-                                || '과목'; 
+                                || sKey; 
                         }
-                        
-                        setTodoProps({ title: tKey, done: cKey, date: dKey, subject: sKey, time: timeKey });
                     }
+                    setTodoProps({ title: tKey, done: cKey, date: dKey, subject: sKey, time: timeKey });
 
                     const parsedTodos = todoData.results.map(page => {
                         const title = page.properties[tKey]?.title?.[0]?.plain_text || '내용 없음';
@@ -890,7 +919,7 @@ const App = () => {
                         let timeStr = null;
                         let timeSortValue = 9999; 
 
-                        const timeField = page.properties['시간'];
+                        const timeField = page.properties[timeKey] || page.properties['시간'];
                         let timeRaw = null;
                         if (timeField) {
                             if (timeField.type === 'number') timeRaw = timeField.number;
@@ -1372,7 +1401,7 @@ const App = () => {
         try {
             const properties = { [todoProps.title]: { title: [{ text: { content: title } }] }, [todoProps.date]: { date: { start: dateStart } } };
             if (todoProps.subject && subjectId) properties[todoProps.subject] = { relation: [{ id: subjectId }] };
-            if (time && todoProps.time) properties[todoProps.time] = { number: timeNumber };
+            if (time) properties[todoProps.time || '시간'] = { number: timeNumber };
 
             const dashboardRelationProp = config.dashboardRelationProp || '대시보드 통계용';
             const dashboardPageId = await getDashboardPageId(config);
