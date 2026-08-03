@@ -1,0 +1,2363 @@
+{
+  "groupId": "weekly_streak_5",
+  "name": "이번 주 연속 공부 5일",
+  "repeat": "weekly",
+  "periodKeyType": "isoWeek",
+  "condition": {
+    "type": "streak",
+    "target": 5,
+    "unit": "day"
+  },
+  "rounds": [
+    {
+      "enabled": true,
+      "round": 1,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_001",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_001__{periodKey}",
+      "status": "작성완료",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_beard_brown",
+          "rawId": "beard_brown",
+          "label": "갈색 수염",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 2,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_002",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_002__{periodKey}",
+      "status": "작성완료",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_coke",
+          "rawId": "soda_coke",
+          "label": "콜라",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_pizza",
+          "rawId": "pizza",
+          "label": "조각 피자",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 3,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_003",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_003__{periodKey}",
+      "status": "작성완료",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_juice_tomato",
+          "rawId": "juice_tomato",
+          "label": "토마토 주스",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 4,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_004",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_004__{periodKey}",
+      "status": "작성완료",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_tomato",
+          "rawId": "tomato",
+          "label": "토마토",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_slice_tomato",
+          "rawId": "slice_tomato",
+          "label": "토마토 슬라이스",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 5,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_005",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_005__{periodKey}",
+      "status": "작성완료",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_strawberry",
+          "rawId": "soda_strawberry",
+          "label": "딸기 에이드",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 6,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_006",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_006__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_icecream_scoop_strawberry",
+          "rawId": "icecream_scoop_strawberry",
+          "label": "딸기 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_icecream_scoop_greentea",
+          "rawId": "icecream_scoop_greentea",
+          "label": "녹차 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_icecream_scoop_chocolate",
+          "rawId": "icecream_scoop_chocolate",
+          "label": "초콜렛 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 7,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_007",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_007__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cookie_cat_paw_print",
+          "rawId": "cookie_cat_paw_print",
+          "label": "발자국 쿠키",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 8,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_008",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_008__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_tea_black",
+          "rawId": "tea_black",
+          "label": "홍차",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 9,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_009",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_009__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_honeycomb",
+          "rawId": "honeycomb",
+          "label": "벌꿀집",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 10,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_010",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_010__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_orange",
+          "rawId": "orange",
+          "label": "오렌지",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 11,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_011",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_011__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_juice_orange",
+          "rawId": "juice_orange",
+          "label": "오렌지 주스",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_toy_duck",
+          "rawId": "toy_duck",
+          "label": "오리 장난감",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": true,
+      "round": 12,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_012",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_012__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_beach_umbrella_orange",
+          "rawId": "beach_umbrella_orange",
+          "label": "오렌지 파라솔",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_slice_orange",
+          "rawId": "slice_orange",
+          "label": "오렌지 슬라이스",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 13,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_013",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_013__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_tea_oolong",
+          "rawId": "tea_oolong",
+          "label": "우롱차",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 14,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_014",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_014__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_flower_jasmine",
+          "rawId": "flower_jasmine",
+          "label": "자스민 꽃",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 15,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_015",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_015__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_clear",
+          "rawId": "soda_clear",
+          "label": "사이다",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 16,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_016",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_016__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_hat_cap_green",
+          "rawId": "hat_cap_green",
+          "label": "초록 캡모자",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_hat_cap_red",
+          "rawId": "hat_cap_red",
+          "label": "빨간 캡모자",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 17,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_017",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_017__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_straw_soda",
+          "rawId": "straw_soda",
+          "label": "사이다 빨대",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_straw_coke",
+          "rawId": "straw_coke",
+          "label": "콜라 빨대",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 18,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_018",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_018__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_lemon",
+          "rawId": "soda_lemon",
+          "label": "레몬 에이드",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_strawberry",
+          "rawId": "soda_strawberry",
+          "label": "딸기 에이드",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 19,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_019",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_019__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_sunglasses_yellow",
+          "rawId": "sunglasses_yellow",
+          "label": "노란 선글라스",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 20,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_020",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_020__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_beach_umbrella_blue",
+          "rawId": "beach_umbrella_blue",
+          "label": "파란 파라솔",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_beach_umbrella_red",
+          "rawId": "beach_umbrella_red",
+          "label": "빨간 파라솔",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 21,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_021",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_021__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_tea_milk_taro",
+          "rawId": "tea_milk_taro",
+          "label": "타로 밀크티",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 22,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_022",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_022__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_straw_tea_taromilk",
+          "rawId": "straw_tea_taromilk",
+          "label": "타로밀크티 빨대",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 23,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_023",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_023__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_purple",
+          "rawId": "macaron_purple",
+          "label": "보라 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 24,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_024",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_024__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_icecream_scoop_taro",
+          "rawId": "icecream_scoop_taro",
+          "label": "타로 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_sherbet_vanilla",
+          "rawId": "sherbet_vanilla",
+          "label": "바닐라 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_sherbet_greentea",
+          "rawId": "sherbet_greentea",
+          "label": "녹차 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 25,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_025",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_025__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_cookie_dubai_chewy",
+          "rawId": "cookie_dubai_chewy",
+          "label": "두쫀쿠",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 26,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_026",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_026__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_juice_kiwi",
+          "rawId": "juice_kiwi",
+          "label": "키위 주스",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 27,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_027",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_027__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_whipped_cream_strawberry",
+          "rawId": "whipped_cream_strawberry",
+          "label": "딸기 휘핑크림",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 28,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_028",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_028__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_pudding",
+          "rawId": "latte_pudding",
+          "label": "푸딩라떼",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_croffle",
+          "rawId": "croffle",
+          "label": "크로플",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 29,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_029",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_029__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_pudding",
+          "rawId": "pudding",
+          "label": "푸딩",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 30,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_030",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_030__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_whipped_cream",
+          "rawId": "whipped_cream",
+          "label": "휘핑크림",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 31,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_031",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_031__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_bingsu_fruits",
+          "rawId": "bingsu_fruits",
+          "label": "과일빙수",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 32,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_032",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_032__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_sherbet_chocolate",
+          "rawId": "sherbet_chocolate",
+          "label": "초콜렛 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_sherbet_grapefruit",
+          "rawId": "sherbet_grapefruit",
+          "label": "자몽 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_sherbet_strawberry",
+          "rawId": "sherbet_strawberry",
+          "label": "딸기 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_icecream_scoop_vanilla",
+          "rawId": "icecream_scoop_vanilla",
+          "label": "바닐라 아이스크림 스쿱",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 33,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_033",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_033__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_soda_melon_straw",
+          "rawId": "soda_melon_straw",
+          "label": "메론소다 (빨대)",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 34,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_034",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_034__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_melon",
+          "rawId": "melon",
+          "label": "멜론",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 35,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_035",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_035__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_juice_grape",
+          "rawId": "juice_grape",
+          "label": "포도 주스",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 36,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_036",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_036__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_grape",
+          "rawId": "grape",
+          "label": "포도 모자",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 37,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_037",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_037__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_straw_purple",
+          "rawId": "straw_purple",
+          "label": "보라 빨대",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 38,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_038",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_038__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_milk",
+          "rawId": "milk",
+          "label": "우유",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 39,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_039",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_039__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cereals_fruitring",
+          "rawId": "cereals_fruitring",
+          "label": "과일맛 링 시리얼",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 40,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_040",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_040__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_cookie",
+          "rawId": "cookie",
+          "label": "초코칩 쿠키",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 41,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_041",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_041__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_anpan",
+          "rawId": "anpan",
+          "label": "단팥빵",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 42,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_042",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_042__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_hat_sheep_head_towel",
+          "rawId": "hat_sheep_head_towel",
+          "label": "찜질방 양모자",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 43,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_043",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_043__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_milk_chocolate",
+          "rawId": "milk_chocolate",
+          "label": "초코 우유",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_milk_banana",
+          "rawId": "milk_banana",
+          "label": "바나나 우유",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 44,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_044",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_044__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cereals_chocolatering",
+          "rawId": "cereals_chocolatering",
+          "label": "초코링 시리얼",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cereals_bananaring",
+          "rawId": "cereals_bananaring",
+          "label": "바나나링 시리얼",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 45,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_045",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_045__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_milk_strawberry",
+          "rawId": "milk_strawberry",
+          "label": "딸기 우유",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_milk_melon",
+          "rawId": "milk_melon",
+          "label": "멜론 우유",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 46,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_046",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_046__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cereals_strawberryring",
+          "rawId": "cereals_strawberryring",
+          "label": "딸기링 시리얼",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_cereals_melonring",
+          "rawId": "cereals_melonring",
+          "label": "멜론링 시리얼",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 47,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_047",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_047__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "stick_chocolate",
+          "rawId": "stick_chocolate",
+          "label": "초코 스틱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_stick_strawberry",
+          "rawId": "stick_strawberry",
+          "label": "딸기 스틱",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 48,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_048",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_048__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_stick_banana",
+          "rawId": "stick_banana",
+          "label": "바나나 스틱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_stick_melon",
+          "rawId": "stick_melon",
+          "label": "멜론 스틱",
+          "note": "",
+          "emoji": "🍪"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_milk_melon",
+          "rawId": "milk_melon",
+          "label": "멜론 우유",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 49,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_049",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_049__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_milk_chocolate",
+          "rawId": "milk_chocolate",
+          "label": "초코 우유",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_milk_strawberry",
+          "rawId": "milk_strawberry",
+          "label": "딸기 우유",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_milk_banana",
+          "rawId": "milk_banana",
+          "label": "바나나 우유",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 50,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_050",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_050__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_tea_green",
+          "rawId": "tea_green",
+          "label": "녹차",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 51,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_051",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_051__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_bamboo_tea_brush",
+          "rawId": "bamboo_tea_brush",
+          "label": "차 브러쉬",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 52,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_052",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_052__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_cup_greentea",
+          "rawId": "cup_greentea",
+          "label": "녹차잔",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 53,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_053",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_053__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_dalgona",
+          "rawId": "latte_dalgona",
+          "label": "달고나라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 54,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_054",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_054__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_dalgona",
+          "rawId": "dalgona",
+          "label": "달고나",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 55,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_055",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_055__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_dalgona",
+          "rawId": "dalgona",
+          "label": "달고나",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 56,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_056",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_056__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_hat_kindergarten",
+          "rawId": "hat_kindergarten",
+          "label": "유치원생 모자",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 57,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_057",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_057__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_traditional_misutgaru",
+          "rawId": "traditional_misutgaru",
+          "label": "미숫가루",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 58,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_058",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_058__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_left",
+          "tab": "cupDeco",
+          "id": "deco_left_dasik",
+          "rawId": "dasik",
+          "label": "다식",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 59,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_059",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_059__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_honey",
+          "rawId": "honey",
+          "label": "꿀",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 60,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_060",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_060__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_black_sesame",
+          "rawId": "latte_black_sesame",
+          "label": "흑임자라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 61,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_061",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_061__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "deco_right",
+          "tab": "cupDeco2",
+          "id": "deco_right_straw_normal",
+          "rawId": "straw_normal",
+          "label": "일반 빨대",
+          "note": "",
+          "emoji": "🍪"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 62,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_062",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_062__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_black_sesame",
+          "rawId": "macaron_black_sesame",
+          "label": "흑임자 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 63,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_063",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_063__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_strawberry",
+          "rawId": "macaron_strawberry",
+          "label": "딸기 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_green",
+          "rawId": "macaron_green",
+          "label": "녹차 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_banana",
+          "rawId": "macaron_banana",
+          "label": "바나나 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 64,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_064",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_064__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_blue",
+          "rawId": "latte_blue",
+          "label": "블루라떼",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "bg",
+          "tab": "bg",
+          "id": "bg_blue",
+          "rawId": "bg_blue",
+          "label": "블루라떼",
+          "note": "",
+          "emoji": "🎨",
+          "color": "#F1F9FC"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 65,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_065",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_065__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_soda",
+          "rawId": "macaron_soda",
+          "label": "소다 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_chocolate",
+          "rawId": "macaron_chocolate",
+          "label": "초코 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 66,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_066",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_066__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_yogurt_strawberry",
+          "rawId": "latte_yogurt_strawberry",
+          "label": "딸기 요거트라떼",
+          "note": "",
+          "emoji": "☕"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_macaron_melon",
+          "rawId": "macaron_melon",
+          "label": "멜론 마카롱",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 67,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_067",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_067__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_croissant",
+          "rawId": "croissant",
+          "label": "크루아상",
+          "note": "",
+          "emoji": "🎀"
+        },
+        {
+          "type": "catAcc",
+          "tab": "catAcc",
+          "id": "acc_croissant_strawberry",
+          "rawId": "croissant_strawberry",
+          "label": "딸기 크루아상",
+          "note": "",
+          "emoji": "🎀"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 68,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_068",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_068__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_yogurt_mango",
+          "rawId": "latte_yogurt_mango",
+          "label": "망고 요거트라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 69,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_069",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_069__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_yogurt_kiwi",
+          "rawId": "latte_yogurt_kiwi",
+          "label": "키위 요거트라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 70,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_070",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_070__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_yogurt_peach",
+          "rawId": "latte_yogurt_peach",
+          "label": "복숭아 요거트라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 71,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_071",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_071__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": [
+        {
+          "type": "drink",
+          "tab": "drink",
+          "id": "drink_latte_yogurt_blueberry",
+          "rawId": "latte_yogurt_blueberry",
+          "label": "블루베리 요거트라떼",
+          "note": "",
+          "emoji": "☕"
+        }
+      ]
+    },
+    {
+      "enabled": false,
+      "round": 72,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_072",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_072__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 73,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_073",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_073__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 74,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_074",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_074__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 75,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_075",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_075__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 76,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_076",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_076__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 77,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_077",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_077__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 78,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_078",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_078__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 79,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_079",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_079__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    },
+    {
+      "enabled": false,
+      "round": 80,
+      "groupId": "weekly_streak_5",
+      "id": "weekly_streak_5_round_080",
+      "name": "이번 주 연속 공부 5일",
+      "repeat": "weekly",
+      "periodKeyType": "isoWeek",
+      "conditionType": "streak",
+      "target": 5,
+      "unit": "day",
+      "condition": "이번 주 월요일부터 일요일 사이에 5일 연속으로 공부합니다.",
+      "completionRecordIdPattern": "weekly_streak_5__round_080__{periodKey}",
+      "status": "미작성",
+      "memo": "",
+      "rewards": []
+    }
+  ]
+}

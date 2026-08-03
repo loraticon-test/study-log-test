@@ -1,0 +1,440 @@
+[
+  {
+    "id": "total_25m",
+    "name": "누적 25분 달성",
+    "cat": "누적시간",
+    "targetMinutes": 25,
+    "display": "25분",
+    "condition": "누적 집중 시간이 25분 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_americano_ice",
+        "rawId": "coffee_americano_ice",
+        "label": "아이스 아메리카노",
+        "note": "",
+        "emoji": "☕"
+      }
+    ]
+  },
+  {
+    "id": "total_1h",
+    "name": "누적 1시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 60,
+    "display": "1시간",
+    "condition": "누적 집중 시간이 1시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_icecream_cherry",
+        "rawId": "icecream_cherry",
+        "label": "체리 아이스크림",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "total_2h",
+    "name": "누적 2시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 120,
+    "display": "2시간",
+    "condition": "누적 집중 시간이 2시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_straw_red",
+        "rawId": "straw_red",
+        "label": "빨간 빨대",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "total_3h",
+    "name": "누적 3시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 180,
+    "display": "3시간",
+    "condition": "누적 집중 시간이 3시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_spoon",
+        "rawId": "spoon",
+        "label": "스푼",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_cookie_chocolate_cream",
+        "rawId": "cookie_chocolate_cream",
+        "label": "초코 크림 쿠키",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "total_5h",
+    "name": "누적 5시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 300,
+    "display": "5시간",
+    "condition": "누적 집중 시간이 5시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_mochi_strawberry",
+        "rawId": "mochi_strawberry",
+        "label": "딸기 모찌",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "total_7h",
+    "name": "누적 7시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 420,
+    "display": "7시간",
+    "condition": "누적 집중 시간이 7시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_chocolate_white",
+        "rawId": "chocolate_white",
+        "label": "화이트 초콜렛",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_chocolate",
+        "rawId": "chocolate",
+        "label": "초콜릿",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "total_10h",
+    "name": "누적 10시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 600,
+    "display": "10시간",
+    "condition": "누적 집중 시간이 10시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_teaspoon",
+        "rawId": "teaspoon",
+        "label": "티스푼",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "total_15h",
+    "name": "누적 15시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 900,
+    "display": "15시간",
+    "condition": "누적 집중 시간이 15시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_orange",
+        "rawId": "orange",
+        "label": "치즈냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_20h",
+    "name": "누적 20시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 1200,
+    "display": "20시간",
+    "condition": "누적 집중 시간이 20시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_black",
+        "rawId": "black",
+        "label": "깜냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_25h",
+    "name": "누적 25시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 1500,
+    "display": "25시간",
+    "condition": "누적 집중 시간이 25시간 이상입니다.",
+    "status": "",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_gray",
+        "rawId": "gray",
+        "label": "고등어냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_30h",
+    "name": "누적 30시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 1800,
+    "display": "30시간",
+    "condition": "누적 집중 시간이 30시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_calico",
+        "rawId": "calico",
+        "label": "삼색냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_35h",
+    "name": "누적 35시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 2100,
+    "display": "35시간",
+    "condition": "누적 집중 시간이 35시간 이상입니다.",
+    "status": "",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_siamese",
+        "rawId": "siamese",
+        "label": "샴냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_40h",
+    "name": "누적 40시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 2400,
+    "display": "40시간",
+    "condition": "누적 집중 시간이 40시간 이상입니다.",
+    "status": "",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_tuxedo",
+        "rawId": "tuxedo",
+        "label": "턱시도냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_45h",
+    "name": "누적 45시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 2700,
+    "display": "45시간",
+    "condition": "누적 집중 시간이 45시간 이상입니다.",
+    "status": "",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_blue",
+        "rawId": "blue",
+        "label": "러시안 블루",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_50h",
+    "name": "누적 50시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 3000,
+    "display": "50시간",
+    "condition": "누적 집중 시간이 50시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_tanned",
+        "rawId": "tanned",
+        "label": "태닝냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_75h",
+    "name": "누적 75시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 4500,
+    "display": "75시간",
+    "condition": "누적 집중 시간이 75시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_cloud",
+        "rawId": "cloud",
+        "label": "구름냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_100h",
+    "name": "누적 100시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 6000,
+    "display": "100시간",
+    "condition": "누적 집중 시간이 100시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_pudding",
+        "rawId": "pudding",
+        "label": "푸딩냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_150h",
+    "name": "누적 150시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 9000,
+    "display": "150시간",
+    "condition": "누적 집중 시간이 150시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "cat",
+        "tab": "cat",
+        "id": "cat_universe",
+        "rawId": "universe",
+        "label": "우주냥",
+        "note": "",
+        "emoji": "🐱"
+      }
+    ]
+  },
+  {
+    "id": "total_200h",
+    "name": "누적 200시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 12000,
+    "display": "200시간",
+    "condition": "누적 집중 시간이 200시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_latte_milkyway",
+        "rawId": "latte_milkyway",
+        "label": "은하수라떼",
+        "note": "",
+        "emoji": "☕"
+      }
+    ]
+  },
+  {
+    "id": "total_300h",
+    "name": "누적 300시간 달성",
+    "cat": "누적시간",
+    "targetMinutes": 18000,
+    "display": "300시간",
+    "condition": "누적 집중 시간이 300시간 이상입니다.",
+    "status": "미작성",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_crown",
+        "rawId": "crown",
+        "label": "왕관",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  }
+]

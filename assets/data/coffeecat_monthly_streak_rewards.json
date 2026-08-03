@@ -1,0 +1,746 @@
+[
+  {
+    "id": "monthly_01_streak_5",
+    "name": "1월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_01",
+    "month": 1,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_traditional_sikhye",
+        "rawId": "traditional_sikhye",
+        "label": "식혜",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_hat_gat",
+        "rawId": "hat_gat",
+        "label": "갓",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_01_streak_10",
+    "name": "1월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_01",
+    "month": 1,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_kkultteok_mugwort",
+        "rawId": "kkultteok_mugwort",
+        "label": "쑥꿀떡",
+        "note": "",
+        "emoji": "🎀"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_luckypouch",
+        "rawId": "luckypouch",
+        "label": "복주머니",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_02_streak_5",
+    "name": "2월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_02",
+    "month": 2,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_tea_yuja",
+        "rawId": "tea_yuja",
+        "label": "유자차",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_chamomile",
+        "rawId": "chamomile",
+        "label": "캐모마일",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_02_streak_10",
+    "name": "2월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_02",
+    "month": 2,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_tea_chamomile",
+        "rawId": "tea_chamomile",
+        "label": "캐모마일차",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_chamomile",
+        "rawId": "chamomile",
+        "label": "캐모마일",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_03_streak_5",
+    "name": "3월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_03",
+    "month": 3,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_latte_matcha",
+        "rawId": "latte_matcha",
+        "label": "말차라떼",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_tiramisu_matcha",
+        "rawId": "tiramisu_matcha",
+        "label": "말차 티라미수",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_03_streak_10",
+    "name": "3월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_03",
+    "month": 3,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_chocolate_matcha",
+        "rawId": "chocolate_matcha",
+        "label": "말차 초콜렛",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_cookie_matcha_smore",
+        "rawId": "cookie_matcha_smore",
+        "label": "말차 스모어 쿠키",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_04_streak_5",
+    "name": "4월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_04",
+    "month": 4,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_latte_cherryblossom_strawberry",
+        "rawId": "latte_cherryblossom_strawberry",
+        "label": "벚꽃 딸기라떼",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_cherryblossom",
+        "rawId": "cherryblossom",
+        "label": "벚꽃",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_04_streak_10",
+    "name": "4월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_04",
+    "month": 4,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_cherryblossom_cookie",
+        "rawId": "cherryblossom_cookie",
+        "label": "벚꽃 쿠키",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_chocolate_strawberry",
+        "rawId": "chocolate_strawberry",
+        "label": "딸기 초콜렛",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_05_streak_5",
+    "name": "5월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_05",
+    "month": 5,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_soda_green_grape",
+        "rawId": "soda_green_grape",
+        "label": "청포도 에이드",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_sunglasses_green",
+        "rawId": "sunglasses_green",
+        "label": "초록 선글라스",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_05_streak_10",
+    "name": "5월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_05",
+    "month": 5,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_beach_umbrella_green",
+        "rawId": "beach_umbrella_green",
+        "label": "초록 파라솔",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_peppermint",
+        "rawId": "peppermint",
+        "label": "페퍼민트",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_06_streak_5",
+    "name": "6월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_06",
+    "month": 6,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_soda_blue_lemon",
+        "rawId": "soda_blue_lemon",
+        "label": "블루 레몬 에이드",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_sunglasses_blue",
+        "rawId": "sunglasses_blue",
+        "label": "파란 선글라스",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_06_streak_10",
+    "name": "6월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_06",
+    "month": 6,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_beach_umbrella_yellow",
+        "rawId": "beach_umbrella_yellow",
+        "label": "노란 파라솔",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_slice_lemon",
+        "rawId": "slice_lemon",
+        "label": "레몬 슬라이스",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_07_streak_5",
+    "name": "7월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_07",
+    "month": 7,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_soda_watermelon_punch",
+        "rawId": "soda_watermelon_punch",
+        "label": "수박화채",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_hat_watermelon",
+        "rawId": "hat_watermelon",
+        "label": "수박 모자",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_07_streak_10",
+    "name": "7월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_07",
+    "month": 7,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_bingsu_redbean",
+        "rawId": "bingsu_redbean",
+        "label": "팥빙수",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_tteok_bingsu",
+        "rawId": "tteok_bingsu",
+        "label": "빙수떡",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_08_streak_5",
+    "name": "8월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_08",
+    "month": 8,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_bingsu_mango",
+        "rawId": "bingsu_mango",
+        "label": "망고 빙수",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_tteok_injeolmi",
+        "rawId": "tteok_injeolmi",
+        "label": "인절미 떡",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_08_streak_10",
+    "name": "8월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_08",
+    "month": 8,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_icetea_peach",
+        "rawId": "icetea_peach",
+        "label": "아이스 복숭아티",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_hat_straw",
+        "rawId": "hat_straw",
+        "label": "밀짚모자",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_09_streak_5",
+    "name": "9월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_09",
+    "month": 9,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_latte_sweetpotato",
+        "rawId": "latte_sweetpotato",
+        "label": "고구마라떼",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_sweetpotato",
+        "rawId": "sweetpotato",
+        "label": "고구마",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_09_streak_10",
+    "name": "9월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_09",
+    "month": 9,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_leaf_maple",
+        "rawId": "leaf_maple",
+        "label": "단풍잎",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_slice_sweetpotato",
+        "rawId": "slice_sweetpotato",
+        "label": "고구마 슬라이스",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_10_streak_5",
+    "name": "10월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_10",
+    "month": 10,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_tea_ssanghwa",
+        "rawId": "tea_ssanghwa",
+        "label": "쌍화차",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_towel",
+        "rawId": "towel",
+        "label": "수건",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_10_streak_10",
+    "name": "10월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_10",
+    "month": 10,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_cinnamon_stick",
+        "rawId": "cinnamon_stick",
+        "label": "계피스틱",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_egg_yolk",
+        "rawId": "egg_yolk",
+        "label": "계란 노른자",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_11_streak_5",
+    "name": "11월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_11",
+    "month": 11,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_chocolate_hot",
+        "rawId": "chocolate_hot",
+        "label": "핫초코",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_whipped_cream",
+        "rawId": "whipped_cream",
+        "label": "휘핑크림",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_11_streak_10",
+    "name": "11월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_11",
+    "month": 11,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_marshmallow_snowman",
+        "rawId": "marshmallow_snowman",
+        "label": "눈사람 마시멜로",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_cookie_snowflake",
+        "rawId": "cookie_snowflake",
+        "label": "눈결정",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  },
+  {
+    "id": "monthly_12_streak_5",
+    "name": "12월에 연속 5일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_12",
+    "month": 12,
+    "target": 5,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "drink",
+        "tab": "drink",
+        "id": "drink_latte_white_chocolate",
+        "rawId": "latte_white_chocolate",
+        "label": "화이트 초코라떼",
+        "note": "",
+        "emoji": "☕"
+      },
+      {
+        "type": "catAcc",
+        "tab": "catAcc",
+        "id": "acc_hat_santa",
+        "rawId": "hat_santa",
+        "label": "산타 모자",
+        "note": "",
+        "emoji": "🎀"
+      }
+    ]
+  },
+  {
+    "id": "monthly_12_streak_10",
+    "name": "12월에 연속 10일 공부",
+    "cat": "연속공부",
+    "eventId": "monthly_streak_12",
+    "month": 12,
+    "target": 10,
+    "period": "해당월",
+    "status": "예정",
+    "memo": "",
+    "rewards": [
+      {
+        "type": "deco_left",
+        "tab": "cupDeco",
+        "id": "deco_left_gingercat",
+        "rawId": "gingercat",
+        "label": "진저냥",
+        "note": "",
+        "emoji": "🍪"
+      },
+      {
+        "type": "deco_right",
+        "tab": "cupDeco2",
+        "id": "deco_right_holly_berry",
+        "rawId": "holly_berry",
+        "label": "홀리 베리",
+        "note": "",
+        "emoji": "🍪"
+      }
+    ]
+  }
+]
