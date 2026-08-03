@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="코지 카페 대시보드">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="코지 카페 대시보드">
+    <link rel="manifest" id="app-manifest">
+    <script>
+        (() => {
+            const params = new URLSearchParams(window.location.search);
+            const hasInstallConfig = Boolean(
+                (params.get('proxy') || params.get('proxyUrl')) &&
+                (params.get('key') || params.get('apiKey')) &&
+                (params.get('record') || params.get('recordDbId'))
+            );
+
+            const manifest = {
+                id: new URL('./dashboard.html', window.location.href).href,
+                name: '코지 카페 대시보드',
+                short_name: '대시보드',
+                description: '홈 화면에서 바로 실행하는 코지 카페 공부 대시보드입니다.',
+                scope: new URL('./', window.location.href).href,
+                display: 'standalone',
+                orientation: 'portrait',
+                background_color: '#FDFBF7',
+                theme_color: '#A67B5B',
+                icons: [
+                    {
+                        src: new URL('../../assets/images/icons/dashboard/icon-192.png', window.location.href).href,
+                        sizes: '192x192',
+                        type: 'image/png',
+                        purpose: 'any maskable'
+                    },
+                    {
+                        src: new URL('../../assets/images/icons/dashboard/icon-512.png', window.location.href).href,
+                        sizes: '512x512',
+                        type: 'image/png',
+                        purpose: 'any maskable'
+                    }
+                ]
+            };
+
+            const manifestText = encodeURIComponent(JSON.stringify(manifest));
+            document
+                .getElementById('app-manifest')
+                ?.setAttribute('href', `data:application/manifest+json,${manifestText}`);
+        })();
+    </script>
+    <script src="../../assets/js/install-config.js?v=20260724-0002" data-app="dashboard"></script>
+    <link rel="icon" type="image/svg+xml" href="../../assets/images/icons/dashboard/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/icons/dashboard/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/icons/dashboard/icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/icons/dashboard/apple-touch-icon.png">
+    <title>코지 카페 와이드 대시보드</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- 설치 여부와 무관하게 모든 브라우저에서 같은 한글 폰트를 사용한다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <link rel="stylesheet" href="../../assets/css/dashboard.css?v=20260731-0002">
+    
+    <script>
+        try {
+            const savedDark = localStorage.getItem('cozy_dash_dark');
+            const params = new URLSearchParams(window.location.search);
+            const urlDark = params.get('theme') === 'dark' || params.get('dark') === '1';
+            if (savedDark === 'true' || (!savedDark && urlDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+    </script>
+</head>
+<body>
+<div id="root" class="w-full flex flex-col gap-4 bg-transparent" style="padding: 1.25rem; box-sizing: border-box;"></div>
+
+  <script>Promise.resolve(window.STUDY_INSTALL_READY).finally(() => { const script = document.createElement("script"); script.src = "../../assets/js/dashboard-app.js?v=20260731-0003"; document.body.appendChild(script); });</script>
+<script>
+if ('serviceWorker' in navigator && ['https:', 'http:'].includes(window.location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+

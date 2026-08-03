@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>코지 카페 타이머</title>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="dns-prefetch" href="//unpkg.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="코지 타이머">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="코지 타이머">
+    <link rel="manifest" href="./manifest-timer.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="../../assets/images/icons/timer/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/icons/timer/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/icons/timer/icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/icons/timer/apple-touch-icon.png">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- 설치 여부와 무관하게 모든 브라우저에서 같은 한글 폰트를 사용한다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <link rel="stylesheet" href="../../assets/css/timer.css">
+</head>
+<body>
+<div id="root" class="w-full h-full flex justify-center items-center p-4 bg-transparent"></div>
+
+<script src="../../assets/js/timer-app.js?v=20260723-0001"></script>
+<script>
+if ('serviceWorker' in navigator && ['https:', 'http:'].includes(window.location.protocol)) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+}
+</script>
+</body>
+</html>

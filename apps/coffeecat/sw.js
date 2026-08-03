@@ -1,0 +1,75 @@
+const CACHE_NAME = 'coffeecat-pwa-v68';
+
+const APP_SHELL = [
+  './coffeecat.html',
+  './manifest-coffeecat.webmanifest',
+  '../../assets/js/install-config.js?v=20260724-0003',
+  '../../assets/js/coffeecat-app.js?v=20260731-0040',
+  '../../assets/css/coffeecat.css?v=20260716-1545',
+  '../../assets/data/coffeecat_monthly_streak_rewards.json?v=20260723-0017',
+  '../../assets/data/coffeecat_total_time_rewards.json?v=20260717-0013',
+  '../../assets/data/coffeecat_weekly_streak_round_rewards.json?v=20260723-0019'
+];
+
+const OPTIONAL_ASSETS = [];
+
+const CACHEABLE_HOSTS = new Set([
+  'cdn.jsdelivr.net',
+  'unpkg.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com'
+]);
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(APP_SHELL);
+      await Promise.allSettled(OPTIONAL_ASSETS.map((asset) => cache.add(asset)));
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  if (CACHEABLE_HOSTS.has(url.hostname)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        const network = fetch(event.request)
+          .then((response) => {
+            if (response && (response.ok || response.type === 'opaque')) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok && url.origin === self.location.origin) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.open(CACHE_NAME).then((cache) => cache.match(event.request)))
+  );
+});

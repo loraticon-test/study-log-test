@@ -1,0 +1,72 @@
+const CACHE_NAME = 'cozy-dashboard-pwa-v14';
+const APP_SHELL = [
+  './dashboard.html',
+  './manifest.webmanifest',
+  '../../assets/js/install-config.js?v=20260724-0002',
+  '../../assets/js/dashboard-app.js?v=20260731-0003',
+  '../../assets/css/dashboard.css?v=20260731-0002'
+];
+const OPTIONAL_ASSETS = [
+  '../../assets/images/icons/dashboard/icon.svg',
+  '../../assets/images/icons/dashboard/icon-192.png',
+  '../../assets/images/icons/dashboard/icon-512.png',
+  '../../assets/images/icons/dashboard/apple-touch-icon.png'
+];
+const CACHEABLE_HOSTS = new Set([
+  'unpkg.com',
+  'cdn.jsdelivr.net'
+]);
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      await cache.addAll(APP_SHELL);
+      await Promise.allSettled(OPTIONAL_ASSETS.map((asset) => cache.add(asset)));
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  if (CACHEABLE_HOSTS.has(url.hostname)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cached = await cache.match(event.request);
+        const network = fetch(event.request)
+          .then((response) => {
+            if (response && (response.ok || response.type === 'opaque')) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.ok && url.origin === self.location.origin) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});

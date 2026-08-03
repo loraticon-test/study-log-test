@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="단어 입력 테스트">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="단어 입력 테스트">
+    <link rel="manifest" id="app-manifest">
+    <script>
+        (() => {
+            const params = new URLSearchParams(window.location.search);
+            const hasInstallConfig = Boolean(
+                (params.get('proxy') || params.get('proxyUrl')) &&
+                (params.get('key') || params.get('apiKey')) &&
+                (params.get('test') || params.get('testDbId'))
+            );
+            const startUrl = hasInstallConfig
+                ? new URL(`./test.html${window.location.search}`, window.location.href).href
+                : new URL('./test.html', window.location.href).href;
+
+            const manifest = {
+                id: new URL('./test.html', window.location.href).href,
+                name: '단어 입력 테스트',
+                short_name: '입력 테스트',
+                description: '홈 화면에서 바로 실행하는 단어 입력 복습 테스트입니다.',
+                start_url: startUrl,
+                scope: new URL('./', window.location.href).href,
+                display: 'standalone',
+                orientation: 'portrait',
+                background_color: '#FDFBF7',
+                theme_color: '#A67B5B',
+                icons: [
+                    {
+                        src: new URL('../../assets/images/icons/test/icon-192.png', window.location.href).href,
+                        sizes: '192x192',
+                        type: 'image/png',
+                        purpose: 'any maskable'
+                    },
+                    {
+                        src: new URL('../../assets/images/icons/test/icon-512.png', window.location.href).href,
+                        sizes: '512x512',
+                        type: 'image/png',
+                        purpose: 'any maskable'
+                    }
+                ]
+            };
+
+            const manifestText = JSON.stringify(manifest);
+            const manifestUrl = `data:application/manifest+json;charset=utf-8,${encodeURIComponent(manifestText)}`;
+            document.getElementById('app-manifest')?.setAttribute('href', manifestUrl);
+        })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="../../assets/images/icons/test/icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/icons/test/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/icons/test/icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/icons/test/apple-touch-icon.png">
+    <title>✍️ 단어 입력 테스트</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- 설치 여부와 무관하게 모든 브라우저에서 같은 한글 폰트를 사용한다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <link rel="stylesheet" href="../../assets/css/test.css">
+</head>
+<body>
+<div id="root" class="w-full h-full flex justify-center items-center"></div>
+
+<script src="../../assets/js/test-app.js?v=20260723-0001"></script>
+<script>
+if ('serviceWorker' in navigator && ['https:', 'http:'].includes(window.location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커피냥 카페 시계</title>
+  <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="커피냥">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="커피냥">
+  <meta name="description" content="홈화면에서 바로 여는 공부 기록 커피냥 위젯입니다.">
+
+  <link rel="manifest" id="app-manifest">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/icons/coffeecat/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/icons/coffeecat/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="../../assets/images/icons/coffeecat/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/icons/coffeecat/apple-touch-icon.png">
+  <link rel="stylesheet" href="../../assets/css/coffeecat.css">
+  <style>
+    /* 선택하지 않은 꾸미기 레이어는 실제 이미지 파일이 없으므로 숨깁니다. */
+    .coffee-layer[src$="/deco_none.webp"],
+    .coffee-layer[src$="/none.webp"] {
+      visibility: hidden;
+    }
+  </style>
+
+  <script>
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      const hasInstallConfig = Boolean(
+        (params.get('proxy') || params.get('proxyUrl')) &&
+        (params.get('key') || params.get('apiKey')) &&
+        params.get('recordDbId')
+      );
+
+      const manifest = {
+        id: new URL('./coffeecat.html', window.location.href).href,
+        name: "커피냥 카페 시계",
+        short_name: "커피냥",
+        description: "홈화면에서 바로 여는 공부 기록 커피냥 위젯입니다.",
+        start_url: hasInstallConfig
+          ? new URL(`./coffeecat.html${window.location.search}`, window.location.href).href
+          : new URL('./coffeecat.html', window.location.href).href,
+        scope: new URL('./', window.location.href).href,
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#FDFBF7',
+        theme_color: '#A67B5B',
+        icons: [
+          {
+            src: new URL('../../assets/images/icons/coffeecat/icon-192.png', window.location.href).href,
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable'
+          },
+          {
+            src: new URL('../../assets/images/icons/coffeecat/icon-512.png', window.location.href).href,
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ],
+      };
+
+      document
+        .getElementById('app-manifest')
+        ?.setAttribute('href', `data:application/manifest+json,${encodeURIComponent(JSON.stringify(manifest))}`);
+    })();
+
+    window.showClockLoadError = (message) => {
+      window.__clockLoadError = message;
+      const render = () => {
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.innerHTML = `<div style="margin:2rem auto;padding:1rem;max-width:320px;border-radius:1rem;background:#FDF1E8;color:#8B664B;font:14px system-ui;line-height:1.6"><b>커피냥 카페 시계를 불러오지 못했어요.</b><br>${message}<br><small>페이지를 새로고침해도 계속되면 이 문구를 알려주세요.</small></div>`;
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render, { once:true });
+      else render();
+    };
+    window.addEventListener('error', event => {
+      if (event.error) window.showClockLoadError(`실행 오류: ${event.error.message || event.message}`);
+    });
+    window.addEventListener('unhandledrejection', event => {
+      window.showClockLoadError(`실행 오류: ${event.reason?.message || event.reason}`);
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin onerror="this.onerror=function(){window.showClockLoadError('React 라이브러리를 불러오지 못했어요.');};this.src='https://unpkg.com/react@18.2.0/umd/react.production.min.js';"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin onerror="this.onerror=function(){window.showClockLoadError('React DOM 라이브러리를 불러오지 못했어요.');};this.src='https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js';"></script>
+</head>
+<body>
+<div id="root"></div>
+<script src="../../assets/js/coffeecat-app.js?v=20260723-0036"></script>
+<script>
+(() => {
+  const icons = {
+    '공부기록 DB': `
+      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"
+           fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <ellipse cx="12" cy="5" rx="7" ry="3"></ellipse>
+        <path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5"></path>
+        <path d="M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"></path>
+      </svg>`,
+    '퀘스트 DB': `
+      <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"
+           fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 4h8v4a4 4 0 0 1-8 0V4Z"></path>
+        <path d="M8 6H5v1a4 4 0 0 0 4 4M16 6h3v1a4 4 0 0 1-4 4"></path>
+        <path d="M12 12v5M9 20h6M10 17h4"></path>
+      </svg>`
+  };
+
+  const findLeafByText = (root, text) => Array.from(root.querySelectorAll('div'))
+    .find(element => element.children.length === 0 && element.textContent.trim() === text);
+
+  const repairSettingsUi = () => {
+    const root = document.getElementById('root');
+    if (!root) return;
+
+    const heading = findLeafByText(root, '연결된 DB 목록');
+    const grid = heading?.nextElementSibling;
+    if (grid) {
+      Object.assign(grid.style, { width: '100%', minWidth: '0' });
+      Array.from(grid.children).forEach(card => {
+        Object.assign(card.style, {
+          width: '100%', minWidth: '0', maxWidth: '100%', boxSizing: 'border-box'
+        });
+
+        const label = Object.keys(icons).find(name => card.textContent.includes(name));
+        const iconBox = card.firstElementChild;
+        if (label && iconBox && iconBox.dataset.dbIcon !== label) {
+          iconBox.dataset.dbIcon = label;
+          iconBox.style.color = 'currentColor';
+          iconBox.innerHTML = icons[label];
+        }
+      });
+    }
+
+    const recordRangeTitle = findLeafByText(root, '공부 기록 불러오기 기간');
+    recordRangeTitle?.parentElement?.remove();
+
+    const nextRewardTitle = findLeafByText(root, '다음 주 보상');
+    const nextRewardText = nextRewardTitle?.parentElement;
+    const nextRewardIcons = nextRewardText?.previousElementSibling;
+    const rewardCount = nextRewardIcons?.children.length || 0;
+    if (nextRewardIcons && rewardCount > 0) {
+      if (rewardCount >= 3) {
+        Object.assign(nextRewardIcons.style, {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 2rem)',
+          gridAutoRows: '2rem',
+          gap: '.28rem',
+          maxWidth: '4.28rem',
+          overflow: 'visible',
+          paddingBottom: '0'
+        });
+      } else {
+        Object.assign(nextRewardIcons.style, {
+          display: 'flex',
+          gridTemplateColumns: '',
+          gridAutoRows: '',
+          gap: '.28rem',
+          maxWidth: '5rem',
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          paddingBottom: '.05rem'
+        });
+      }
+    }
+
+    root.querySelectorAll('.coffee-layer-drink').forEach(drinkLayer => {
+      const drinkSource = drinkLayer.currentSrc || drinkLayer.src || '';
+      const cupUpLayer = drinkLayer.parentElement?.querySelector('.coffee-layer-cup-up');
+      if (!cupUpLayer?.src) return;
+
+      const isTeaGreen = /\/tea_green\.webp(?:[?#].*)?$/i.test(drinkSource);
+      const hasTeaGreenCupUp = /\/up_tea_green\.webp(?:[?#].*)?$/i.test(cupUpLayer.src);
+      const expectedCupUp = isTeaGreen
+        ? new URL('up_tea_green.webp', cupUpLayer.src).href
+        : hasTeaGreenCupUp
+          ? new URL('up.webp', cupUpLayer.src).href
+          : null;
+
+      if (expectedCupUp && cupUpLayer.src !== expectedCupUp) {
+        cupUpLayer.src = expectedCupUp;
+      }
+    });
+
+    root.querySelectorAll('span, div').forEach(element => {
+      if (element.children.length === 0 && /^[\uFFFD\s]+$/.test(element.textContent)) {
+        element.textContent = '🎁';
+        element.setAttribute('aria-label', '이미지 대체 아이콘');
+      }
+    });
+  };
+
+  let scheduled = false;
+  const scheduleRepair = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      repairSettingsUi();
+    });
+  };
+
+  const root = document.getElementById('root');
+  if (root) {
+    new MutationObserver(scheduleRepair).observe(root, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['src']
+    });
+  }
+  scheduleRepair();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && ['https:', 'http:'].includes(window.location.protocol)) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
