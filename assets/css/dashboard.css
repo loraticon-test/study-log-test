@@ -369,6 +369,114 @@ html, body, #root {
 }
 /* dashboard calendar stable sizing end */
 
+/* Calendar sticker shape picker */
+.calendar-sticker-cell {
+    position: relative;
+    overflow: visible;
+}
+
+.calendar-sticker-cell.is-picker-open {
+    z-index: 40;
+}
+
+.calendar-sticker-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.calendar-sticker-trigger:focus-visible {
+    outline: 2px solid #849F71;
+    outline-offset: 2px;
+}
+
+.calendar-sticker-picker {
+    position: absolute;
+    top: 36px;
+    left: 50%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px;
+    transform: translateX(-50%);
+    border: 1px solid #EBE8DE;
+    border-radius: 14px;
+    background: #FFFFFF;
+    box-shadow: 0 10px 28px rgba(92, 58, 33, 0.18);
+}
+
+.calendar-sticker-picker::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    transform: translateX(-50%) rotate(45deg);
+    border-top: 1px solid #EBE8DE;
+    border-left: 1px solid #EBE8DE;
+    background: #FFFFFF;
+}
+
+.calendar-sticker-option {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.calendar-sticker-option:hover {
+    background: #FDF8F1;
+    transform: translateY(-1px);
+}
+
+.calendar-sticker-option.is-active {
+    border-color: #849F71;
+    background: #F3F8F5;
+}
+
+.calendar-sticker-option:focus-visible {
+    outline: 2px solid #849F71;
+    outline-offset: 1px;
+}
+
+.dark .calendar-sticker-picker {
+    border-color: #3D3D3D;
+    background: #252525;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+}
+
+.dark .calendar-sticker-picker::before {
+    border-color: #3D3D3D;
+    background: #252525;
+}
+
+.dark .calendar-sticker-option:hover {
+    background: #333333;
+}
+
+.dark .calendar-sticker-option.is-active {
+    border-color: #849F71;
+    background: #2E3A2A;
+}
+
 /* responsive goal metadata */
 .goal-meta-narrow {
     display: flex;

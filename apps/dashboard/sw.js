@@ -3,14 +3,15 @@ const APP_SHELL = [
   './dashboard.html',
   './manifest.webmanifest',
   '../../assets/js/install-config.js?v=20260724-0002',
-  '../../assets/js/dashboard-app.js?v=20260731-0003',
-  '../../assets/css/dashboard.css?v=20260731-0002'
+  '../../assets/js/dashboard-app.js?v=20260804-0004',
+  '../../assets/css/dashboard.css?v=20260804-0004'
 ];
 const OPTIONAL_ASSETS = [
   '../../assets/images/icons/dashboard/icon.svg',
   '../../assets/images/icons/dashboard/icon-192.png',
   '../../assets/images/icons/dashboard/icon-512.png',
-  '../../assets/images/icons/dashboard/apple-touch-icon.png'
+  '../../assets/images/icons/dashboard/apple-touch-icon.png',
+  '../../assets/images/dashboard/coffee-cup.svg'
 ];
 const CACHEABLE_HOSTS = new Set([
   'unpkg.com',
