@@ -407,6 +407,9 @@ const App = () => {
     };
 
     const resetForm = () => {
+        const confirmed = window.confirm('작성한 내용이 모두 지워집니다. 비우시겠어요?');
+        if (!confirmed) return;
+
         setConcept('');
         setSubjectId('');
         setContent('');
@@ -536,7 +539,7 @@ const App = () => {
     const selectedSubject = subjects.find(item => item.id === subjectId);
     const notionUrl = lastSavedPage?.id ? `https://www.notion.so/${lastSavedPage.id.replace(/-/g, '')}` : '';
     const connected = !!config.saved && !!config.proxyUrl && !!config.apiKey && !!config.blankDbId;
-    const isUrlConnected = !!config.fromUrl;
+    const isUrlConnected = !!(config.fromUrl || config.fromInstall);
     const maskValue = (value) => {
         if (!value) return '연결 대기';
         const text = String(value);
