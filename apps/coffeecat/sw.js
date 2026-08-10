@@ -4,7 +4,7 @@ const APP_SHELL = [
   './coffeecat.html',
   './manifest-coffeecat.webmanifest',
   '../../assets/js/install-config.js?v=20260724-0003',
-  '../../assets/js/coffeecat-app.js?v=20260731-0040',
+  '../../assets/js/coffeecat-app.js?v=20260811-0040',
   '../../assets/css/coffeecat.css?v=20260716-1545',
   '../../assets/data/coffeecat_monthly_streak_rewards.json?v=20260723-0017',
   '../../assets/data/coffeecat_total_time_rewards.json?v=20260717-0013',
