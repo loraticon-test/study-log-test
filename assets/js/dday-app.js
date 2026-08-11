@@ -64,6 +64,7 @@
     loading: false,
     error: '',
     settingsOpen: false,
+    themeColorConfirmOpen: false,
     goalSearch: '',
     goalListLimit: 60,
     toast: '',
@@ -518,6 +519,7 @@
         <p id="goal-color-error" class="color-editor-error" hidden>HEX 코드를 확인해 주세요.</p>
         <div class="color-editor-actions"><label class="color-editor-palette"><input id="goal-color-native" type="color" aria-label="팔레트에서 색상 선택"><span>팔레트</span></label><button type="button" class="color-editor-apply" data-action="apply-goal-color">적용</button><button type="button" class="color-editor-reset" data-action="reset-goal-color">기본값으로 초기화</button></div>
       </div>
+      ${state.themeColorConfirmOpen ? `<div class="theme-color-confirm-backdrop"><section class="theme-color-confirm" role="alertdialog" aria-modal="true" aria-labelledby="theme-color-confirm-title" aria-describedby="theme-color-confirm-description"><h3 id="theme-color-confirm-title">전체 테마색을 적용할까요?</h3><p id="theme-color-confirm-description">모든 목표의 사용자 지정 글자색과 배경색이 지워지고 현재 테마 팔레트가 적용됩니다.</p><div class="theme-color-confirm-actions"><button type="button" class="secondary-button" data-action="cancel-theme-colors">취소</button><button type="button" class="primary-button" data-action="confirm-theme-colors">적용</button></div></section></div>` : ''}
     </div>`;
   }
 
@@ -653,12 +655,22 @@
       toast('이미 전체 목표에 테마 색상이 적용되어 있어요.');
       return;
     }
-    if (!window.confirm('모든 목표의 사용자 지정 글자색과 배경색을 지우고 현재 테마 색상을 적용할까요?')) return;
+    state.themeColorConfirmOpen = true;
+    closeGoalColorEditor();
+    renderSettings();
+  }
+
+  function confirmThemeColorsToAllGoals() {
     state.settings = { ...state.settings, goalColors: {}, goalTextColors: {} };
+    state.themeColorConfirmOpen = false;
     saveSettings();
-    renderMain();
-    renderGoalListContent();
+    render();
     toast('전체 목표에 현재 테마 색상을 적용했어요.');
+  }
+
+  function cancelThemeColorsToAllGoals() {
+    state.themeColorConfirmOpen = false;
+    renderSettings();
   }
 
   function render() {
@@ -680,8 +692,11 @@
       if (action === 'apply-goal-color') { applyGoalColorEditor(); return; }
       if (action === 'reset-goal-color') { resetGoalColorEditor(); return; }
       if (action === 'apply-theme-colors') { applyThemeColorsToAllGoals(); return; }
+      if (action === 'confirm-theme-colors') { confirmThemeColorsToAllGoals(); return; }
+      if (action === 'cancel-theme-colors') { cancelThemeColorsToAllGoals(); return; }
       if (action === 'open-settings') {
         state.settingsOpen = true;
+        state.themeColorConfirmOpen = false;
         state.goalSearch = '';
         state.goalListLimit = 60;
         renderSettings();
@@ -690,6 +705,7 @@
       if (action === 'close-settings' || action === 'backdrop-close') {
         if (state.config.saved || state.goals.length) {
           state.settingsOpen = false;
+          state.themeColorConfirmOpen = false;
           renderSettings();
         }
         return;
@@ -788,6 +804,11 @@
       if (event.key === 'Escape' && editor && !editor.hidden) {
         event.preventDefault();
         closeGoalColorEditor();
+        return;
+      }
+      if (event.key === 'Escape' && state.themeColorConfirmOpen) {
+        event.preventDefault();
+        cancelThemeColorsToAllGoals();
         return;
       }
       if (event.key === 'Escape' && state.settingsOpen && (state.config.saved || state.goals.length)) {

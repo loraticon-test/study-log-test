@@ -208,6 +208,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .color-editor-apply { height: 34px; padding: 0 13px; border-radius: 10px; color: #FFFFFF; background: var(--theme-color); font-size: 10px; font-weight: 900; cursor: pointer; }
 .color-editor-reset { grid-column: 1 / -1; height: 32px; border-radius: 10px; color: var(--theme-hover); background: var(--theme-soft); font-size: 10px; font-weight: 850; cursor: pointer; }
 .color-editor-reset:disabled { opacity: .42; cursor: default; }
+.theme-color-confirm-backdrop { position: fixed; inset: 0; z-index: 145; padding: 18px; display: flex; align-items: center; justify-content: center; background: rgba(28, 22, 18, .42); }
+.theme-color-confirm { width: min(100%, 360px); padding: 21px; border: 1px solid var(--theme-border); border-radius: 22px; color: var(--text); background: var(--surface-raised); }
+.theme-color-confirm h3 { margin: 0; color: var(--theme-title); font-size: 16px; font-weight: 900; }
+.theme-color-confirm p { margin: 8px 0 18px; color: var(--text-soft); font-size: 11px; font-weight: 650; line-height: 1.55; }
+.theme-color-confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.theme-color-confirm-actions .primary-button,
+.theme-color-confirm-actions .secondary-button { width: 100%; padding: 0 12px; }
 .dark-row { margin-top: 11px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-soft); font-size: 11px; font-weight: 800; }
 .switch { position: relative; width: 42px; height: 24px; border-radius: 999px; background: var(--theme-muted); cursor: pointer; transition: background .2s; }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform .2s; box-shadow: 0 2px 5px rgba(0,0,0,.15); }
