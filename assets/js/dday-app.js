@@ -507,7 +507,7 @@
             ${[['title','목표명'],['type','목표유형'],['status','상태'],['date','목표 날짜'],['subject','관련 과목']].map(([key,label]) => `<label class="check-option"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}>${label}</label>`).join('')}
           </div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">A는 디데이 글자색, 컬러칩은 배경색을 설정합니다.</p></div><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div>${goalSelectionHtml()}</section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">A는 디데이 글자색, 컬러칩은 배경색을 설정합니다.</p></div><div class="section-actions"><button type="button" class="tiny-button" data-action="apply-theme-colors">전체 테마색 적용</button><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div></div>${goalSelectionHtml()}</section>
         </div>
         <footer class="settings-footer"><button class="secondary-button" data-action="refresh">데이터 새로고침</button><button class="primary-button" data-action="close-settings">설정 완료</button></footer>
       </section>
@@ -515,7 +515,7 @@
         <div class="color-editor-head"><strong id="goal-color-editor-title">색상 선택</strong><button type="button" class="color-editor-close" data-action="close-color-editor" aria-label="색상 선택 닫기">×</button></div>
         <label class="color-editor-hex"><span>HEX</span><input id="goal-color-hex" type="text" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" placeholder="#1F2937" aria-label="HEX 색상 코드"></label>
         <p id="goal-color-error" class="color-editor-error" hidden>HEX 코드를 확인해 주세요.</p>
-        <div class="color-editor-actions"><label class="color-editor-palette"><input id="goal-color-native" type="color" aria-label="팔레트에서 색상 선택"><span>팔레트</span></label><button type="button" class="color-editor-apply" data-action="apply-goal-color">적용</button></div>
+        <div class="color-editor-actions"><label class="color-editor-palette"><input id="goal-color-native" type="color" aria-label="팔레트에서 색상 선택"><span>팔레트</span></label><button type="button" class="color-editor-apply" data-action="apply-goal-color">적용</button><button type="button" class="color-editor-reset" data-action="reset-goal-color">기본값으로 초기화</button></div>
       </div>
     </div>`;
   }
@@ -581,6 +581,9 @@
     editor.querySelector('#goal-color-editor-title').textContent = kind === 'text' ? '디데이 글자색' : '디데이 배경색';
     hexInput.value = color;
     nativeInput.value = color;
+    editor.querySelector('.color-editor-reset').disabled = kind === 'text'
+      ? !customGoalTextColor(goal)
+      : !normalizeHexColor(state.settings.goalColors?.[goal.id]);
     error.hidden = true;
     hexInput.classList.remove('invalid');
     editor.hidden = false;
@@ -623,6 +626,40 @@
     renderGoalListContent();
   }
 
+  function resetGoalColorEditor() {
+    const editor = root.querySelector('#goal-color-editor');
+    if (!editor || editor.hidden) return;
+    const goalId = editor.dataset.goalId;
+    if (editor.dataset.colorKind === 'text') {
+      const goalTextColors = { ...state.settings.goalTextColors };
+      delete goalTextColors[goalId];
+      state.settings = { ...state.settings, goalTextColors };
+    } else {
+      const goalColors = { ...state.settings.goalColors };
+      delete goalColors[goalId];
+      state.settings = { ...state.settings, goalColors };
+    }
+    saveSettings();
+    closeGoalColorEditor();
+    renderMain();
+    renderGoalListContent();
+    toast('기본 테마 색상으로 초기화했어요.');
+  }
+
+  function applyThemeColorsToAllGoals() {
+    const hasCustomColors = Object.keys(state.settings.goalColors || {}).length || Object.keys(state.settings.goalTextColors || {}).length;
+    if (!hasCustomColors) {
+      toast('이미 전체 목표에 테마 색상이 적용되어 있어요.');
+      return;
+    }
+    if (!window.confirm('모든 목표의 사용자 지정 글자색과 배경색을 지우고 현재 테마 색상을 적용할까요?')) return;
+    state.settings = { ...state.settings, goalColors: {}, goalTextColors: {} };
+    saveSettings();
+    renderMain();
+    renderGoalListContent();
+    toast('전체 목표에 현재 테마 색상을 적용했어요.');
+  }
+
   function render() {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.classList.toggle('dark', state.settings.dark);
@@ -640,6 +677,8 @@
       if (element.dataset.colorEditorKind) { openGoalColorEditor(element); return; }
       if (action === 'close-color-editor') { closeGoalColorEditor(); return; }
       if (action === 'apply-goal-color') { applyGoalColorEditor(); return; }
+      if (action === 'reset-goal-color') { resetGoalColorEditor(); return; }
+      if (action === 'apply-theme-colors') { applyThemeColorsToAllGoals(); return; }
       if (action === 'open-settings') {
         state.settingsOpen = true;
         state.goalSearch = '';
