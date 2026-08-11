@@ -42,11 +42,20 @@
     dark: false,
     showFrame: true,
     fields: { title: true, type: false, status: false, date: false, subject: false },
+    fieldOrder: ['type', 'status', 'date', 'subject'],
     selectedIds: null,
     manualOrder: [],
     goalColors: {},
     goalTextColors: {}
   };
+
+  const DISPLAY_FIELD_LABELS = {
+    type: '목표유형',
+    status: '상태',
+    date: '목표 날짜',
+    subject: '관련 과목'
+  };
+  const DISPLAY_FIELD_KEYS = Object.keys(DISPLAY_FIELD_LABELS);
 
   const icons = {
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.63 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.63a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.37 9c.25.63.87 1.04 1.56 1.04H21a2 2 0 1 1 0 4h-.09c-.68 0-1.29.4-1.51.96z"></path></svg>',
@@ -103,6 +112,9 @@
     const requestedStyle = saved.style === 'outline' ? 'cream' : (saved.style || DEFAULT_SETTINGS.style);
     const savedGoalColors = saved.goalColors && typeof saved.goalColors === 'object' ? saved.goalColors : {};
     const savedGoalTextColors = saved.goalTextColors && typeof saved.goalTextColors === 'object' ? saved.goalTextColors : {};
+    const savedFieldOrder = Array.isArray(saved.fieldOrder) ? saved.fieldOrder : [];
+    const fieldOrder = [...new Set(savedFieldOrder.filter(key => DISPLAY_FIELD_KEYS.includes(key)))];
+    DISPLAY_FIELD_KEYS.forEach(key => { if (!fieldOrder.includes(key)) fieldOrder.push(key); });
     return {
       ...DEFAULT_SETTINGS,
       ...saved,
@@ -111,6 +123,7 @@
       theme: THEMES[requestedTheme] ? requestedTheme : DEFAULT_SETTINGS.theme,
       style: ['cream', 'soft', 'colorBox'].includes(requestedStyle) ? requestedStyle : DEFAULT_SETTINGS.style,
       fields: { ...DEFAULT_SETTINGS.fields, ...(saved.fields || {}) },
+      fieldOrder,
       selectedIds: selectedFromUrl.length ? selectedFromUrl : (Array.isArray(saved.selectedIds) ? saved.selectedIds : null),
       manualOrder: Array.isArray(saved.manualOrder) ? saved.manualOrder : [],
       goalColors: Object.fromEntries(Object.entries(savedGoalColors).filter(([, color]) => normalizeHexColor(color))),
@@ -203,41 +216,6 @@
     return [];
   }
 
-  function notionPageIcon(page) {
-    const icon = page?.icon;
-    if (!icon) return null;
-    if (icon.type === 'emoji' && icon.emoji) return { type: 'emoji', value: icon.emoji };
-    const url = icon[icon.type]?.url;
-    if (!url) return null;
-    try {
-      const parsed = new URL(url, location.href);
-      return ['http:', 'https:'].includes(parsed.protocol) ? { type: 'image', value: parsed.href } : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function subjectFromPage(page, fallbackName = '과목 연결됨') {
-    const title = Object.values(page?.properties || {}).find(prop => prop.type === 'title');
-    return { name: richText(title) || fallbackName, icon: notionPageIcon(page) };
-  }
-
-  function mergeSubjectItems(goal, subjectMap) {
-    const items = new Map();
-    const add = (name, icon = null) => {
-      String(name || '').split(',').map(item => item.trim()).filter(Boolean).forEach(item => {
-        const existing = items.get(item);
-        if (!existing || (!existing.icon && icon)) items.set(item, { name: item, icon });
-      });
-    };
-    goal.subjectIds.forEach(id => {
-      const subject = subjectMap[id];
-      if (subject) add(subject.name, subject.icon);
-    });
-    add(goal.subjectText);
-    return [...items.values()];
-  }
-
   async function notion(path, options = {}) {
     const response = await fetch(`${state.config.proxyUrl}${path}`, {
       ...options,
@@ -278,7 +256,8 @@
       try {
         const pages = await fetchDatabasePages(state.config.subjectDbId, {}, 500);
         pages.forEach(page => {
-          map[page.id] = subjectFromPage(page, '이름 없는 과목');
+          const title = Object.values(page.properties || {}).find(prop => prop.type === 'title');
+          map[page.id] = richText(title) || '이름 없는 과목';
         });
         return map;
       } catch (error) {
@@ -291,10 +270,11 @@
       const results = await Promise.all(batch.map(async id => {
         try {
           const page = await notion(`/v1/pages/${id}`, { method: 'GET' });
-          return [id, subjectFromPage(page, '이름 없는 과목')];
-        } catch (_) { return [id, { name: '과목 연결됨', icon: null }]; }
+          const title = Object.values(page.properties || {}).find(prop => prop.type === 'title');
+          return [id, richText(title) || '이름 없는 과목'];
+        } catch (_) { return [id, '과목 연결됨']; }
       }));
-      results.forEach(([id, subject]) => { map[id] = subject; });
+      results.forEach(([id, name]) => { map[id] = name; });
     }
     return map;
   }
@@ -340,8 +320,10 @@
       });
       const subjectMap = await fetchSubjectMap(rawGoals.flatMap(goal => goal.subjectIds));
       state.goals = rawGoals.map(goal => {
-        const subjectItems = mergeSubjectItems(goal, subjectMap);
-        return { ...goal, subjectItems, subject: subjectItems.map(item => item.name).join(', ') };
+        const subjectNames = [goal.subjectText, ...goal.subjectIds.map(id => subjectMap[id])]
+          .flatMap(value => String(value || '').split(',').map(item => item.trim()))
+          .filter(Boolean);
+        return { ...goal, subject: [...new Set(subjectNames)].join(', ') };
       });
 
       if (state.settings.selectedIds === null) {
@@ -434,31 +416,16 @@
     return sortGoals(state.goals.filter(goal => selected.has(goal.id)));
   }
 
-  function subjectMarkerHtml(icon) {
-    if (icon?.type === 'emoji') {
-      return `<span class="subject-icon subject-emoji" aria-hidden="true">${escapeHtml(icon.value)}</span>`;
-    }
-    if (icon?.type === 'image') {
-      return `<img class="subject-icon subject-icon-image" src="${escapeHtml(icon.value)}" alt="" aria-hidden="true">`;
-    }
-    return '<span class="subject-icon subject-fallback-dot" aria-hidden="true">&middot;</span>';
-  }
-
-  function subjectMetaHtml(goal) {
-    const subjects = Array.isArray(goal.subjectItems) && goal.subjectItems.length
-      ? goal.subjectItems
-      : String(goal.subject || '').split(',').map(name => ({ name: name.trim(), icon: null })).filter(item => item.name);
-    const content = subjects.map(subject => `<span class="subject-entry">${subjectMarkerHtml(subject.icon)}<span class="subject-name">${escapeHtml(subject.name)}</span></span>`).join('');
-    return content ? `<span class="meta-item subject-meta">${content}</span>` : '';
-  }
-
   function goalMeta(goal, listMode = false) {
     const fields = state.settings.fields;
     const items = [];
-    if (fields.type && goal.type) items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(goal.type)}</span>`);
-    if (fields.status && goal.status) items.push(`<span class="status-chip">${escapeHtml(goal.status)}</span>`);
-    if (fields.date && goal.targetDate) items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(formatDate(goal.targetDate))}</span>`);
-    if (fields.subject && goal.subject) items.push(subjectMetaHtml(goal));
+    const addTextItem = value => items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(value)}</span>`);
+    state.settings.fieldOrder.forEach(key => {
+      if (key === 'type' && fields.type && goal.type) addTextItem(goal.type);
+      if (key === 'status' && fields.status && goal.status) items.push(`<span class="status-chip">${escapeHtml(goal.status)}</span>`);
+      if (key === 'date' && fields.date && goal.targetDate) addTextItem(formatDate(goal.targetDate));
+      if (key === 'subject' && fields.subject && goal.subject) addTextItem(goal.subject);
+    });
     return items.length ? `<div class="goal-meta${listMode ? ' is-list' : ''}">${items.join('')}</div>` : '';
   }
 
@@ -539,6 +506,27 @@
     return `<div class="manual-order">${ordered.map((goal, index) => `<div class="manual-row"><span>${index + 1}. ${escapeHtml(goal.title)}</span><button class="order-button" data-move="up" data-goal-id="${escapeHtml(goal.id)}" ${index === 0 ? 'disabled' : ''} aria-label="위로 이동">↑</button><button class="order-button" data-move="down" data-goal-id="${escapeHtml(goal.id)}" ${index === ordered.length - 1 ? 'disabled' : ''} aria-label="아래로 이동">↓</button></div>`).join('')}</div>`;
   }
 
+  function displayFieldSettingsHtml() {
+    const fixedTitle = `<div class="field-order-row is-fixed"><span class="field-drag-placeholder" aria-hidden="true">●</span><label class="field-order-toggle"><input type="checkbox" data-field="title" ${state.settings.fields.title ? 'checked' : ''}><span>목표명</span></label><span class="fixed-field-badge">맨 위 고정</span></div>`;
+    const sortableFields = state.settings.fieldOrder.map(key => {
+      const label = DISPLAY_FIELD_LABELS[key];
+      return `<div class="field-order-row" data-field-order="${key}"><button type="button" class="field-drag-handle" data-field-drag-handle="${key}" aria-label="${label} 순서 이동" title="드래그하여 순서 변경">⋮⋮</button><label class="field-order-toggle"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}><span>${label}</span></label></div>`;
+    }).join('');
+    return `<div class="display-options"><label class="check-option frame-option"><input type="checkbox" data-display-setting="showFrame" ${state.settings.showFrame ? 'checked' : ''}>제목·외곽 프레임</label><div class="field-order-list" aria-label="표시 정보 순서">${fixedTitle}${sortableFields}</div></div>`;
+  }
+
+  function reorderDisplayField(draggedKey, targetKey, insertAfter = false) {
+    if (!DISPLAY_FIELD_KEYS.includes(draggedKey) || !DISPLAY_FIELD_KEYS.includes(targetKey) || draggedKey === targetKey) return;
+    const current = [...state.settings.fieldOrder];
+    const next = current.filter(key => key !== draggedKey);
+    let targetIndex = next.indexOf(targetKey);
+    if (targetIndex < 0) return;
+    if (insertAfter) targetIndex += 1;
+    next.splice(targetIndex, 0, draggedKey);
+    if (next.every((key, index) => key === current[index])) return;
+    patchSettings({ fieldOrder: next });
+  }
+
   function settingsHtml() {
     if (!state.settingsOpen) return '';
     const connected = state.config.saved;
@@ -553,10 +541,7 @@
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">색상과 스타일</h3></div></div><div class="theme-row">${Object.entries(THEMES).map(([key,theme]) => `<button class="theme-swatch${state.settings.theme === key ? ' selected' : ''}" data-theme-choice="${key}" style="background:${theme.color}" title="${theme.name}" aria-label="${theme.name}"></button>`).join('')}</div><div class="style-row">${[['cream','라인 미니멀'],['soft','배경 투명'],['colorBox','컬러 박스']].map(([key,label]) => `<button class="style-choice${state.settings.style === key ? ' selected' : ''}" data-style-choice="${key}">${label}</button>`).join('')}</div><div class="dark-row"><span>다크 모드</span><button class="switch${state.settings.dark ? ' on' : ''}" data-action="toggle-dark" role="switch" aria-checked="${state.settings.dark}" aria-label="다크 모드"></button></div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">카드 형태</h3><p class="section-hint">좁은 Notion 칼럼에는 작은 카드형, 넓은 영역에는 긴 카드형을 추천해요.</p></div></div><div class="option-grid">${optionButton('small','작은 카드형','2열 카드')}${optionButton('long','긴 카드형','가로 카드')}${optionButton('list','리스트형','한 줄 목록')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">디데이 표시 방식</h3></div></div><div class="format-grid">${formatButton('compact','D-31',true)}${formatButton('remaining','31일 남음')}${formatButton('until','목표까지 31일')}${formatButton('number','31일')}</div></section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">제목·외곽 프레임을 끄면 디데이 카드만 표시됩니다.</p></div></div><div class="toggle-grid">
-            <label class="check-option"><input type="checkbox" data-display-setting="showFrame" ${state.settings.showFrame ? 'checked' : ''}>제목·외곽 프레임</label>
-            ${[['title','목표명'],['type','목표유형'],['status','상태'],['date','목표 날짜'],['subject','관련 과목']].map(([key,label]) => `<label class="check-option"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}>${label}</label>`).join('')}
-          </div></section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">목표명은 맨 위에 고정됩니다. 나머지 항목은 손잡이를 드래그해 순서를 바꿀 수 있어요.</p></div></div>${displayFieldSettingsHtml()}</section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">A는 디데이 글자색, 컬러칩은 배경색을 설정합니다.</p></div><div class="section-actions"><button type="button" class="tiny-button" data-action="apply-theme-colors">전체 테마색 적용</button><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div></div>${goalSelectionHtml()}</section>
         </div>
@@ -731,6 +716,51 @@
   }
 
   function bindEvents() {
+    let fieldDrag = null;
+    const clearFieldDragStyles = () => {
+      root.querySelectorAll('.field-order-row').forEach(row => row.classList.remove('is-dragging', 'drop-before', 'drop-after'));
+    };
+
+    root.addEventListener('pointerdown', event => {
+      const handle = event.target.closest('[data-field-drag-handle]');
+      if (!handle || (event.pointerType === 'mouse' && event.button !== 0)) return;
+      const row = handle.closest('[data-field-order]');
+      if (!row) return;
+      fieldDrag = { pointerId: event.pointerId, draggedKey: row.dataset.fieldOrder, targetKey: null, insertAfter: false };
+      row.classList.add('is-dragging');
+      handle.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    root.addEventListener('pointermove', event => {
+      if (!fieldDrag || event.pointerId !== fieldDrag.pointerId) return;
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.('[data-field-order]');
+      root.querySelectorAll('.field-order-row').forEach(row => row.classList.remove('drop-before', 'drop-after'));
+      if (!target || target.dataset.fieldOrder === fieldDrag.draggedKey) {
+        fieldDrag.targetKey = null;
+        return;
+      }
+      const bounds = target.getBoundingClientRect();
+      fieldDrag.targetKey = target.dataset.fieldOrder;
+      fieldDrag.insertAfter = event.clientY > bounds.top + bounds.height / 2;
+      target.classList.add(fieldDrag.insertAfter ? 'drop-after' : 'drop-before');
+      event.preventDefault();
+    });
+
+    const finishFieldDrag = event => {
+      if (!fieldDrag || event.pointerId !== fieldDrag.pointerId) return;
+      const { draggedKey, targetKey, insertAfter } = fieldDrag;
+      fieldDrag = null;
+      clearFieldDragStyles();
+      if (targetKey) reorderDisplayField(draggedKey, targetKey, insertAfter);
+    };
+    root.addEventListener('pointerup', finishFieldDrag);
+    root.addEventListener('pointercancel', event => {
+      if (!fieldDrag || event.pointerId !== fieldDrag.pointerId) return;
+      fieldDrag = null;
+      clearFieldDragStyles();
+    });
+
     root.addEventListener('click', event => {
       const element = event.target.closest('[data-action], [data-setting], [data-theme-choice], [data-style-choice], [data-move], [data-color-editor-kind]');
       if (!element || !root.contains(element)) return;
@@ -844,6 +874,18 @@
     });
 
     root.addEventListener('keydown', event => {
+      const fieldHandle = event.target.closest('[data-field-drag-handle]');
+      if (fieldHandle && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
+        const key = fieldHandle.dataset.fieldDragHandle;
+        const current = state.settings.fieldOrder;
+        const index = current.indexOf(key);
+        const targetIndex = event.key === 'ArrowUp' ? index - 1 : index + 1;
+        if (index >= 0 && targetIndex >= 0 && targetIndex < current.length) {
+          event.preventDefault();
+          reorderDisplayField(key, current[targetIndex], event.key === 'ArrowDown');
+        }
+        return;
+      }
       const editor = root.querySelector('#goal-color-editor');
       if (event.key === 'Enter' && event.target.id === 'goal-color-hex') {
         event.preventDefault();

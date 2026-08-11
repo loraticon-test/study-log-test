@@ -95,14 +95,6 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .layout-list .goal-meta { margin-top: 3px; flex-wrap: nowrap; overflow: hidden; }
 .meta-item { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta-dot::before { content: "·"; margin-right: 7px; color: var(--theme-muted); }
-.subject-meta { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; }
-.subject-entry { min-width: 0; display: inline-flex; align-items: center; gap: 4px; }
-.subject-entry + .subject-entry::before { content: ","; margin-right: 3px; color: var(--text-muted); }
-.subject-icon { flex: 0 0 auto; }
-.subject-emoji { font-size: 12px; line-height: 1; }
-.subject-icon-image { width: 13px; height: 13px; border-radius: 3px; object-fit: contain; }
-.subject-fallback-dot { color: var(--theme-muted); font-size: 13px; line-height: 1; }
-.subject-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .status-chip { display: inline-flex; align-items: center; max-width: 100%; padding: 3px 7px; border-radius: 999px; background: var(--theme-soft); color: var(--theme-hover); font-size: 9.5px; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .style-soft .status-chip { background: color-mix(in srgb, var(--surface-raised) 62%, transparent); }
 .countdown { color: var(--goal-text-color, var(--theme-title)); font-variant-numeric: tabular-nums; letter-spacing: -.035em; white-space: nowrap; }
@@ -172,7 +164,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .recommended { display: inline-flex; padding: 3px 6px; border-radius: 999px; color: white !important; background: var(--theme-color); font-size: 8px !important; font-weight: 900; }
 .toggle-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
 .check-option { min-height: 42px; padding: 0 11px; display: flex; align-items: center; gap: 9px; border-radius: 13px; color: var(--text-soft); background: var(--theme-soft); font-size: 11px; font-weight: 800; cursor: pointer; }
-.check-option input, .goal-select-row input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: var(--theme-color); }
+.check-option input, .field-order-toggle input, .goal-select-row input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: var(--theme-color); }
+.display-options { display: grid; gap: 9px; }
+.frame-option { width: 100%; }
+.field-order-list { display: flex; flex-direction: column; gap: 6px; }
+.field-order-row { position: relative; min-width: 0; min-height: 42px; padding: 0 10px 0 7px; display: flex; align-items: center; gap: 7px; border: 1px solid transparent; border-radius: 13px; color: var(--text-soft); background: var(--theme-soft); transition: opacity .15s ease, border-color .15s ease, transform .15s ease; }
+.field-order-row.is-fixed { border-color: var(--theme-border); background: var(--surface-raised); }
+.field-order-row.is-dragging { opacity: .48; }
+.field-order-row.drop-before::before,
+.field-order-row.drop-after::after { content: ""; position: absolute; left: 8px; right: 8px; height: 3px; border-radius: 999px; background: var(--theme-color); pointer-events: none; }
+.field-order-row.drop-before::before { top: -5px; }
+.field-order-row.drop-after::after { bottom: -5px; }
+.field-drag-handle { width: 26px; height: 30px; flex: 0 0 auto; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--text-muted); background: transparent; font-size: 13px; letter-spacing: -3px; cursor: grab; touch-action: none; user-select: none; }
+.field-drag-handle:hover, .field-drag-handle:focus-visible { color: var(--theme-hover); background: var(--surface-raised); }
+.field-drag-handle:active { cursor: grabbing; }
+.field-drag-placeholder { width: 26px; flex: 0 0 auto; color: var(--theme-muted); font-size: 7px; text-align: center; }
+.field-order-toggle { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 800; cursor: pointer; }
+.fixed-field-badge { flex: 0 0 auto; padding: 3px 6px; border-radius: 999px; color: var(--theme-hover); background: var(--theme-soft); font-size: 8px; font-weight: 900; white-space: nowrap; }
 .select-input, .search-input { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid var(--theme-border); border-radius: 13px; color: var(--text); background: var(--surface-raised); font-size: 11px; font-weight: 750; }
 .goal-tools { display: flex; gap: 7px; margin-bottom: 8px; }
 .search-input { min-width: 0; flex: 1; }

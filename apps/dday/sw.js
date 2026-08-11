@@ -1,10 +1,10 @@
-const CACHE_NAME = 'cozy-dday-v18';
+const CACHE_NAME = 'cozy-dday-v19';
 const APP_SHELL = [
   './index.html',
   './manifest-dday.webmanifest',
   '../../assets/js/install-config.js?v=20260811-0001',
-  '../../assets/js/dday-app.js?v=20260812-0018',
-  '../../assets/css/dday.css?v=20260812-0018'
+  '../../assets/js/dday-app.js?v=20260812-0019',
+  '../../assets/css/dday.css?v=20260812-0019'
 ];
 const CACHEABLE_HOSTS = new Set(['cdn.jsdelivr.net']);
 
