@@ -8,27 +8,27 @@
 
   const THEMES = {
     latte: {
-      name: '카페 라떼', color: '#A67B5B',
+      name: '카페 라떼', color: '#A67B5B', textColor: '#5C3A21',
       goalColors: ['#F4F0EA', '#D1CBBF', '#CAB09D', '#A67B5B', '#8B664B']
     },
     matcha: {
-      name: '말차 라떼', color: '#849F71',
+      name: '말차 라떼', color: '#849F71', textColor: '#425B37',
       goalColors: ['#EEF4E9', '#BBC8AD', '#B5C5AA', '#849F71', '#738C62']
     },
     choco: {
-      name: '초코 라떼', color: '#72523A',
+      name: '초코 라떼', color: '#72523A', textColor: '#3D291C',
       goalColors: ['#F4ECE4', '#C7B4A2', '#B69A82', '#72523A', '#5C3A21']
     },
     berry: {
-      name: '딸기 라떼', color: '#D98891',
+      name: '딸기 라떼', color: '#D98891', textColor: '#8F4F58',
       goalColors: ['#FCECEF', '#D9AEB5', '#D3A2A9', '#D98891', '#C2737D']
     },
     milkTea: {
-      name: '밀크티', color: '#D4A373',
+      name: '밀크티', color: '#D4A373', textColor: '#7B5738',
       goalColors: ['#F7ECDD', '#D8B98E', '#D1AD84', '#D4A373', '#B88B5E']
     },
     blue: {
-      name: '블루라떼', color: '#79ABC2',
+      name: '블루라떼', color: '#79ABC2', textColor: '#466B7C',
       goalColors: ['#EAF5FA', '#AAC8D6', '#9BBFCF', '#79ABC2', '#6395AC']
     }
   };
@@ -44,7 +44,8 @@
     fields: { title: true, type: false, status: false, date: false, subject: false },
     selectedIds: null,
     manualOrder: [],
-    goalColors: {}
+    goalColors: {},
+    goalTextColors: {}
   };
 
   const icons = {
@@ -100,6 +101,7 @@
     const requestedTheme = params.get('colorTheme') || saved.theme || DEFAULT_SETTINGS.theme;
     const requestedStyle = saved.style === 'outline' ? 'cream' : (saved.style || DEFAULT_SETTINGS.style);
     const savedGoalColors = saved.goalColors && typeof saved.goalColors === 'object' ? saved.goalColors : {};
+    const savedGoalTextColors = saved.goalTextColors && typeof saved.goalTextColors === 'object' ? saved.goalTextColors : {};
     return {
       ...DEFAULT_SETTINGS,
       ...saved,
@@ -110,7 +112,8 @@
       fields: { ...DEFAULT_SETTINGS.fields, ...(saved.fields || {}) },
       selectedIds: selectedFromUrl.length ? selectedFromUrl : (Array.isArray(saved.selectedIds) ? saved.selectedIds : null),
       manualOrder: Array.isArray(saved.manualOrder) ? saved.manualOrder : [],
-      goalColors: Object.fromEntries(Object.entries(savedGoalColors).filter(([, color]) => normalizeHexColor(color)))
+      goalColors: Object.fromEntries(Object.entries(savedGoalColors).filter(([, color]) => normalizeHexColor(color))),
+      goalTextColors: Object.fromEntries(Object.entries(savedGoalTextColors).filter(([, color]) => normalizeHexColor(color)))
     };
   }
 
@@ -145,6 +148,20 @@
 
   function goalColor(goal) {
     return normalizeHexColor(state.settings.goalColors?.[goal.id]) || automaticGoalColor(goal);
+  }
+
+  function customGoalTextColor(goal) {
+    return normalizeHexColor(state.settings.goalTextColors?.[goal.id]);
+  }
+
+  function defaultGoalTextColor() {
+    if (state.settings.dark) return state.settings.style === 'colorBox' ? '#F3F4F6' : '#F3E6D6';
+    if (state.settings.style === 'colorBox') return '#1F2937';
+    return (THEMES[state.settings.theme] || THEMES.latte).textColor;
+  }
+
+  function goalTextPickerColor(goal) {
+    return customGoalTextColor(goal) || defaultGoalTextColor();
   }
 
   function normalizeKey(value) {
@@ -384,7 +401,8 @@
     const title = state.settings.fields.title ? `<h3 class="goal-name" title="${escapeHtml(goal.title)}">${escapeHtml(goal.title)}</h3>` : '';
     const countdown = formatCountdown(goal);
     const countdownHtml = `<div class="countdown${countdownClass(goal)}${goal.targetDate ? '' : ' no-date'}">${escapeHtml(countdown)}</div>`;
-    const cardOpen = `<article class="goal-card" style="--goal-color:${goalColor(goal)}">`;
+    const textColor = customGoalTextColor(goal);
+    const cardOpen = `<article class="goal-card" style="--goal-color:${goalColor(goal)}${textColor ? `;--goal-text-color:${textColor}` : ''}">`;
     if (state.settings.layout === 'list') {
       return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
     }
@@ -436,7 +454,8 @@
       const meta = [goal.type, goal.status, goal.subject].filter(Boolean).join(' · ') || formatDate(goal.targetDate) || '날짜 없음';
       const safeId = escapeHtml(goal.id);
       const color = goalColor(goal);
-      return `<div class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" style="--goal-color:${color}"><input id="goal-check-${safeId}" type="checkbox" data-goal-id="${safeId}" ${selected.has(goal.id) ? 'checked' : ''}><label class="goal-select-copy" for="goal-check-${safeId}"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></label><input class="goal-color-picker" type="color" value="${color}" data-goal-color-id="${safeId}" title="${escapeHtml(goal.title)} 색상 선택" aria-label="${escapeHtml(goal.title)} 색상 선택"><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></div>`;
+      const textColor = goalTextPickerColor(goal);
+      return `<div class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" style="--goal-color:${color};--goal-text-color:${textColor}"><input id="goal-check-${safeId}" type="checkbox" data-goal-id="${safeId}" ${selected.has(goal.id) ? 'checked' : ''}><label class="goal-select-copy" for="goal-check-${safeId}"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></label><label class="goal-text-color-picker" title="${escapeHtml(goal.title)} 디데이 글자색 선택"><span class="goal-text-color-glyph" aria-hidden="true">A</span><input type="color" value="${textColor}" data-goal-text-color-id="${safeId}" aria-label="${escapeHtml(goal.title)} 디데이 글자색 선택"></label><input class="goal-color-picker" type="color" value="${color}" data-goal-color-id="${safeId}" title="${escapeHtml(goal.title)} 배경색 선택" aria-label="${escapeHtml(goal.title)} 배경색 선택"><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></div>`;
     }).join('');
     const remaining = matches.length - visible.length;
     return `<div class="goal-select-list">${rows}</div>${remaining > 0 ? `<div class="goal-list-footer"><button class="tiny-button" data-action="show-more-goals">더 보기 (${remaining}개 남음)</button></div>` : ''}`;
@@ -474,7 +493,7 @@
             ${[['title','목표명'],['type','목표유형'],['status','상태'],['date','목표 날짜'],['subject','관련 과목']].map(([key,label]) => `<label class="check-option"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}>${label}</label>`).join('')}
           </div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">여러 개를 선택할 수 있어요.</p></div><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div>${goalSelectionHtml()}</section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">A는 디데이 글자색, 컬러칩은 배경색을 설정합니다.</p></div><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div>${goalSelectionHtml()}</section>
         </div>
         <footer class="settings-footer"><button class="secondary-button" data-action="refresh">데이터 새로고침</button><button class="primary-button" data-action="close-settings">설정 완료</button></footer>
       </section>
@@ -574,6 +593,15 @@
       if (input.dataset.settingSelect) { patchSettings({ [input.dataset.settingSelect]: input.value }); return; }
       if (input.dataset.displaySetting) { patchSettings({ [input.dataset.displaySetting]: input.checked }); return; }
       if (input.dataset.field) { patchSettings({ fields: { ...state.settings.fields, [input.dataset.field]: input.checked } }); return; }
+      if (input.dataset.goalTextColorId) {
+        const color = normalizeHexColor(input.value);
+        if (!color) return;
+        state.settings = { ...state.settings, goalTextColors: { ...state.settings.goalTextColors, [input.dataset.goalTextColorId]: color } };
+        saveSettings();
+        input.closest('.goal-select-row')?.style.setProperty('--goal-text-color', color);
+        renderMain();
+        return;
+      }
       if (input.dataset.goalColorId) {
         const color = normalizeHexColor(input.value);
         if (!color) return;
