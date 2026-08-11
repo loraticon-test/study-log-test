@@ -13,23 +13,23 @@
     },
     matcha: {
       name: '말차 라떼', color: '#849F71', textColor: '#425B37',
-      goalColors: ['#EEF4E9', '#BBC8AD', '#B5C5AA', '#849F71', '#738C62']
+      goalColors: ['#EEF4E9', '#C9D6BF', '#A6BA97', '#849F71', '#738C62']
     },
     choco: {
       name: '초코 라떼', color: '#72523A', textColor: '#3D291C',
-      goalColors: ['#F4ECE4', '#C7B4A2', '#B69A82', '#72523A', '#5C3A21']
+      goalColors: ['#F4ECE4', '#C6B6A9', '#9C8370', '#72523A', '#5C3A21']
     },
     berry: {
       name: '딸기 라떼', color: '#D98891', textColor: '#8F4F58',
-      goalColors: ['#FCECEF', '#D9AEB5', '#D3A2A9', '#D98891', '#C2737D']
+      goalColors: ['#FCECEF', '#F0C9CE', '#E4A8AF', '#D98891', '#C2737D']
     },
     milkTea: {
       name: '밀크티', color: '#D4A373', textColor: '#7B5738',
-      goalColors: ['#F7ECDD', '#D8B98E', '#D1AD84', '#D4A373', '#B88B5E']
+      goalColors: ['#F7ECDD', '#EBD2B8', '#DFBA95', '#D4A373', '#B88B5E']
     },
     blue: {
       name: '블루라떼', color: '#79ABC2', textColor: '#466B7C',
-      goalColors: ['#EAF5FA', '#AAC8D6', '#9BBFCF', '#79ABC2', '#6395AC']
+      goalColors: ['#EAF5FA', '#C2DBE6', '#9DC3D4', '#79ABC2', '#6395AC']
     }
   };
 
