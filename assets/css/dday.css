@@ -54,7 +54,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .spinner { width: 17px; height: 17px; border: 2px solid var(--theme-border); border-top-color: var(--theme-color); border-radius: 50%; animation: spin .8s linear infinite; }
 
 .widget-shell { position: relative; width: min(100%, 520px); min-width: 0; max-width: 100%; margin: 0; padding: 18px; background: transparent; border: 1px solid var(--theme-border); border-radius: 32px; box-shadow: none; transition: width .25s ease, border-color .2s ease; }
-.widget-shell.layout-small { width: min(100%, 440px); }
+.widget-shell.layout-small { width: 100%; }
 .widget-shell.layout-small.single-goal { width: min(100%, 280px); }
 .widget-shell.frame-hidden { padding: 0; border: 0; border-radius: 0; }
 .layout-small.single-goal .goal-grid { grid-template-columns: 1fr; }
@@ -73,7 +73,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .icon-button.loading svg { animation: spin .8s linear infinite; }
 
 .goal-grid { width: 100%; max-width: 100%; display: grid; gap: 10px; min-width: 0; }
-.layout-small .goal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.layout-small .goal-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 220px)); }
 .layout-long .goal-grid, .layout-list .goal-grid { grid-template-columns: 1fr; }
 .goal-card { --goal-color: var(--theme-color); position: relative; min-width: 0; overflow: hidden; border: 1px solid var(--theme-border); background: var(--surface-raised); transition: transform .18s ease, border-color .18s ease, background .18s ease; }
 .goal-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--theme-color) 45%, var(--theme-border)); }
