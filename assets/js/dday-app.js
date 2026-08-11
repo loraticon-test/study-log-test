@@ -341,7 +341,7 @@
     const countdown = formatCountdown(goal);
     const countdownHtml = `<div class="countdown${countdownClass(goal)}${goal.targetDate ? '' : ' no-date'}">${escapeHtml(countdown)}</div>`;
     if (state.settings.layout === 'list') {
-      return `<article class="goal-card"><span class="goal-accent" aria-hidden="true"></span><div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
+      return `<article class="goal-card"><div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
     }
     if (state.settings.layout === 'long') {
       return `<article class="goal-card"><div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
