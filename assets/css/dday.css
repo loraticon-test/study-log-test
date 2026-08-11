@@ -95,6 +95,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .layout-list .goal-meta { margin-top: 3px; flex-wrap: nowrap; overflow: hidden; }
 .meta-item { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta-dot::before { content: "·"; margin-right: 7px; color: var(--theme-muted); }
+.subject-meta { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; }
+.subject-entry { min-width: 0; display: inline-flex; align-items: center; gap: 4px; }
+.subject-entry + .subject-entry::before { content: ","; margin-right: 3px; color: var(--text-muted); }
+.subject-icon { flex: 0 0 auto; }
+.subject-emoji { font-size: 12px; line-height: 1; }
+.subject-icon-image { width: 13px; height: 13px; border-radius: 3px; object-fit: contain; }
+.subject-fallback-dot { color: var(--theme-muted); font-size: 13px; line-height: 1; }
+.subject-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .status-chip { display: inline-flex; align-items: center; max-width: 100%; padding: 3px 7px; border-radius: 999px; background: var(--theme-soft); color: var(--theme-hover); font-size: 9.5px; font-weight: 850; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .style-soft .status-chip { background: color-mix(in srgb, var(--surface-raised) 62%, transparent); }
 .countdown { color: var(--goal-text-color, var(--theme-title)); font-variant-numeric: tabular-nums; letter-spacing: -.035em; white-space: nowrap; }

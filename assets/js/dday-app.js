@@ -203,6 +203,41 @@
     return [];
   }
 
+  function notionPageIcon(page) {
+    const icon = page?.icon;
+    if (!icon) return null;
+    if (icon.type === 'emoji' && icon.emoji) return { type: 'emoji', value: icon.emoji };
+    const url = icon[icon.type]?.url;
+    if (!url) return null;
+    try {
+      const parsed = new URL(url, location.href);
+      return ['http:', 'https:'].includes(parsed.protocol) ? { type: 'image', value: parsed.href } : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function subjectFromPage(page, fallbackName = '과목 연결됨') {
+    const title = Object.values(page?.properties || {}).find(prop => prop.type === 'title');
+    return { name: richText(title) || fallbackName, icon: notionPageIcon(page) };
+  }
+
+  function mergeSubjectItems(goal, subjectMap) {
+    const items = new Map();
+    const add = (name, icon = null) => {
+      String(name || '').split(',').map(item => item.trim()).filter(Boolean).forEach(item => {
+        const existing = items.get(item);
+        if (!existing || (!existing.icon && icon)) items.set(item, { name: item, icon });
+      });
+    };
+    goal.subjectIds.forEach(id => {
+      const subject = subjectMap[id];
+      if (subject) add(subject.name, subject.icon);
+    });
+    add(goal.subjectText);
+    return [...items.values()];
+  }
+
   async function notion(path, options = {}) {
     const response = await fetch(`${state.config.proxyUrl}${path}`, {
       ...options,
@@ -243,8 +278,7 @@
       try {
         const pages = await fetchDatabasePages(state.config.subjectDbId, {}, 500);
         pages.forEach(page => {
-          const title = Object.values(page.properties || {}).find(prop => prop.type === 'title');
-          map[page.id] = richText(title) || '이름 없는 과목';
+          map[page.id] = subjectFromPage(page, '이름 없는 과목');
         });
         return map;
       } catch (error) {
@@ -257,11 +291,10 @@
       const results = await Promise.all(batch.map(async id => {
         try {
           const page = await notion(`/v1/pages/${id}`, { method: 'GET' });
-          const title = Object.values(page.properties || {}).find(prop => prop.type === 'title');
-          return [id, richText(title) || '이름 없는 과목'];
-        } catch (_) { return [id, '과목 연결됨']; }
+          return [id, subjectFromPage(page, '이름 없는 과목')];
+        } catch (_) { return [id, { name: '과목 연결됨', icon: null }]; }
       }));
-      results.forEach(([id, name]) => { map[id] = name; });
+      results.forEach(([id, subject]) => { map[id] = subject; });
     }
     return map;
   }
@@ -307,10 +340,8 @@
       });
       const subjectMap = await fetchSubjectMap(rawGoals.flatMap(goal => goal.subjectIds));
       state.goals = rawGoals.map(goal => {
-        const subjectNames = [goal.subjectText, ...goal.subjectIds.map(id => subjectMap[id])]
-          .flatMap(value => String(value || '').split(',').map(item => item.trim()))
-          .filter(Boolean);
-        return { ...goal, subject: [...new Set(subjectNames)].join(', ') };
+        const subjectItems = mergeSubjectItems(goal, subjectMap);
+        return { ...goal, subjectItems, subject: subjectItems.map(item => item.name).join(', ') };
       });
 
       if (state.settings.selectedIds === null) {
@@ -403,13 +434,31 @@
     return sortGoals(state.goals.filter(goal => selected.has(goal.id)));
   }
 
+  function subjectMarkerHtml(icon) {
+    if (icon?.type === 'emoji') {
+      return `<span class="subject-icon subject-emoji" aria-hidden="true">${escapeHtml(icon.value)}</span>`;
+    }
+    if (icon?.type === 'image') {
+      return `<img class="subject-icon subject-icon-image" src="${escapeHtml(icon.value)}" alt="" aria-hidden="true">`;
+    }
+    return '<span class="subject-icon subject-fallback-dot" aria-hidden="true">&middot;</span>';
+  }
+
+  function subjectMetaHtml(goal) {
+    const subjects = Array.isArray(goal.subjectItems) && goal.subjectItems.length
+      ? goal.subjectItems
+      : String(goal.subject || '').split(',').map(name => ({ name: name.trim(), icon: null })).filter(item => item.name);
+    const content = subjects.map(subject => `<span class="subject-entry">${subjectMarkerHtml(subject.icon)}<span class="subject-name">${escapeHtml(subject.name)}</span></span>`).join('');
+    return content ? `<span class="meta-item subject-meta">${content}</span>` : '';
+  }
+
   function goalMeta(goal, listMode = false) {
     const fields = state.settings.fields;
     const items = [];
     if (fields.type && goal.type) items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(goal.type)}</span>`);
     if (fields.status && goal.status) items.push(`<span class="status-chip">${escapeHtml(goal.status)}</span>`);
     if (fields.date && goal.targetDate) items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(formatDate(goal.targetDate))}</span>`);
-    if (fields.subject && goal.subject) items.push(`<span class="${items.length ? 'meta-item meta-dot' : 'meta-item'}">${escapeHtml(goal.subject)}</span>`);
+    if (fields.subject && goal.subject) items.push(subjectMetaHtml(goal));
     return items.length ? `<div class="goal-meta${listMode ? ' is-list' : ''}">${items.join('')}</div>` : '';
   }
 
