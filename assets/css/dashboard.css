@@ -647,12 +647,12 @@ html, body, #root {
     background-color: var(--theme-dark-border) !important;
 }
 
-/* Mastered vocabulary cards: subtle frame with a clear status rail. */
+/* Mastered vocabulary cards: subtle, even frame. */
 .theme-scope .mastered-word-card,
 .theme-scope .bg-\[\#F3F8F5\].border-\[\#E8F2EC\] {
     background-color: #F3F8F5 !important;
     border-color: #C9DCCF !important;
-    border-left: 3px solid var(--theme-color, #849F71) !important;
+    border-left: 1px solid #C9DCCF !important;
     background-color: color-mix(in srgb, var(--theme-color) 7%, var(--theme-surface)) !important;
     border-color: color-mix(in srgb, var(--theme-color) 28%, var(--theme-surface)) !important;
     box-shadow: none !important;
@@ -662,7 +662,6 @@ html, body, #root {
 .theme-scope .bg-\[\#F3F8F5\].border-\[\#E8F2EC\]:hover {
     border-color: #9FBEA7 !important;
     border-color: color-mix(in srgb, var(--theme-color) 55%, var(--theme-surface)) !important;
-    border-left-color: var(--theme-color) !important;
     box-shadow: 0 6px 16px color-mix(in srgb, var(--theme-color) 12%, transparent) !important;
     transform: translateY(-1px);
 }
@@ -671,16 +670,13 @@ html, body, #root {
 .dark .theme-scope .bg-\[\#F3F8F5\].border-\[\#E8F2EC\] {
     background-color: #1F2A24 !important;
     border-color: #36513E !important;
-    border-left-color: var(--theme-color, #849F71) !important;
     background-color: color-mix(in srgb, var(--theme-color) 10%, #252525) !important;
     border-color: color-mix(in srgb, var(--theme-color) 30%, #2F2F2F) !important;
-    border-left-color: var(--theme-dark-accent) !important;
 }
 
 .dark .theme-scope .mastered-word-card:hover,
 .dark .theme-scope .bg-\[\#F3F8F5\].border-\[\#E8F2EC\]:hover {
     border-color: #52735C !important;
     border-color: color-mix(in srgb, var(--theme-color) 58%, #2F2F2F) !important;
-    border-left-color: var(--theme-dark-accent) !important;
     box-shadow: 0 8px 18px color-mix(in srgb, var(--theme-color) 14%, transparent) !important;
 }
