@@ -1,9 +1,9 @@
-const CACHE_NAME = 'cozy-dashboard-pwa-v26';
+const CACHE_NAME = 'cozy-dashboard-pwa-v27';
 const APP_SHELL = [
   './dashboard.html',
   './manifest.webmanifest',
   '../../assets/js/install-config.js?v=20260724-0002',
-  '../../assets/js/dashboard-app.js?v=20260811-0006',
+  '../../assets/js/dashboard-app.js?v=20260812-0007',
   '../../assets/css/dashboard.css?v=20260811-0006'
 ];
 const OPTIONAL_ASSETS = [
