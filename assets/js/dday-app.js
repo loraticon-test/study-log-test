@@ -7,12 +7,30 @@
   const root = document.getElementById('root');
 
   const THEMES = {
-    latte: { name: '카페 라떼', color: '#A67B5B' },
-    matcha: { name: '말차 라떼', color: '#849F71' },
-    choco: { name: '초코 라떼', color: '#72523A' },
-    berry: { name: '딸기 라떼', color: '#D98891' },
-    milkTea: { name: '밀크티', color: '#D4A373' },
-    blue: { name: '블루라떼', color: '#79ABC2' }
+    latte: {
+      name: '카페 라떼', color: '#A67B5B',
+      goalColors: ['#F4F0EA', '#D1CBBF', '#CAB09D', '#A67B5B', '#8B664B']
+    },
+    matcha: {
+      name: '말차 라떼', color: '#849F71',
+      goalColors: ['#EEF4E9', '#BBC8AD', '#B5C5AA', '#849F71', '#738C62']
+    },
+    choco: {
+      name: '초코 라떼', color: '#72523A',
+      goalColors: ['#F4ECE4', '#C7B4A2', '#B69A82', '#72523A', '#5C3A21']
+    },
+    berry: {
+      name: '딸기 라떼', color: '#D98891',
+      goalColors: ['#FCECEF', '#D9AEB5', '#D3A2A9', '#D98891', '#C2737D']
+    },
+    milkTea: {
+      name: '밀크티', color: '#D4A373',
+      goalColors: ['#F7ECDD', '#D8B98E', '#D1AD84', '#D4A373', '#B88B5E']
+    },
+    blue: {
+      name: '블루라떼', color: '#79ABC2',
+      goalColors: ['#EAF5FA', '#AAC8D6', '#9BBFCF', '#79ABC2', '#6395AC']
+    }
   };
 
   const DEFAULT_SETTINGS = {
@@ -25,7 +43,8 @@
     showFrame: true,
     fields: { title: true, type: false, status: false, date: false, subject: false },
     selectedIds: null,
-    manualOrder: []
+    manualOrder: [],
+    goalColors: {}
   };
 
   const icons = {
@@ -44,6 +63,8 @@
     loading: false,
     error: '',
     settingsOpen: false,
+    goalSearch: '',
+    goalListLimit: 60,
     toast: '',
     toastTimer: null
   };
@@ -76,15 +97,20 @@
     const saved = safeJson(localStorage.getItem(SETTINGS_KEY) || '{}', {});
     const params = new URLSearchParams(location.search);
     const selectedFromUrl = (params.get('showGoals') || params.get('selectedGoals') || '').split(',').map(extractNotionId).filter(Boolean);
+    const requestedTheme = params.get('colorTheme') || saved.theme || DEFAULT_SETTINGS.theme;
+    const requestedStyle = saved.style === 'outline' ? 'cream' : (saved.style || DEFAULT_SETTINGS.style);
+    const savedGoalColors = saved.goalColors && typeof saved.goalColors === 'object' ? saved.goalColors : {};
     return {
       ...DEFAULT_SETTINGS,
       ...saved,
       layout: params.get('layout') || saved.layout || DEFAULT_SETTINGS.layout,
       format: params.get('format') || saved.format || DEFAULT_SETTINGS.format,
-      theme: params.get('colorTheme') || saved.theme || DEFAULT_SETTINGS.theme,
+      theme: THEMES[requestedTheme] ? requestedTheme : DEFAULT_SETTINGS.theme,
+      style: ['cream', 'soft'].includes(requestedStyle) ? requestedStyle : DEFAULT_SETTINGS.style,
       fields: { ...DEFAULT_SETTINGS.fields, ...(saved.fields || {}) },
       selectedIds: selectedFromUrl.length ? selectedFromUrl : (Array.isArray(saved.selectedIds) ? saved.selectedIds : null),
-      manualOrder: Array.isArray(saved.manualOrder) ? saved.manualOrder : []
+      manualOrder: Array.isArray(saved.manualOrder) ? saved.manualOrder : [],
+      goalColors: Object.fromEntries(Object.entries(savedGoalColors).filter(([, color]) => normalizeHexColor(color)))
     };
   }
 
@@ -102,6 +128,23 @@
 
   function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+  }
+
+  function normalizeHexColor(value) {
+    const color = String(value || '').trim();
+    return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : '';
+  }
+
+  function automaticGoalColor(goal) {
+    const palette = (THEMES[state.settings.theme] || THEMES.latte).goalColors;
+    const source = String(goal.id || goal.title || 'goal');
+    let hash = 0;
+    for (let index = 0; index < source.length; index += 1) hash = ((hash * 31) + source.charCodeAt(index)) >>> 0;
+    return palette[hash % palette.length];
+  }
+
+  function goalColor(goal) {
+    return normalizeHexColor(state.settings.goalColors?.[goal.id]) || automaticGoalColor(goal);
   }
 
   function normalizeKey(value) {
@@ -341,13 +384,14 @@
     const title = state.settings.fields.title ? `<h3 class="goal-name" title="${escapeHtml(goal.title)}">${escapeHtml(goal.title)}</h3>` : '';
     const countdown = formatCountdown(goal);
     const countdownHtml = `<div class="countdown${countdownClass(goal)}${goal.targetDate ? '' : ' no-date'}">${escapeHtml(countdown)}</div>`;
+    const cardOpen = `<article class="goal-card" style="--goal-color:${goalColor(goal)}">`;
     if (state.settings.layout === 'list') {
-      return `<article class="goal-card"><div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
+      return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
     }
     if (state.settings.layout === 'long') {
-      return `<article class="goal-card"><div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
+      return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
     }
-    return `<article class="goal-card"><div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
+    return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
   }
 
   function emptyState() {
@@ -382,15 +426,26 @@
     return `<button class="format-button${state.settings.format === value ? ' selected' : ''}" data-setting="format" data-value="${value}"><strong>${sample}</strong>${recommended ? '<span class="recommended">추천</span>' : ''}</button>`;
   }
 
+  function goalListContentHtml() {
+    const query = state.goalSearch.trim().toLowerCase();
+    const matches = sortGoals(state.goals, 'dateAsc').filter(goal => !query || goal.title.toLowerCase().includes(query));
+    const visible = matches.slice(0, state.goalListLimit);
+    const selected = new Set(state.settings.selectedIds || []);
+    if (!visible.length) return '<div class="param-help">검색 결과가 없어요.</div>';
+    const rows = visible.map(goal => {
+      const meta = [goal.type, goal.status, goal.subject].filter(Boolean).join(' · ') || formatDate(goal.targetDate) || '날짜 없음';
+      const safeId = escapeHtml(goal.id);
+      const color = goalColor(goal);
+      return `<div class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" style="--goal-color:${color}"><input id="goal-check-${safeId}" type="checkbox" data-goal-id="${safeId}" ${selected.has(goal.id) ? 'checked' : ''}><label class="goal-select-copy" for="goal-check-${safeId}"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></label><input class="goal-color-picker" type="color" value="${color}" data-goal-color-id="${safeId}" title="${escapeHtml(goal.title)} 색상 선택" aria-label="${escapeHtml(goal.title)} 색상 선택"><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></div>`;
+    }).join('');
+    const remaining = matches.length - visible.length;
+    return `<div class="goal-select-list">${rows}</div>${remaining > 0 ? `<div class="goal-list-footer"><button class="tiny-button" data-action="show-more-goals">더 보기 (${remaining}개 남음)</button></div>` : ''}`;
+  }
+
   function goalSelectionHtml() {
     if (state.loading) return '<div class="initial-loader"><span class="spinner"></span><span>목표 목록을 불러오는 중이에요</span></div>';
     if (!state.goals.length) return '<div class="param-help">연결 후 목표 목록이 여기에 표시됩니다.</div>';
-    const selected = new Set(state.settings.selectedIds || []);
-    return `<div class="goal-tools"><input id="goal-search" class="search-input" type="search" placeholder="목표명 검색" aria-label="목표명 검색"><button class="tiny-button" data-action="select-all">전체 선택</button><button class="tiny-button" data-action="clear-selection">해제</button></div>
-      <div class="goal-select-list">${sortGoals(state.goals, 'dateAsc').map(goal => {
-        const meta = [goal.type, goal.status, goal.subject].filter(Boolean).join(' · ') || formatDate(goal.targetDate) || '날짜 없음';
-        return `<label class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" data-search="${escapeHtml(goal.title.toLowerCase())}"><input type="checkbox" data-goal-id="${escapeHtml(goal.id)}" ${selected.has(goal.id) ? 'checked' : ''}><span class="goal-select-copy"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></span><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></label>`;
-      }).join('')}</div>`;
+    return `<div class="goal-tools"><input id="goal-search" class="search-input" type="search" value="${escapeHtml(state.goalSearch)}" placeholder="목표명 검색" aria-label="목표명 검색"><button class="tiny-button" data-action="select-all">전체 선택</button><button class="tiny-button" data-action="clear-selection">해제</button></div><div id="goal-list-content">${goalListContentHtml()}</div>`;
   }
 
   function manualOrderHtml() {
@@ -411,7 +466,7 @@
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">Notion 연결</h3><p class="section-hint">목표 DB는 필수, 과목 DB는 과목명 표시를 위해 권장합니다.</p></div></div>
             <div class="connection-card"><span class="connection-icon">${icons.link}</span><span class="connection-copy"><strong>${connected ? '목표 DB가 연결되어 있어요' : '목표 DB 연결이 필요해요'}</strong><span>${connected ? `목표 DB ${state.config.goalDbId.slice(0, 6)}… · 과목 DB ${state.config.subjectDbId ? '연결됨' : '관계 페이지로 조회'}` : '통합 설정 또는 URL 파라미터로 연결해 주세요.'}</span></span><span class="connection-pill${connected ? '' : ' missing'}">${connected ? '연결됨' : '필수 누락'}</span></div>
           </section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">색상과 스타일</h3></div></div><div class="theme-row">${Object.entries(THEMES).map(([key,theme]) => `<button class="theme-swatch${state.settings.theme === key ? ' selected' : ''}" data-theme-choice="${key}" style="background:${theme.color}" title="${theme.name}" aria-label="${theme.name}"></button>`).join('')}</div><div class="style-row">${[['cream','크림 카드'],['soft','소프트 컬러'],['outline','라인 미니멀']].map(([key,label]) => `<button class="style-choice${state.settings.style === key ? ' selected' : ''}" data-style-choice="${key}">${label}</button>`).join('')}</div><div class="dark-row"><span>다크 모드</span><button class="switch${state.settings.dark ? ' on' : ''}" data-action="toggle-dark" role="switch" aria-checked="${state.settings.dark}" aria-label="다크 모드"></button></div></section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">색상과 스타일</h3></div></div><div class="theme-row">${Object.entries(THEMES).map(([key,theme]) => `<button class="theme-swatch${state.settings.theme === key ? ' selected' : ''}" data-theme-choice="${key}" style="background:${theme.color}" title="${theme.name}" aria-label="${theme.name}"></button>`).join('')}</div><div class="style-row">${[['cream','라인 미니멀'],['soft','소프트 컬러']].map(([key,label]) => `<button class="style-choice${state.settings.style === key ? ' selected' : ''}" data-style-choice="${key}">${label}</button>`).join('')}</div><div class="dark-row"><span>다크 모드</span><button class="switch${state.settings.dark ? ' on' : ''}" data-action="toggle-dark" role="switch" aria-checked="${state.settings.dark}" aria-label="다크 모드"></button></div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">카드 형태</h3><p class="section-hint">좁은 Notion 칼럼에는 작은 카드형, 넓은 영역에는 긴 카드형을 추천해요.</p></div></div><div class="option-grid">${optionButton('small','작은 카드형','2열 카드')}${optionButton('long','긴 카드형','가로 카드')}${optionButton('list','리스트형','한 줄 목록')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">디데이 표시 방식</h3></div></div><div class="format-grid">${formatButton('compact','D-31',true)}${formatButton('remaining','31일 남음')}${formatButton('until','목표까지 31일')}${formatButton('number','31일')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">제목·외곽 프레임을 끄면 디데이 카드만 표시됩니다.</p></div></div><div class="toggle-grid">
@@ -419,70 +474,156 @@
             ${[['title','목표명'],['type','목표유형'],['status','상태'],['date','목표 날짜'],['subject','관련 과목']].map(([key,label]) => `<label class="check-option"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}>${label}</label>`).join('')}
           </div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">여러 개를 선택할 수 있어요.</p></div><span class="recommended">${selectedCount}개 선택</span></div>${goalSelectionHtml()}</section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">여러 개를 선택할 수 있어요.</p></div><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div>${goalSelectionHtml()}</section>
         </div>
         <footer class="settings-footer"><button class="secondary-button" data-action="refresh">데이터 새로고침</button><button class="primary-button" data-action="close-settings">설정 완료</button></footer>
       </section>
     </div>`;
   }
 
+  function ensureMounts() {
+    if (root.querySelector('#widget-main')) return;
+    root.innerHTML = '<div id="widget-main"></div><div id="settings-root"></div><div id="toast-root"></div>';
+  }
+
+  function renderMain() {
+    ensureMounts();
+    root.querySelector('#widget-main').innerHTML = mainHtml();
+  }
+
+  function renderSettings() {
+    ensureMounts();
+    const mount = root.querySelector('#settings-root');
+    const previousScroll = mount.querySelector('.settings-scroll')?.scrollTop || 0;
+    mount.innerHTML = settingsHtml();
+    const nextScroll = mount.querySelector('.settings-scroll');
+    if (nextScroll) nextScroll.scrollTop = previousScroll;
+  }
+
+  function renderToast() {
+    ensureMounts();
+    root.querySelector('#toast-root').innerHTML = state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : '';
+  }
+
+  function renderGoalListContent(preserveScroll = true) {
+    const content = root.querySelector('#goal-list-content');
+    if (!content) return;
+    const previousScroll = preserveScroll ? content.querySelector('.goal-select-list')?.scrollTop || 0 : 0;
+    content.innerHTML = goalListContentHtml();
+    const nextList = content.querySelector('.goal-select-list');
+    if (nextList) nextList.scrollTop = previousScroll;
+  }
+
+  function updateSelectedCount() {
+    const badge = root.querySelector('#selected-goal-count');
+    if (badge) badge.textContent = `${(state.settings.selectedIds || []).length}개 선택`;
+  }
+
   function render() {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.classList.toggle('dark', state.settings.dark);
-    root.innerHTML = mainHtml() + settingsHtml() + (state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : '');
-    bindEvents();
+    renderMain();
+    renderSettings();
+    renderToast();
   }
 
   function bindEvents() {
-    root.querySelectorAll('[data-action]').forEach(element => element.addEventListener('click', event => {
+    root.addEventListener('click', event => {
+      const element = event.target.closest('[data-action], [data-setting], [data-theme-choice], [data-style-choice], [data-move]');
+      if (!element || !root.contains(element)) return;
       const action = element.dataset.action;
       if (action === 'backdrop-close' && event.target !== element) return;
-      if (action === 'open-settings') { state.settingsOpen = true; render(); }
-      if (action === 'close-settings' || action === 'backdrop-close') { if (state.config.saved || state.goals.length) { state.settingsOpen = false; render(); } }
-      if (action === 'refresh') loadGoals(true);
-      if (action === 'toggle-dark') patchSettings({ dark: !state.settings.dark });
-      if (action === 'select-all') patchSettings({ selectedIds: state.goals.map(goal => goal.id), manualOrder: state.goals.map(goal => goal.id) });
-      if (action === 'clear-selection') patchSettings({ selectedIds: [], manualOrder: [] });
-    }));
-    root.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click', () => patchSettings({ [button.dataset.setting]: button.dataset.value })));
-    root.querySelectorAll('[data-setting-select]').forEach(select => select.addEventListener('change', () => patchSettings({ [select.dataset.settingSelect]: select.value })));
-    root.querySelectorAll('[data-display-setting]').forEach(input => input.addEventListener('change', () => patchSettings({ [input.dataset.displaySetting]: input.checked })));
-    root.querySelectorAll('[data-field]').forEach(input => input.addEventListener('change', () => patchSettings({ fields: { ...state.settings.fields, [input.dataset.field]: input.checked } })));
-    root.querySelectorAll('[data-theme-choice]').forEach(button => button.addEventListener('click', () => patchSettings({ theme: button.dataset.themeChoice })));
-    root.querySelectorAll('[data-style-choice]').forEach(button => button.addEventListener('click', () => patchSettings({ style: button.dataset.styleChoice })));
-    root.querySelectorAll('[data-goal-id][type="checkbox"]').forEach(input => input.addEventListener('change', () => {
-      const selected = new Set(state.settings.selectedIds || []);
-      if (input.checked) selected.add(input.dataset.goalId); else selected.delete(input.dataset.goalId);
-      const selectedIds = [...selected];
-      const manualOrder = [...state.settings.manualOrder.filter(id => selected.has(id)), ...selectedIds.filter(id => !state.settings.manualOrder.includes(id))];
-      patchSettings({ selectedIds, manualOrder });
-    }));
-    root.querySelectorAll('[data-move]').forEach(button => button.addEventListener('click', () => {
-      const ordered = sortGoals(state.goals.filter(goal => (state.settings.selectedIds || []).includes(goal.id)), 'manual').map(goal => goal.id);
-      const index = ordered.indexOf(button.dataset.goalId);
-      const nextIndex = button.dataset.move === 'up' ? index - 1 : index + 1;
-      if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
-      [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
-      patchSettings({ manualOrder: ordered });
-    }));
-    const search = root.querySelector('#goal-search');
-    search?.addEventListener('input', () => {
-      const query = search.value.trim().toLowerCase();
-      root.querySelectorAll('.goal-select-row').forEach(row => { row.hidden = Boolean(query && !row.dataset.search.includes(query)); });
+      if (action === 'open-settings') {
+        state.settingsOpen = true;
+        state.goalSearch = '';
+        state.goalListLimit = 60;
+        renderSettings();
+        return;
+      }
+      if (action === 'close-settings' || action === 'backdrop-close') {
+        if (state.config.saved || state.goals.length) {
+          state.settingsOpen = false;
+          renderSettings();
+        }
+        return;
+      }
+      if (action === 'refresh') { loadGoals(true); return; }
+      if (action === 'toggle-dark') { patchSettings({ dark: !state.settings.dark }); return; }
+      if (action === 'select-all') { patchSettings({ selectedIds: state.goals.map(goal => goal.id), manualOrder: state.goals.map(goal => goal.id) }); return; }
+      if (action === 'clear-selection') { patchSettings({ selectedIds: [], manualOrder: [] }); return; }
+      if (action === 'show-more-goals') {
+        state.goalListLimit += 60;
+        renderGoalListContent();
+        return;
+      }
+      if (element.dataset.setting) { patchSettings({ [element.dataset.setting]: element.dataset.value }); return; }
+      if (element.dataset.themeChoice) { patchSettings({ theme: element.dataset.themeChoice }); return; }
+      if (element.dataset.styleChoice) { patchSettings({ style: element.dataset.styleChoice }); return; }
+      if (element.dataset.move) {
+        const ordered = sortGoals(state.goals.filter(goal => (state.settings.selectedIds || []).includes(goal.id)), 'manual').map(goal => goal.id);
+        const index = ordered.indexOf(element.dataset.goalId);
+        const nextIndex = element.dataset.move === 'up' ? index - 1 : index + 1;
+        if (index < 0 || nextIndex < 0 || nextIndex >= ordered.length) return;
+        [ordered[index], ordered[nextIndex]] = [ordered[nextIndex], ordered[index]];
+        patchSettings({ manualOrder: ordered });
+      }
     });
+
+    root.addEventListener('change', event => {
+      const input = event.target;
+      if (input.dataset.settingSelect) { patchSettings({ [input.dataset.settingSelect]: input.value }); return; }
+      if (input.dataset.displaySetting) { patchSettings({ [input.dataset.displaySetting]: input.checked }); return; }
+      if (input.dataset.field) { patchSettings({ fields: { ...state.settings.fields, [input.dataset.field]: input.checked } }); return; }
+      if (input.dataset.goalColorId) {
+        const color = normalizeHexColor(input.value);
+        if (!color) return;
+        state.settings = { ...state.settings, goalColors: { ...state.settings.goalColors, [input.dataset.goalColorId]: color } };
+        saveSettings();
+        input.closest('.goal-select-row')?.style.setProperty('--goal-color', color);
+        renderMain();
+        return;
+      }
+      if (input.matches('[data-goal-id][type="checkbox"]')) {
+        const selected = new Set(state.settings.selectedIds || []);
+        if (input.checked) selected.add(input.dataset.goalId); else selected.delete(input.dataset.goalId);
+        const selectedIds = [...selected];
+        const manualOrder = [...state.settings.manualOrder.filter(id => selected.has(id)), ...selectedIds.filter(id => !state.settings.manualOrder.includes(id))];
+        state.settings = { ...state.settings, selectedIds, manualOrder };
+        saveSettings();
+        renderMain();
+        if (state.settings.sort === 'manual') renderSettings();
+        else {
+          renderGoalListContent();
+          updateSelectedCount();
+        }
+      }
+    });
+
+    root.addEventListener('input', event => {
+      if (event.target.id !== 'goal-search') return;
+      state.goalSearch = event.target.value;
+      state.goalListLimit = 60;
+      renderGoalListContent(false);
+    });
+
     root.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && state.settingsOpen && (state.config.saved || state.goals.length)) { state.settingsOpen = false; render(); }
-    }, { once: true });
+      if (event.key === 'Escape' && state.settingsOpen && (state.config.saved || state.goals.length)) {
+        state.settingsOpen = false;
+        renderSettings();
+      }
+    });
   }
 
   function toast(message) {
     state.toast = message;
     clearTimeout(state.toastTimer);
-    state.toastTimer = setTimeout(() => { state.toast = ''; render(); }, 2200);
+    renderToast();
+    state.toastTimer = setTimeout(() => { state.toast = ''; renderToast(); }, 2200);
   }
 
   state.settingsOpen = !state.config.saved;
   saveSettings();
+  bindEvents();
   render();
   if (state.config.saved) loadGoals();
 })();
