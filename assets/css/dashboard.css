@@ -542,6 +542,8 @@ html, body, #root {
     --theme-dark-accent: color-mix(in srgb, var(--theme-color) 72%, white);
     --theme-dark-soft: color-mix(in srgb, var(--theme-color) 18%, #252525);
     --theme-dark-border: color-mix(in srgb, var(--theme-color) 52%, #2F2F2F);
+    --theme-dark-muted: color-mix(in srgb, var(--theme-color) 48%, #C8CED6);
+    --theme-dark-subtle: color-mix(in srgb, var(--theme-color) 30%, #8B949E);
 }
 
 .dark .theme-scope .text-\[\#A67B5B\],
@@ -587,4 +589,60 @@ html, body, #root {
 
 .dark .theme-scope .ring-\[\#A67B5B\] {
     --tw-ring-color: var(--theme-color) !important;
+}
+
+/* Navigation typography must follow the selected color theme in dark mode. */
+.dark .theme-scope .gnb-nav-full button,
+.dark .theme-scope .gnb-nav-compact button {
+    color: var(--theme-dark-muted) !important;
+}
+
+.dark .theme-scope .gnb-nav-full button.bg-\[\#F4F0EA\],
+.dark .theme-scope .gnb-nav-compact button.bg-\[\#F4F0EA\] {
+    color: var(--theme-dark-accent) !important;
+}
+
+/* Weekly attendance states: completed, missed and future. */
+.dark .theme-scope .weekly-stamp-list .weekly-stamp.bg-\[\#A67B5B\] {
+    background-color: var(--theme-color) !important;
+}
+
+.dark .theme-scope .weekly-stamp-list .weekly-stamp.bg-\[\#F4F0EA\] {
+    background-color: var(--theme-dark-soft) !important;
+}
+
+.dark .theme-scope .weekly-stamp-list .weekly-stamp.border-gray-200 {
+    border-color: var(--theme-dark-border) !important;
+}
+
+.dark .theme-scope .home-grid > div:has(.weekly-stamp-list) > div:first-child .text-gray-400 {
+    color: var(--theme-dark-muted) !important;
+}
+
+.dark .theme-scope .home-grid > div:has(.weekly-stamp-list) > div:first-child .text-gray-300 {
+    color: var(--theme-dark-subtle) !important;
+}
+
+/* Home todo checkboxes and theme actions. */
+.dark .theme-scope .home-grid > div:first-child .border-gray-300 {
+    border-color: var(--theme-dark-border) !important;
+}
+
+.dark .theme-scope input[type="checkbox"] {
+    accent-color: var(--theme-color);
+}
+
+.dark .theme-scope .hover\:text-latte-600:hover,
+.dark .theme-scope .group:hover .group-hover\:text-latte-600 {
+    color: var(--theme-dark-accent) !important;
+}
+
+.dark .theme-scope .hover\:bg-\[\#8B664B\]:hover,
+.dark .theme-scope .hover\:bg-latte-700:hover {
+    background-color: var(--theme-hover) !important;
+}
+
+.dark .theme-scope .bg-\[\#EBE8DE\],
+.dark .theme-scope .hover\:bg-\[\#EBE8DE\]:hover {
+    background-color: var(--theme-dark-border) !important;
 }
