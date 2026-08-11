@@ -147,10 +147,11 @@
 
   function automaticGoalColor(goal) {
     const palette = (THEMES[state.settings.theme] || THEMES.latte).goalColors;
-    const source = String(goal.id || goal.title || 'goal');
-    let hash = 0;
-    for (let index = 0; index < source.length; index += 1) hash = ((hash * 31) + source.charCodeAt(index)) >>> 0;
-    return palette[hash % palette.length];
+    const selected = new Set(state.settings.selectedIds || []);
+    const displayedGoals = sortGoals(state.goals.filter(item => selected.has(item.id)));
+    let index = displayedGoals.findIndex(item => item.id === goal.id);
+    if (index < 0) index = sortGoals(state.goals).findIndex(item => item.id === goal.id);
+    return palette[Math.max(0, index) % palette.length];
   }
 
   function goalColor(goal) {
