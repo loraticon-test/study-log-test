@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="목표 디데이">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="코지 목표 디데이">
+  <title>코지 목표 디데이</title>
+  <link rel="manifest" id="app-manifest" href="./manifest-dday.webmanifest">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="../../assets/css/dday.css?v=20260811-0001">
+  <script>
+    try {
+      const saved = JSON.parse(localStorage.getItem('cozy_dday_settings') || '{}');
+      if (saved.dark === true || (!('dark' in saved) && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+      document.documentElement.dataset.theme = saved.theme || 'latte';
+    } catch (_) {}
+  </script>
+  <script src="../../assets/js/install-config.js?v=20260811-0001" data-app="dday"></script>
+</head>
+<body>
+  <main id="root" aria-live="polite">
+    <div class="initial-loader"><span class="spinner" aria-hidden="true"></span><span>목표를 준비하고 있어요</span></div>
+  </main>
+  <script>
+    Promise.resolve(window.STUDY_INSTALL_READY).finally(() => {
+      const script = document.createElement('script');
+      script.src = '../../assets/js/dday-app.js?v=20260811-0001';
+      document.body.appendChild(script);
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator && ['https:', 'http:'].includes(location.protocol)) {
+      addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

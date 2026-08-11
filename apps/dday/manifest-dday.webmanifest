@@ -1,0 +1,12 @@
+{
+  "id": "./",
+  "name": "코지 목표 디데이",
+  "short_name": "목표 디데이",
+  "description": "Notion 목표 DB와 연결되는 코지 카페 스타일 디데이 위젯입니다.",
+  "scope": "./",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FDFBF7",
+  "theme_color": "#A67B5B"
+}
