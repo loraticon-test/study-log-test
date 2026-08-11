@@ -138,6 +138,13 @@
     return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : '';
   }
 
+  function normalizeEditableHexColor(value) {
+    let color = String(value || '').trim();
+    if (!color.startsWith('#')) color = `#${color}`;
+    if (/^#[0-9a-f]{3}$/i.test(color)) color = `#${color.slice(1).split('').map(char => char + char).join('')}`;
+    return normalizeHexColor(color);
+  }
+
   function automaticGoalColor(goal) {
     const palette = (THEMES[state.settings.theme] || THEMES.latte).goalColors;
     const source = String(goal.id || goal.title || 'goal');
@@ -273,7 +280,7 @@
       const typeKey = findSchemaKey(props, key => key.includes('목표유형') || key.includes('유형') || key.includes('goaltype'), ['select','multi_select']);
       const statusKey = findSchemaKey(props, key => key.includes('상태') || key.includes('status'), ['status','select']);
       const dateKey = findSchemaKey(props, key => key.includes('목표날짜') || key.includes('마감') || key.includes('날짜') || key.includes('date'), ['date']);
-      const subjectKey = findSchemaKey(props, key => key.includes('관련과목') || key.includes('과목') || key.includes('subject'), ['relation']);
+      const subjectKey = findSchemaKey(props, key => key.includes('관련과목') || key.includes('과목') || key.includes('subject'), ['rollup','relation','formula','rich_text','multi_select','select']);
       if (!titleKey) throw new Error('목표 DB에서 제목 속성을 찾지 못했어요.');
       if (!dateKey) throw new Error('목표 DB에서 날짜 속성을 찾지 못했어요. 속성명에 “목표 날짜” 또는 “날짜”를 포함해 주세요.');
 
@@ -281,7 +288,8 @@
       const rawGoals = pages.map(page => {
         const pageProps = page.properties || {};
         const date = pageProps[dateKey]?.date || null;
-        const subjects = subjectKey ? relationIds(pageProps[subjectKey]) : [];
+        const subjectProp = subjectKey ? pageProps[subjectKey] : null;
+        const subjects = relationIds(subjectProp);
         return {
           id: page.id,
           title: richText(pageProps[titleKey]) || '이름 없는 목표',
@@ -291,11 +299,17 @@
           endDate: date?.end || null,
           targetDate: date?.end || date?.start || null,
           subjectIds: subjects,
+          subjectText: richText(subjectProp),
           subject: ''
         };
       });
       const subjectMap = await fetchSubjectMap(rawGoals.flatMap(goal => goal.subjectIds));
-      state.goals = rawGoals.map(goal => ({ ...goal, subject: goal.subjectIds.map(id => subjectMap[id]).filter(Boolean).join(', ') }));
+      state.goals = rawGoals.map(goal => {
+        const subjectNames = [goal.subjectText, ...goal.subjectIds.map(id => subjectMap[id])]
+          .flatMap(value => String(value || '').split(',').map(item => item.trim()))
+          .filter(Boolean);
+        return { ...goal, subject: [...new Set(subjectNames)].join(', ') };
+      });
 
       if (state.settings.selectedIds === null) {
         const first = sortGoals(state.goals, 'urgency')[0];
@@ -455,7 +469,7 @@
       const safeId = escapeHtml(goal.id);
       const color = goalColor(goal);
       const textColor = goalTextPickerColor(goal);
-      return `<div class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" style="--goal-color:${color};--goal-text-color:${textColor}"><input id="goal-check-${safeId}" type="checkbox" data-goal-id="${safeId}" ${selected.has(goal.id) ? 'checked' : ''}><label class="goal-select-copy" for="goal-check-${safeId}"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></label><label class="goal-text-color-picker" title="${escapeHtml(goal.title)} 디데이 글자색 선택"><span class="goal-text-color-glyph" aria-hidden="true">A</span><input type="color" value="${textColor}" data-goal-text-color-id="${safeId}" aria-label="${escapeHtml(goal.title)} 디데이 글자색 선택"></label><input class="goal-color-picker" type="color" value="${color}" data-goal-color-id="${safeId}" title="${escapeHtml(goal.title)} 배경색 선택" aria-label="${escapeHtml(goal.title)} 배경색 선택"><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></div>`;
+      return `<div class="goal-select-row${selected.has(goal.id) ? ' is-selected' : ''}" style="--goal-color:${color};--goal-text-color:${textColor}"><input id="goal-check-${safeId}" type="checkbox" data-goal-id="${safeId}" ${selected.has(goal.id) ? 'checked' : ''}><label class="goal-select-copy" for="goal-check-${safeId}"><strong>${escapeHtml(goal.title)}</strong><span>${escapeHtml(meta)}</span></label><button class="goal-text-color-picker" type="button" data-color-editor-kind="text" data-color-goal-id="${safeId}" title="${escapeHtml(goal.title)} 디데이 글자색 선택" aria-label="${escapeHtml(goal.title)} 디데이 글자색 선택"><span class="goal-text-color-glyph" aria-hidden="true">A</span></button><button class="goal-color-picker" type="button" data-color-editor-kind="background" data-color-goal-id="${safeId}" title="${escapeHtml(goal.title)} 배경색 선택" aria-label="${escapeHtml(goal.title)} 배경색 선택"></button><span class="goal-select-dday">${escapeHtml(formatCountdown(goal, 'compact'))}</span></div>`;
     }).join('');
     const remaining = matches.length - visible.length;
     return `<div class="goal-select-list">${rows}</div>${remaining > 0 ? `<div class="goal-list-footer"><button class="tiny-button" data-action="show-more-goals">더 보기 (${remaining}개 남음)</button></div>` : ''}`;
@@ -497,6 +511,12 @@
         </div>
         <footer class="settings-footer"><button class="secondary-button" data-action="refresh">데이터 새로고침</button><button class="primary-button" data-action="close-settings">설정 완료</button></footer>
       </section>
+      <div id="goal-color-editor" class="goal-color-editor" role="dialog" aria-modal="false" aria-labelledby="goal-color-editor-title" hidden>
+        <div class="color-editor-head"><strong id="goal-color-editor-title">색상 선택</strong><button type="button" class="color-editor-close" data-action="close-color-editor" aria-label="색상 선택 닫기">×</button></div>
+        <label class="color-editor-hex"><span>HEX</span><input id="goal-color-hex" type="text" maxlength="7" inputmode="text" autocomplete="off" spellcheck="false" placeholder="#1F2937" aria-label="HEX 색상 코드"></label>
+        <p id="goal-color-error" class="color-editor-error" hidden>HEX 코드를 확인해 주세요.</p>
+        <div class="color-editor-actions"><label class="color-editor-palette"><input id="goal-color-native" type="color" aria-label="팔레트에서 색상 선택"><span>팔레트</span></label><button type="button" class="color-editor-apply" data-action="apply-goal-color">적용</button></div>
+      </div>
     </div>`;
   }
 
@@ -538,6 +558,71 @@
     if (badge) badge.textContent = `${(state.settings.selectedIds || []).length}개 선택`;
   }
 
+  function closeGoalColorEditor() {
+    const editor = root.querySelector('#goal-color-editor');
+    if (!editor) return;
+    editor.hidden = true;
+    editor.style.visibility = '';
+    delete editor.dataset.goalId;
+    delete editor.dataset.colorKind;
+  }
+
+  function openGoalColorEditor(control) {
+    const editor = root.querySelector('#goal-color-editor');
+    const goal = state.goals.find(item => item.id === control.dataset.colorGoalId);
+    if (!editor || !goal) return;
+    const kind = control.dataset.colorEditorKind;
+    const color = kind === 'text' ? goalTextPickerColor(goal) : goalColor(goal);
+    const hexInput = editor.querySelector('#goal-color-hex');
+    const nativeInput = editor.querySelector('#goal-color-native');
+    const error = editor.querySelector('#goal-color-error');
+    editor.dataset.goalId = goal.id;
+    editor.dataset.colorKind = kind;
+    editor.querySelector('#goal-color-editor-title').textContent = kind === 'text' ? '디데이 글자색' : '디데이 배경색';
+    hexInput.value = color;
+    nativeInput.value = color;
+    error.hidden = true;
+    hexInput.classList.remove('invalid');
+    editor.hidden = false;
+    editor.style.visibility = 'hidden';
+    requestAnimationFrame(() => {
+      const anchor = control.getBoundingClientRect();
+      const popover = editor.getBoundingClientRect();
+      const left = Math.max(8, Math.min(anchor.right - popover.width, window.innerWidth - popover.width - 8));
+      const below = anchor.bottom + 7;
+      const top = below + popover.height <= window.innerHeight - 8 ? below : Math.max(8, anchor.top - popover.height - 7);
+      editor.style.left = `${left}px`;
+      editor.style.top = `${top}px`;
+      editor.style.visibility = 'visible';
+      hexInput.focus();
+      hexInput.select();
+    });
+  }
+
+  function applyGoalColorEditor() {
+    const editor = root.querySelector('#goal-color-editor');
+    if (!editor || editor.hidden) return;
+    const hexInput = editor.querySelector('#goal-color-hex');
+    const error = editor.querySelector('#goal-color-error');
+    const color = normalizeEditableHexColor(hexInput.value);
+    if (!color) {
+      error.hidden = false;
+      hexInput.classList.add('invalid');
+      hexInput.focus();
+      return;
+    }
+    const goalId = editor.dataset.goalId;
+    if (editor.dataset.colorKind === 'text') {
+      state.settings = { ...state.settings, goalTextColors: { ...state.settings.goalTextColors, [goalId]: color } };
+    } else {
+      state.settings = { ...state.settings, goalColors: { ...state.settings.goalColors, [goalId]: color } };
+    }
+    saveSettings();
+    closeGoalColorEditor();
+    renderMain();
+    renderGoalListContent();
+  }
+
   function render() {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.classList.toggle('dark', state.settings.dark);
@@ -548,10 +633,13 @@
 
   function bindEvents() {
     root.addEventListener('click', event => {
-      const element = event.target.closest('[data-action], [data-setting], [data-theme-choice], [data-style-choice], [data-move]');
+      const element = event.target.closest('[data-action], [data-setting], [data-theme-choice], [data-style-choice], [data-move], [data-color-editor-kind]');
       if (!element || !root.contains(element)) return;
       const action = element.dataset.action;
       if (action === 'backdrop-close' && event.target !== element) return;
+      if (element.dataset.colorEditorKind) { openGoalColorEditor(element); return; }
+      if (action === 'close-color-editor') { closeGoalColorEditor(); return; }
+      if (action === 'apply-goal-color') { applyGoalColorEditor(); return; }
       if (action === 'open-settings') {
         state.settingsOpen = true;
         state.goalSearch = '';
@@ -628,6 +716,22 @@
     });
 
     root.addEventListener('input', event => {
+      if (event.target.id === 'goal-color-hex') {
+        const editor = event.target.closest('#goal-color-editor');
+        const color = normalizeEditableHexColor(event.target.value);
+        const error = editor?.querySelector('#goal-color-error');
+        event.target.classList.toggle('invalid', Boolean(event.target.value) && !color);
+        if (error) error.hidden = !event.target.value || Boolean(color);
+        if (color) editor.querySelector('#goal-color-native').value = color;
+        return;
+      }
+      if (event.target.id === 'goal-color-native') {
+        const editor = event.target.closest('#goal-color-editor');
+        editor.querySelector('#goal-color-hex').value = event.target.value.toUpperCase();
+        editor.querySelector('#goal-color-hex').classList.remove('invalid');
+        editor.querySelector('#goal-color-error').hidden = true;
+        return;
+      }
       if (event.target.id !== 'goal-search') return;
       state.goalSearch = event.target.value;
       state.goalListLimit = 60;
@@ -635,6 +739,17 @@
     });
 
     root.addEventListener('keydown', event => {
+      const editor = root.querySelector('#goal-color-editor');
+      if (event.key === 'Enter' && event.target.id === 'goal-color-hex') {
+        event.preventDefault();
+        applyGoalColorEditor();
+        return;
+      }
+      if (event.key === 'Escape' && editor && !editor.hidden) {
+        event.preventDefault();
+        closeGoalColorEditor();
+        return;
+      }
       if (event.key === 'Escape' && state.settingsOpen && (state.config.saved || state.goals.length)) {
         state.settingsOpen = false;
         renderSettings();
