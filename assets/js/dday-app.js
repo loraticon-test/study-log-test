@@ -22,6 +22,7 @@
     theme: 'latte',
     style: 'cream',
     dark: false,
+    showFrame: true,
     fields: { title: true, type: false, status: false, date: false, subject: false },
     selectedIds: null,
     manualOrder: []
@@ -360,14 +361,14 @@
     const goals = selectedGoals();
     const countText = goals.length ? `${goals.length}개의 목표` : '표시할 목표를 선택해 주세요';
     const singleGoalClass = goals.length === 1 && state.settings.layout === 'small' ? ' single-goal' : '';
-    return `<section class="widget-shell layout-${escapeHtml(state.settings.layout)} format-${escapeHtml(state.settings.format)} style-${escapeHtml(state.settings.style)}${singleGoalClass}">
-      <header class="widget-header">
+    const frameClass = state.settings.showFrame ? ' frame-visible' : ' frame-hidden';
+    const actionButtons = `<button class="icon-button${state.loading ? ' loading' : ''}" data-action="refresh" title="목표 새로고침" aria-label="목표 새로고침">${icons.refresh}</button><button class="icon-button" data-action="open-settings" title="디데이 설정" aria-label="디데이 설정">${icons.settings}</button>`;
+    const header = state.settings.showFrame ? `<header class="widget-header">
         <div class="widget-heading"><span class="eyebrow">Goal D-Day</span><h1 class="widget-title">목표 디데이</h1><p class="widget-subtitle">${escapeHtml(countText)}</p></div>
-        <div class="header-actions">
-          <button class="icon-button${state.loading ? ' loading' : ''}" data-action="refresh" title="목표 새로고침" aria-label="목표 새로고침">${icons.refresh}</button>
-          <button class="icon-button" data-action="open-settings" title="디데이 설정" aria-label="디데이 설정">${icons.settings}</button>
-        </div>
-      </header>
+        <div class="header-actions">${actionButtons}</div>
+      </header>` : `<div class="floating-actions" aria-label="위젯 도구">${actionButtons}</div>`;
+    return `<section class="widget-shell layout-${escapeHtml(state.settings.layout)} format-${escapeHtml(state.settings.format)} style-${escapeHtml(state.settings.style)}${singleGoalClass}${frameClass}">
+      ${header}
       ${state.error ? `<div class="error-banner">${icons.alert}<span>${escapeHtml(state.error)}</span></div>` : ''}
       <div class="goal-grid">${goals.length ? goals.map(renderGoal).join('') : emptyState()}</div>
     </section>`;
@@ -413,7 +414,8 @@
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">색상과 스타일</h3></div></div><div class="theme-row">${Object.entries(THEMES).map(([key,theme]) => `<button class="theme-swatch${state.settings.theme === key ? ' selected' : ''}" data-theme-choice="${key}" style="background:${theme.color}" title="${theme.name}" aria-label="${theme.name}"></button>`).join('')}</div><div class="style-row">${[['cream','크림 카드'],['soft','소프트 컬러'],['outline','라인 미니멀']].map(([key,label]) => `<button class="style-choice${state.settings.style === key ? ' selected' : ''}" data-style-choice="${key}">${label}</button>`).join('')}</div><div class="dark-row"><span>다크 모드</span><button class="switch${state.settings.dark ? ' on' : ''}" data-action="toggle-dark" role="switch" aria-checked="${state.settings.dark}" aria-label="다크 모드"></button></div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">카드 형태</h3><p class="section-hint">좁은 Notion 칼럼에는 작은 카드형, 넓은 영역에는 긴 카드형을 추천해요.</p></div></div><div class="option-grid">${optionButton('small','작은 카드형','2열 카드')}${optionButton('long','긴 카드형','가로 카드')}${optionButton('list','리스트형','한 줄 목록')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">디데이 표시 방식</h3></div></div><div class="format-grid">${formatButton('compact','D-31',true)}${formatButton('remaining','31일 남음')}${formatButton('until','목표까지 31일')}${formatButton('number','31일')}</div></section>
-          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">디데이는 항상 표시되며, 기본값은 목표명만 켜져 있습니다.</p></div></div><div class="toggle-grid">
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">제목·외곽 프레임을 끄면 디데이 카드만 표시됩니다.</p></div></div><div class="toggle-grid">
+            <label class="check-option"><input type="checkbox" data-display-setting="showFrame" ${state.settings.showFrame ? 'checked' : ''}>제목·외곽 프레임</label>
             ${[['title','목표명'],['type','목표유형'],['status','상태'],['date','목표 날짜'],['subject','관련 과목']].map(([key,label]) => `<label class="check-option"><input type="checkbox" data-field="${key}" ${state.settings.fields[key] ? 'checked' : ''}>${label}</label>`).join('')}
           </div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
@@ -444,6 +446,7 @@
     }));
     root.querySelectorAll('[data-setting]').forEach(button => button.addEventListener('click', () => patchSettings({ [button.dataset.setting]: button.dataset.value })));
     root.querySelectorAll('[data-setting-select]').forEach(select => select.addEventListener('change', () => patchSettings({ [select.dataset.settingSelect]: select.value })));
+    root.querySelectorAll('[data-display-setting]').forEach(input => input.addEventListener('change', () => patchSettings({ [input.dataset.displaySetting]: input.checked })));
     root.querySelectorAll('[data-field]').forEach(input => input.addEventListener('change', () => patchSettings({ fields: { ...state.settings.fields, [input.dataset.field]: input.checked } })));
     root.querySelectorAll('[data-theme-choice]').forEach(button => button.addEventListener('click', () => patchSettings({ theme: button.dataset.themeChoice })));
     root.querySelectorAll('[data-style-choice]').forEach(button => button.addEventListener('click', () => patchSettings({ style: button.dataset.styleChoice })));
