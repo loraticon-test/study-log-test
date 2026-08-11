@@ -534,3 +534,57 @@ html, body, #root {
     }
 }
 /* responsive goal metadata end */
+
+/* dark mode theme accents
+   Keep dark surfaces neutral while routing brand accents through the
+   currently selected dashboard theme. */
+.dark .theme-scope {
+    --theme-dark-accent: color-mix(in srgb, var(--theme-color) 72%, white);
+    --theme-dark-soft: color-mix(in srgb, var(--theme-color) 18%, #252525);
+    --theme-dark-border: color-mix(in srgb, var(--theme-color) 52%, #2F2F2F);
+}
+
+.dark .theme-scope .text-\[\#A67B5B\],
+.dark .theme-scope .text-\[\#8B664B\],
+.dark .theme-scope .text-latte-500,
+.dark .theme-scope .text-latte-700 {
+    color: var(--theme-dark-accent) !important;
+}
+
+.dark .theme-scope .bg-\[\#A67B5B\],
+.dark .theme-scope .bg-latte-500 {
+    background-color: var(--theme-color) !important;
+}
+
+.dark .theme-scope .bg-\[\#F4F0EA\],
+.dark .theme-scope .bg-latte-50 {
+    background-color: var(--theme-dark-soft) !important;
+}
+
+.dark .theme-scope .border-latte-500,
+.dark .theme-scope .group:hover .group-hover\:border-latte-400 {
+    border-color: var(--theme-color) !important;
+}
+
+.dark .theme-scope .hover\:text-latte-500:hover,
+.dark .theme-scope .group:hover .group-hover\:text-latte-500 {
+    color: var(--theme-dark-accent) !important;
+}
+
+.dark .theme-scope .hover\:bg-latte-50:hover {
+    background-color: var(--theme-dark-soft) !important;
+}
+
+.dark .theme-scope .hover\:border-\[\#A67B5B\]:hover,
+.dark .theme-scope .focus\:border-\[\#A67B5B\]:focus,
+.dark .theme-scope .focus\:border-latte-500:focus {
+    border-color: var(--theme-dark-border) !important;
+}
+
+.dark .theme-scope .border-t-\[\#A67B5B\] {
+    border-top-color: var(--theme-color) !important;
+}
+
+.dark .theme-scope .ring-\[\#A67B5B\] {
+    --tw-ring-color: var(--theme-color) !important;
+}
