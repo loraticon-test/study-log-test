@@ -55,6 +55,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
 .widget-shell { position: relative; width: min(100%, 520px); min-width: 0; max-width: 100%; margin: 0; padding: 18px; background: transparent; border: 1px solid var(--theme-border); border-radius: 32px; box-shadow: none; transition: width .25s ease, border-color .2s ease; }
 .widget-shell.layout-small { width: 100%; }
+.widget-shell.layout-long,
+.widget-shell.layout-list { width: 100%; }
 .widget-shell.layout-small.single-goal { width: min(100%, 280px); }
 .widget-shell.frame-hidden { padding: 0; border: 0; border-radius: 0; }
 .layout-small.single-goal .goal-grid { grid-template-columns: 1fr; }
