@@ -220,7 +220,7 @@ const loadConfig = () => {
 const SaveIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
 const SettingsIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.66.16 1.15.73 1.15 1.41v.18c0 .68-.49 1.25-1.15 1.41z"/></svg>;
 const MoonIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
-const SunIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>;
+const SunIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>;
 const RefreshIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>;
 const CheckIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 const CloseIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
@@ -617,7 +617,7 @@ const App = () => {
                     <button onClick={loadInitialData} className="w-9 h-9 rounded-full bg-latte-50 dark:bg-[#333333] text-latte-700 dark:text-gray-200 flex items-center justify-center hover:bg-latte-100 dark:hover:bg-[#3D3D3D] transition-colors" title="새로고침" disabled={isLoading}>
                         {isLoading ? <SpinnerIcon /> : <RefreshIcon />}
                     </button>
-                    <button onClick={() => setIsDark(prev => !prev)} className="w-9 h-9 rounded-full bg-latte-50 dark:bg-[#333333] text-latte-700 dark:text-gray-200 flex items-center justify-center hover:bg-latte-100 dark:hover:bg-[#3D3D3D] transition-colors" title="테마 전환">
+                    <button onClick={() => setIsDark(prev => !prev)} className="w-9 h-9 rounded-full bg-latte-50 dark:bg-[#333333] text-latte-700 dark:text-gray-200 flex items-center justify-center hover:bg-latte-100 dark:hover:bg-[#3D3D3D] transition-colors" title={isDark ? '라이트모드' : '다크모드'} aria-label={isDark ? '라이트모드로 전환' : '다크모드로 전환'}>
                         {isDark ? <SunIcon /> : <MoonIcon />}
                     </button>
                     <button onClick={() => setShowSetup(prev => !prev)} className="w-9 h-9 rounded-full bg-latte-500 text-white flex items-center justify-center hover:bg-latte-700 transition-colors" title="설정">
@@ -628,6 +628,30 @@ const App = () => {
 
             {showSetup && (
                 <div className="theme-card-tint rounded-2xl border border-latte-100 dark:border-[#3D3D3D] bg-[#FDF8F1] dark:bg-[#1E1E1E] p-4 mb-5">
+                    <div className="rounded-2xl border border-latte-100 dark:border-[#333333] bg-white dark:bg-[#252525] p-4 mb-4">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                            <div>
+                                <p className="text-sm font-extrabold text-gray-700 dark:text-gray-100">색상 테마</p>
+                                <p className="text-[11px] font-bold text-gray-400 dark:text-gray-500 mt-0.5">다른 위젯과 같은 음료 팔레트를 적용합니다.</p>
+                            </div>
+                            <span className="text-[11px] font-black rounded-full px-2.5 py-1 border border-latte-100 dark:border-[#333333] bg-latte-50 dark:bg-[#1E1E1E]" style={{ color:isDark ? 'var(--theme-dark-accent)' : theme.hex }}>
+                                {theme.name}
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            {Object.values(THEMES).map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setThemeId(item.id)}
+                                    className="w-8 h-8 rounded-full border border-white/70 transition-transform"
+                                    style={{ background:item.hex, transform: themeId === item.id ? 'scale(1.08)' : 'scale(1)', boxShadow: themeId === item.id ? `0 0 0 3px ${isDark ? '#252525' : '#FFFFFF'}, 0 0 0 5px ${item.hex}` : '0 2px 8px rgba(0,0,0,0.08)' }}
+                                    title={item.name}
+                                    aria-label={`${item.name} 테마 적용`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="flex items-center justify-between gap-3 mb-4">
                         <div>
                             <p className="text-sm font-extrabold text-gray-700 dark:text-gray-100">연결 설정</p>
@@ -677,18 +701,7 @@ const App = () => {
                         <input value={setupForm.subjectDbId || ''} onChange={e => setSetupForm(prev => ({ ...prev, subjectDbId:e.target.value }))} className="theme-focus rounded-xl border border-latte-100 dark:border-[#333333] bg-white dark:bg-[#252525] px-3 py-3 text-sm font-bold text-gray-700 dark:text-gray-100 outline-none" placeholder="과목 DB ID" />
                         <input value={setupForm.vocabDbId || ''} onChange={e => setSetupForm(prev => ({ ...prev, vocabDbId:e.target.value }))} className="theme-focus rounded-xl border border-latte-100 dark:border-[#333333] bg-white dark:bg-[#252525] px-3 py-3 text-sm font-bold text-gray-700 dark:text-gray-100 outline-none" placeholder="단어장 DB ID" />
                     </div>
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                            {Object.values(THEMES).map(item => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => setThemeId(item.id)}
-                                    className="w-7 h-7 rounded-full border border-white/70 transition-transform"
-                                    style={{ background:item.hex, transform: themeId === item.id ? 'scale(1.12)' : 'scale(1)', boxShadow: themeId === item.id ? `0 0 0 3px ${isDark ? '#1E1E1E' : item.surface}, 0 0 0 5px ${item.hex}` : '0 2px 8px rgba(0,0,0,0.08)' }}
-                                    title={item.name}
-                                />
-                            ))}
-                        </div>
+                    <div className="mt-4 flex justify-end">
                         <button onClick={() => setShowSetup(false)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-latte-500 hover:bg-latte-700 px-4 py-3 text-sm font-extrabold text-white transition-colors">
                             <CheckIcon /> 닫기
                         </button>
