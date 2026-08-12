@@ -73,6 +73,61 @@ html, body, #root {
         html:not(.dark) .theme-card-surface { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; }
         html:not(.dark) .theme-card-tint { background-color: var(--theme-tint) !important; border-color: var(--theme-border) !important; }
 
+        /* Keep dark surfaces neutral, but derive every latte accent from the
+           currently selected color theme. */
+        .dark .theme-scope {
+            --theme-dark-accent: color-mix(in srgb, var(--theme-color) 72%, white);
+            --theme-dark-soft: color-mix(in srgb, var(--theme-color) 18%, #252525);
+            --theme-dark-soft-strong: color-mix(in srgb, var(--theme-color) 28%, #252525);
+            --theme-dark-border: color-mix(in srgb, var(--theme-color) 52%, #2F2F2F);
+        }
+        .dark .theme-scope .text-latte-500,
+        .dark .theme-scope .text-latte-600,
+        .dark .theme-scope .text-latte-700,
+        .dark .theme-scope .text-latte-900,
+        .dark .theme-scope .dark\:text-latte-200,
+        .dark .theme-scope .dark\:text-latte-300,
+        .dark .theme-scope .dark\:text-latte-400,
+        .dark .theme-scope .dark\:text-latte-500,
+        .dark .theme-scope .dark\:text-latte-600,
+        .dark .theme-scope .hover\:text-latte-500:hover,
+        .dark .theme-scope .hover\:text-latte-700:hover,
+        .dark .theme-scope .dark\:hover\:text-latte-400:hover { color: var(--theme-dark-accent) !important; }
+        .dark .theme-scope .bg-latte-500,
+        .dark .theme-scope .dark\:bg-latte-600,
+        .dark .theme-scope .dark\:hover\:bg-latte-500:hover { background-color: var(--theme-color) !important; }
+        .dark .theme-scope .bg-latte-700,
+        .dark .theme-scope .dark\:bg-latte-800,
+        .dark .theme-scope .hover\:bg-latte-700:hover { background-color: var(--theme-hover) !important; }
+        .dark .theme-scope .bg-latte-50,
+        .dark .theme-scope .hover\:bg-latte-50:hover,
+        .dark .theme-scope .dark\:bg-latte-900\/20,
+        .dark .theme-scope .dark\:bg-latte-900\/30,
+        .dark .theme-scope .dark\:hover\:bg-latte-900\/30:hover { background-color: var(--theme-dark-soft) !important; }
+        .dark .theme-scope .bg-latte-100,
+        .dark .theme-scope .hover\:bg-latte-100:hover,
+        .dark .theme-scope .dark\:bg-latte-900\/40,
+        .dark .theme-scope .dark\:bg-latte-900\/50,
+        .dark .theme-scope .dark\:hover\:bg-latte-900\/40:hover { background-color: var(--theme-dark-soft-strong) !important; }
+        .dark .theme-scope .border-latte-100,
+        .dark .theme-scope .border-latte-200,
+        .dark .theme-scope .border-latte-300,
+        .dark .theme-scope .dark\:border-latte-600,
+        .dark .theme-scope .dark\:border-latte-700,
+        .dark .theme-scope .dark\:border-latte-800,
+        .dark .theme-scope .dark\:border-latte-900\/30,
+        .dark .theme-scope .hover\:border-latte-300:hover { border-color: var(--theme-dark-border) !important; }
+        .dark .theme-scope .border-latte-500,
+        .dark .theme-scope .dark\:hover\:border-latte-500:hover,
+        .dark .theme-scope .focus\:border-latte-500:focus { border-color: var(--theme-color) !important; }
+        .dark .theme-scope .decoration-latte-500,
+        .dark .theme-scope .group:hover .group-hover\:decoration-latte-500,
+        .dark .theme-scope .group:hover .dark\:group-hover\:decoration-latte-400 { text-decoration-color: var(--theme-dark-accent) !important; }
+        .dark .theme-scope .input-underline { border-bottom-color: var(--theme-dark-border); }
+        .dark .theme-scope .input-underline:focus { border-bottom-color: var(--theme-color); }
+        .dark .theme-card-surface { border-color: var(--theme-dark-border) !important; }
+        .dark .theme-card-tint { background-color: var(--theme-dark-soft) !important; border-color: var(--theme-dark-border) !important; }
+
         
         @keyframes shake {
             0%, 100% { transform: translateX(0); }

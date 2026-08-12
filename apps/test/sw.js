@@ -1,12 +1,12 @@
-const CACHE_NAME = 'word-review-test-pwa-v10';
+const CACHE_NAME = 'word-review-test-pwa-v12';
 const APP_SHELL = [
   './test.html',
   './manifest-test.webmanifest',
   '../../assets/js/install-config.js?v=20260724-0002',
-  '../../assets/js/test-app.js?v=20260724-0003',
-  '../../assets/js/word-meaning-app.js?v=20260724-0003',
-  '../../assets/css/test.css',
-  '../../assets/css/word-meaning.css'
+  '../../assets/js/test-app.js?v=20260812-0001',
+  '../../assets/js/word-meaning-app.js?v=20260812-0001',
+  '../../assets/css/test.css?v=20260812-0001',
+  '../../assets/css/word-meaning.css?v=20260812-0001'
 ];
 const OPTIONAL_ASSETS = [
   '../../assets/images/icons/test/icon.svg',

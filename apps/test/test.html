@@ -53,7 +53,9 @@
       if (mode === 'input' || mode === 'meaning') {
         const css = document.createElement('link');
         css.rel = 'stylesheet';
-        css.href = mode === 'meaning' ? '../../assets/css/word-meaning.css' : '../../assets/css/test.css';
+        css.href = mode === 'meaning'
+          ? '../../assets/css/word-meaning.css?v=20260812-0001'
+          : '../../assets/css/test.css?v=20260812-0001';
         document.head.appendChild(css);
       }
     })();
@@ -155,8 +157,8 @@
 
       const appScript = document.createElement('script');
       appScript.src = mode === 'meaning'
-        ? '../../assets/js/word-meaning-app.js?v=20260724-0003'
-        : '../../assets/js/test-app.js?v=20260724-0003';
+        ? '../../assets/js/word-meaning-app.js?v=20260812-0001'
+        : '../../assets/js/test-app.js?v=20260812-0001';
       document.body.appendChild(appScript);
     })();
       });

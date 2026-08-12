@@ -110,6 +110,32 @@
             border-color: var(--theme-color) !important;
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color) 16%, transparent);
         }
+        .dark .theme-scope {
+            --theme-dark-accent: color-mix(in srgb, var(--theme-color) 72%, white);
+            --theme-dark-soft: color-mix(in srgb, var(--theme-color) 18%, #252525);
+            --theme-dark-soft-strong: color-mix(in srgb, var(--theme-color) 28%, #252525);
+            --theme-dark-border: color-mix(in srgb, var(--theme-color) 52%, #2F2F2F);
+        }
+        .dark .theme-scope .text-latte-500,
+        .dark .theme-scope .text-latte-700,
+        .dark .theme-scope .hover\:text-latte-700:hover { color: var(--theme-dark-accent) !important; }
+        .dark .theme-scope .bg-latte-500 { background-color: var(--theme-color) !important; }
+        .dark .theme-scope .bg-latte-700,
+        .dark .theme-scope .hover\:bg-latte-700:hover { background-color: var(--theme-hover) !important; }
+        .dark .theme-scope .bg-latte-50 { background-color: var(--theme-dark-soft) !important; }
+        .dark .theme-scope .bg-latte-100,
+        .dark .theme-scope .hover\:bg-latte-100:hover { background-color: var(--theme-dark-soft-strong) !important; }
+        .dark .theme-scope .border-latte-100,
+        .dark .theme-scope .border-latte-200 { border-color: var(--theme-dark-border) !important; }
+        .dark .theme-scope .border-latte-500,
+        .dark .theme-scope .focus\:border-latte-500:focus { border-color: var(--theme-color) !important; }
+        .dark .theme-card-surface { border-color: var(--theme-dark-border) !important; }
+        .dark .theme-card-tint { background-color: var(--theme-dark-soft) !important; border-color: var(--theme-dark-border) !important; }
+        .dark .theme-title { color: var(--theme-dark-accent) !important; }
+        .dark .theme-focus:focus {
+            border-color: var(--theme-color) !important;
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color) 28%, transparent);
+        }
         .spin { animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -141,6 +167,25 @@ const THEMES = {
     berry:   { id:'berry',   name:'딸기 라떼', hex:'#D98891', hoverHex:'#C2737D', title:'#8F4F58', surface:'#FFF8F9', soft:'#FCECEF', border:'#F2DEE2', muted:'#D9AEB5', tint:'#FFF4F5' },
     milkTea: { id:'milkTea', name:'밀크티',    hex:'#D4A373', hoverHex:'#B88B5E', title:'#7B5738', surface:'#FFF9F1', soft:'#F7ECDD', border:'#EEDCC6', muted:'#D8B98E', tint:'#FFF7E8' },
     blue:    { id:'blue',    name:'블루라떼',  hex:'#79ABC2', hoverHex:'#6395AC', title:'#365D70', surface:'#F8FCFE', soft:'#EAF5FA', border:'#D8EAF2', muted:'#AAC8D6', tint:'#F1F9FC' },
+};
+
+const normalizeThemeId = (value) => value === 'earlgrey' ? 'milkTea' : value;
+const readThemeId = () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const fromUrl = normalizeThemeId(params.get('colorTheme') || params.get('palette') || '');
+        const fromApp = normalizeThemeId(localStorage.getItem(LS_THEME) || sessionStorage.getItem(LS_THEME) || '');
+        let sharedValue = '';
+        try {
+            sharedValue = JSON.parse(localStorage.getItem('nyan_clock_theme') || sessionStorage.getItem('nyan_clock_theme') || 'null') || '';
+        } catch {
+            sharedValue = localStorage.getItem('nyan_clock_theme') || sessionStorage.getItem('nyan_clock_theme') || '';
+        }
+        const fromShared = normalizeThemeId(sharedValue);
+        return [fromUrl, fromApp, fromShared].find(id => THEMES[id]) || 'latte';
+    } catch {
+        return 'latte';
+    }
 };
 
 const clean = (value) => (value || '').trim();
@@ -228,7 +273,7 @@ const buildParagraphBlocks = (text) => {
 
 const App = () => {
     const [isDark, setIsDark] = useState(() => localStorage.getItem(LS_DARK) === 'true');
-    const [themeId, setThemeId] = useState(() => localStorage.getItem(LS_THEME) || 'latte');
+    const [themeId, setThemeId] = useState(readThemeId);
     const theme = THEMES[themeId] || THEMES.latte;
     const themeVars = {
         '--theme-color': theme.hex,
@@ -273,7 +318,9 @@ const App = () => {
     }, [isDark]);
 
     useEffect(() => {
-        localStorage.setItem(LS_THEME, themeId);
+        try { localStorage.setItem(LS_THEME, themeId); } catch {}
+        try { sessionStorage.setItem(LS_THEME, themeId); } catch {}
+        try { localStorage.setItem('nyan_clock_theme', JSON.stringify(themeId)); } catch {}
     }, [themeId]);
 
     const notionFetch = useCallback(async (path, options = {}) => {
