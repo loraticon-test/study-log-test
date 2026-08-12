@@ -49,7 +49,7 @@ button { border: 0; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid color-mix(in srgb, var(--theme-color) 35%, transparent); outline-offset: 2px; }
 #root { width: 100%; min-width: 0; max-width: 100%; min-height: 100vh; padding: 16px; display: block; }
 #widget-main { width: 100%; min-width: 0; max-width: 100%; }
-#settings-root, #toast-root { display: contents; }
+#settings-root, #dialog-root, #toast-root { display: contents; }
 .initial-loader { min-height: 180px; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 13px; font-weight: 700; }
 .spinner { width: 17px; height: 17px; border: 2px solid var(--theme-border); border-top-color: var(--theme-color); border-radius: 50%; animation: spin .8s linear infinite; }
 
@@ -79,6 +79,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .layout-long .goal-grid, .layout-list .goal-grid { grid-template-columns: 1fr; }
 .goal-card { --goal-color: var(--theme-color); position: relative; min-width: 0; overflow: hidden; border: 1px solid var(--theme-border); background: var(--surface-raised); transition: transform .18s ease, border-color .18s ease, background .18s ease; }
 .goal-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--theme-color) 45%, var(--theme-border)); }
+.goal-card.is-actionable-past { cursor: pointer; }
+.goal-card.is-actionable-past:focus-visible { outline: 3px solid color-mix(in srgb, var(--theme-color) 35%, transparent); outline-offset: 2px; }
 .style-soft .goal-card { background: #FFFFFF; border: 0; }
 .dark .style-soft .goal-card { background: var(--surface-raised); }
 .style-colorBox .goal-card { background: color-mix(in srgb, var(--goal-color) 48%, #FFFFFF); border-color: transparent; }
@@ -181,6 +183,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .field-drag-placeholder { width: 26px; flex: 0 0 auto; color: var(--theme-muted); font-size: 7px; text-align: center; }
 .field-order-toggle { min-width: 0; flex: 1; display: flex; align-items: center; gap: 9px; font-size: 11px; font-weight: 800; cursor: pointer; }
 .fixed-field-badge { flex: 0 0 auto; padding: 3px 6px; border-radius: 999px; color: var(--theme-hover); background: var(--theme-soft); font-size: 8px; font-weight: 900; white-space: nowrap; }
+.auto-hide-settings { display: flex; flex-direction: column; gap: 7px; }
+.auto-hide-row { min-width: 0; min-height: 54px; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 14px; background: var(--theme-soft); }
+.auto-hide-row > div { min-width: 0; }
+.auto-hide-row strong { display: block; color: var(--text); font-size: 11px; font-weight: 850; }
+.auto-hide-row span { display: block; margin-top: 3px; color: var(--text-muted); font-size: 9.5px; line-height: 1.4; }
+.auto-hide-row .switch { flex: 0 0 auto; }
+.past-hide-summary .tiny-button { flex: 0 0 auto; }
+.auto-hide-empty { flex: 0 0 auto; margin: 0 !important; font-size: 9px !important; white-space: nowrap; }
 .select-input, .search-input { width: 100%; min-height: 42px; padding: 0 12px; border: 1px solid var(--theme-border); border-radius: 13px; color: var(--text); background: var(--surface-raised); font-size: 11px; font-weight: 750; }
 .goal-tools { display: flex; gap: 7px; margin-bottom: 8px; }
 .search-input { min-width: 0; flex: 1; }
@@ -233,13 +243,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .theme-color-confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .theme-color-confirm-actions .primary-button,
 .theme-color-confirm-actions .secondary-button { width: 100%; padding: 0 12px; }
+.past-hide-backdrop { position: fixed; inset: 0; z-index: 150; padding: 18px; display: flex; align-items: center; justify-content: center; background: rgba(28, 22, 18, .42); }
+.past-hide-dialog { width: min(100%, 360px); padding: 21px; border: 1px solid var(--theme-border); border-radius: 22px; color: var(--text); background: var(--surface-raised); animation: panel-in .18s ease; }
+.past-hide-eyebrow { display: inline-flex; margin-bottom: 8px; padding: 4px 8px; border-radius: 999px; color: var(--theme-hover); background: var(--theme-soft); font-size: 9px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.past-hide-dialog h3 { margin: 0; color: var(--theme-title); font-size: 16px; font-weight: 900; }
+.past-hide-dialog p { margin: 8px 0 18px; color: var(--text-soft); font-size: 11px; font-weight: 650; line-height: 1.55; }
+.past-hide-dialog p strong { color: var(--text); }
+.past-hide-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.past-hide-actions .primary-button,
+.past-hide-actions .secondary-button { width: 100%; padding: 0 12px; }
 .dark-row { margin-top: 11px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--text-soft); font-size: 11px; font-weight: 800; }
 .switch { position: relative; width: 42px; height: 24px; border-radius: 999px; background: var(--theme-muted); cursor: pointer; transition: background .2s; }
 .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: white; transition: transform .2s; box-shadow: 0 2px 5px rgba(0,0,0,.15); }
 .switch.on { background: var(--theme-color); }
 .switch.on::after { transform: translateX(18px); }
 .settings-footer { padding: 13px 22px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--theme-border); background: var(--surface); }
-.toast { position: fixed; left: 50%; bottom: 24px; z-index: 200; max-width: calc(100vw - 32px); padding: 10px 15px; border-radius: 999px; transform: translateX(-50%); color: white; background: #33302E; box-shadow: 0 12px 35px rgba(0,0,0,.2); font-size: 11px; font-weight: 850; animation: toast-in .25s ease; }
+.toast { position: fixed; left: 50%; bottom: 24px; z-index: 200; max-width: calc(100vw - 32px); padding: 10px 15px; border-radius: 999px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; color: white; background: #33302E; box-shadow: 0 12px 35px rgba(0,0,0,.2); font-size: 11px; font-weight: 850; white-space: nowrap; animation: toast-in .25s ease; }
+.toast button { flex: 0 0 auto; padding: 3px 7px; border-radius: 999px; color: #FFFFFF; background: rgba(255,255,255,.16); font-size: 10px; font-weight: 900; cursor: pointer; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fade-in { from { opacity: 0; } }

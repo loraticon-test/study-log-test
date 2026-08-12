@@ -43,6 +43,8 @@
     showFrame: true,
     fields: { title: true, type: false, status: false, date: false, subject: false },
     fieldOrder: ['type', 'status', 'date', 'subject'],
+    hideCompleted: true,
+    hiddenPastGoalIds: [],
     selectedIds: null,
     manualOrder: [],
     goalColors: {},
@@ -74,6 +76,8 @@
     error: '',
     settingsOpen: false,
     themeColorConfirmOpen: false,
+    pastHidePromptGoalId: null,
+    lastHiddenPastGoalId: null,
     goalSearch: '',
     goalListLimit: 60,
     toast: '',
@@ -124,6 +128,8 @@
       style: ['cream', 'soft', 'colorBox'].includes(requestedStyle) ? requestedStyle : DEFAULT_SETTINGS.style,
       fields: { ...DEFAULT_SETTINGS.fields, ...(saved.fields || {}) },
       fieldOrder,
+      hideCompleted: saved.hideCompleted !== false,
+      hiddenPastGoalIds: Array.isArray(saved.hiddenPastGoalIds) ? [...new Set(saved.hiddenPastGoalIds.filter(id => typeof id === 'string' && id))] : [],
       selectedIds: selectedFromUrl.length ? selectedFromUrl : (Array.isArray(saved.selectedIds) ? saved.selectedIds : null),
       manualOrder: Array.isArray(saved.manualOrder) ? saved.manualOrder : [],
       goalColors: Object.fromEntries(Object.entries(savedGoalColors).filter(([, color]) => normalizeHexColor(color))),
@@ -325,15 +331,17 @@
           .filter(Boolean);
         return { ...goal, subject: [...new Set(subjectNames)].join(', ') };
       });
+      const currentPastIds = new Set(state.goals.filter(goal => (dayDiff(goal.targetDate) ?? 0) < 0).map(goal => goal.id));
+      const hiddenPastGoalIds = (state.settings.hiddenPastGoalIds || []).filter(id => currentPastIds.has(id));
 
       if (state.settings.selectedIds === null) {
         const first = sortGoals(state.goals, 'urgency')[0];
-        patchSettings({ selectedIds: first ? [first.id] : [], manualOrder: first ? [first.id] : [] }, false);
+        patchSettings({ selectedIds: first ? [first.id] : [], manualOrder: first ? [first.id] : [], hiddenPastGoalIds }, false);
       } else {
         const validIds = new Set(state.goals.map(goal => goal.id));
         const selectedIds = state.settings.selectedIds.filter(id => validIds.has(id));
         const manualOrder = [...state.settings.manualOrder.filter(id => validIds.has(id)), ...selectedIds.filter(id => !state.settings.manualOrder.includes(id))];
-        patchSettings({ selectedIds, manualOrder }, false);
+        patchSettings({ selectedIds, manualOrder, hiddenPastGoalIds }, false);
       }
       if (showToast) toast('목표를 새로 불러왔어요.');
     } catch (error) {
@@ -413,7 +421,17 @@
 
   function selectedGoals() {
     const selected = new Set(state.settings.selectedIds || []);
-    return sortGoals(state.goals.filter(goal => selected.has(goal.id)));
+    const hiddenPast = new Set(state.settings.hiddenPastGoalIds || []);
+    return sortGoals(state.goals.filter(goal => {
+      if (!selected.has(goal.id)) return false;
+      if (state.settings.hideCompleted && isCompleted(goal.status)) return false;
+      return !(hiddenPast.has(goal.id) && (dayDiff(goal.targetDate) ?? 0) < 0);
+    }));
+  }
+
+  function hiddenPastGoals() {
+    const hidden = new Set(state.settings.hiddenPastGoalIds || []);
+    return state.goals.filter(goal => hidden.has(goal.id) && (dayDiff(goal.targetDate) ?? 0) < 0);
   }
 
   function goalMeta(goal, listMode = false) {
@@ -434,7 +452,9 @@
     const countdown = formatCountdown(goal);
     const countdownHtml = `<div class="countdown${countdownClass(goal)}${goal.targetDate ? '' : ' no-date'}">${escapeHtml(countdown)}</div>`;
     const textColor = customGoalTextColor(goal);
-    const cardOpen = `<article class="goal-card" style="--goal-color:${goalColor(goal)}${textColor ? `;--goal-text-color:${textColor}` : ''}">`;
+    const isPast = (dayDiff(goal.targetDate) ?? 0) < 0;
+    const pastAction = isPast ? ` data-action="prompt-hide-past" data-goal-id="${escapeHtml(goal.id)}" role="button" tabindex="0" aria-label="${escapeHtml(goal.title)}: 날짜가 지난 목표 숨기기 안내 열기"` : '';
+    const cardOpen = `<article class="goal-card${isPast ? ' is-actionable-past' : ''}"${pastAction} style="--goal-color:${goalColor(goal)}${textColor ? `;--goal-text-color:${textColor}` : ''}">`;
     if (state.settings.layout === 'list') {
       return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal, true)}</div>${countdownHtml}</article>`;
     }
@@ -444,15 +464,17 @@
     return `${cardOpen}<div class="goal-copy">${title}${goalMeta(goal)}</div>${countdownHtml}</article>`;
   }
 
-  function emptyState() {
+  function emptyState(hasSelectedGoals = false) {
     if (state.loading) return `<div class="empty-card"><span class="spinner" aria-hidden="true"></span><strong>목표를 불러오는 중이에요</strong></div>`;
     if (!state.config.saved) return `<div class="empty-card">${icons.link}<strong>목표 DB를 연결해 주세요</strong><p>통합 설정에서 만든 임베드 URL을 사용하면 자동으로 연결돼요.</p><button class="primary-button" data-action="open-settings">연결 안내 보기</button></div>`;
     if (!state.goals.length) return `<div class="empty-card">${icons.calendar}<strong>표시할 목표가 없어요</strong><p>목표 DB에 날짜가 있는 목표를 추가한 뒤 새로고침해 주세요.</p><button class="tiny-button" data-action="refresh">새로고침</button></div>`;
+    if (hasSelectedGoals) return `<div class="empty-card">${icons.calendar}<strong>현재 표시할 목표가 없어요</strong><p>선택한 목표가 모두 완료되었거나 숨겨져 있어요.</p><button class="primary-button" data-action="open-settings">숨김 설정 보기</button></div>`;
     return `<div class="empty-card">${icons.calendar}<strong>표시할 목표를 선택해 주세요</strong><p>여러 목표를 골라 한 위젯에서 함께 볼 수 있어요.</p><button class="primary-button" data-action="open-settings">목표 선택하기</button></div>`;
   }
 
   function mainHtml() {
     const goals = selectedGoals();
+    const hasSelectedGoals = state.goals.some(goal => (state.settings.selectedIds || []).includes(goal.id));
     const countText = goals.length ? `${goals.length}개의 목표` : '표시할 목표를 선택해 주세요';
     const singleGoalClass = goals.length === 1 && state.settings.layout === 'small' ? ' single-goal' : '';
     const frameClass = state.settings.showFrame ? ' frame-visible' : ' frame-hidden';
@@ -464,7 +486,7 @@
     return `<section class="widget-shell layout-${escapeHtml(state.settings.layout)} format-${escapeHtml(state.settings.format)} style-${escapeHtml(state.settings.style)}${singleGoalClass}${frameClass}">
       ${header}
       ${state.error ? `<div class="error-banner">${icons.alert}<span>${escapeHtml(state.error)}</span></div>` : ''}
-      <div class="goal-grid">${goals.length ? goals.map(renderGoal).join('') : emptyState()}</div>
+      <div class="goal-grid">${goals.length ? goals.map(renderGoal).join('') : emptyState(hasSelectedGoals)}</div>
     </section>`;
   }
 
@@ -515,6 +537,11 @@
     return `<div class="display-options"><label class="check-option frame-option"><input type="checkbox" data-display-setting="showFrame" ${state.settings.showFrame ? 'checked' : ''}>제목·외곽 프레임</label><div class="field-order-list" aria-label="표시 정보 순서">${fixedTitle}${sortableFields}</div></div>`;
   }
 
+  function autoHideSettingsHtml() {
+    const hiddenCount = hiddenPastGoals().length;
+    return `<div class="auto-hide-settings"><div class="auto-hide-row"><div><strong>완료된 목표 자동 숨김</strong><span>완료·달성·종료 상태의 목표를 위젯에서 숨깁니다.</span></div><button class="switch${state.settings.hideCompleted ? ' on' : ''}" data-action="toggle-hide-completed" role="switch" aria-checked="${state.settings.hideCompleted}" aria-label="완료된 목표 자동 숨김"></button></div><div class="auto-hide-row past-hide-summary"><div><strong>지난 목표 개별 숨김</strong><span>날짜가 지난 카드를 클릭하면 숨길 수 있습니다.</span></div>${hiddenCount ? `<button type="button" class="tiny-button" data-action="restore-hidden-past">숨긴 목표 복원 (${hiddenCount})</button>` : '<span class="auto-hide-empty">숨긴 목표 없음</span>'}</div></div>`;
+  }
+
   function reorderDisplayField(draggedKey, targetKey, insertAfter = false) {
     if (!DISPLAY_FIELD_KEYS.includes(draggedKey) || !DISPLAY_FIELD_KEYS.includes(targetKey) || draggedKey === targetKey) return;
     const current = [...state.settings.fieldOrder];
@@ -542,6 +569,7 @@
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">카드 형태</h3><p class="section-hint">좁은 Notion 칼럼에는 작은 카드형, 넓은 영역에는 긴 카드형을 추천해요.</p></div></div><div class="option-grid">${optionButton('small','작은 카드형','2열 카드')}${optionButton('long','긴 카드형','가로 카드')}${optionButton('list','리스트형','한 줄 목록')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">디데이 표시 방식</h3></div></div><div class="format-grid">${formatButton('compact','D-31',true)}${formatButton('remaining','31일 남음')}${formatButton('until','목표까지 31일')}${formatButton('number','31일')}</div></section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 정보</h3><p class="section-hint">목표명은 맨 위에 고정됩니다. 나머지 항목은 손잡이를 드래그해 순서를 바꿀 수 있어요.</p></div></div>${displayFieldSettingsHtml()}</section>
+          <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">자동 숨김</h3><p class="section-hint">노션 데이터와 목표 선택은 변경하지 않고 위젯에서만 숨깁니다.</p></div></div>${autoHideSettingsHtml()}</section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">정렬 순서</h3><p class="section-hint">가까운 목표순은 오늘과 다가오는 목표를 먼저, 지난 목표와 완료 목표를 뒤에 둡니다.</p></div></div><select class="select-input" data-setting-select="sort" aria-label="정렬 순서"><option value="urgency" ${state.settings.sort === 'urgency' ? 'selected' : ''}>가까운 목표순 (추천)</option><option value="dateAsc" ${state.settings.sort === 'dateAsc' ? 'selected' : ''}>목표 날짜 빠른순</option><option value="dateDesc" ${state.settings.sort === 'dateDesc' ? 'selected' : ''}>목표 날짜 늦은순</option><option value="manual" ${state.settings.sort === 'manual' ? 'selected' : ''}>직접 정렬</option></select>${manualOrderHtml()}</section>
           <section class="settings-section"><div class="section-title-row"><div><h3 class="section-title">표시할 목표</h3><p class="section-hint">A는 디데이 글자색, 컬러칩은 배경색을 설정합니다.</p></div><div class="section-actions"><button type="button" class="tiny-button" data-action="apply-theme-colors">전체 테마색 적용</button><span id="selected-goal-count" class="recommended">${selectedCount}개 선택</span></div></div>${goalSelectionHtml()}</section>
         </div>
@@ -557,9 +585,17 @@
     </div>`;
   }
 
+  function pastHideDialogHtml() {
+    if (!state.pastHidePromptGoalId) return '';
+    const goal = state.goals.find(item => item.id === state.pastHidePromptGoalId);
+    const days = goal ? dayDiff(goal.targetDate) : null;
+    if (!goal || days == null || days >= 0) return '';
+    return `<div class="past-hide-backdrop" data-action="cancel-hide-past"><section class="past-hide-dialog" role="alertdialog" aria-modal="true" aria-labelledby="past-hide-title" aria-describedby="past-hide-description"><span class="past-hide-eyebrow">D+${Math.abs(days)}</span><h3 id="past-hide-title">지난 목표를 숨길까요?</h3><p id="past-hide-description"><strong>${escapeHtml(goal.title)}</strong>의 목표 날짜가 ${Math.abs(days)}일 지났어요. 이 목표를 위젯에서 숨길 수 있습니다.</p><div class="past-hide-actions"><button type="button" class="secondary-button" data-action="cancel-hide-past">취소</button><button type="button" class="primary-button" data-action="confirm-hide-past">숨기기</button></div></section></div>`;
+  }
+
   function ensureMounts() {
     if (root.querySelector('#widget-main')) return;
-    root.innerHTML = '<div id="widget-main"></div><div id="settings-root"></div><div id="toast-root"></div>';
+    root.innerHTML = '<div id="widget-main"></div><div id="settings-root"></div><div id="dialog-root"></div><div id="toast-root"></div>';
   }
 
   function renderMain() {
@@ -576,9 +612,15 @@
     if (nextScroll) nextScroll.scrollTop = previousScroll;
   }
 
+  function renderDialog() {
+    ensureMounts();
+    root.querySelector('#dialog-root').innerHTML = pastHideDialogHtml();
+  }
+
   function renderToast() {
     ensureMounts();
-    root.querySelector('#toast-root').innerHTML = state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : '';
+    const current = typeof state.toast === 'string' ? { message: state.toast } : state.toast;
+    root.querySelector('#toast-root').innerHTML = current?.message ? `<div class="toast" role="status"><span>${escapeHtml(current.message)}</span>${current.action ? `<button type="button" data-action="${escapeHtml(current.action)}">${escapeHtml(current.actionLabel || '실행 취소')}</button>` : ''}</div>` : '';
   }
 
   function renderGoalListContent(preserveScroll = true) {
@@ -707,11 +749,67 @@
     renderSettings();
   }
 
+  function openPastHidePrompt(goalId) {
+    const goal = state.goals.find(item => item.id === goalId);
+    if (!goal || (dayDiff(goal.targetDate) ?? 0) >= 0) return;
+    state.pastHidePromptGoalId = goal.id;
+    renderDialog();
+    requestAnimationFrame(() => root.querySelector('.past-hide-dialog .primary-button')?.focus());
+  }
+
+  function cancelPastHidePrompt() {
+    state.pastHidePromptGoalId = null;
+    renderDialog();
+  }
+
+  function confirmPastGoalHide() {
+    const goalId = state.pastHidePromptGoalId;
+    const goal = state.goals.find(item => item.id === goalId);
+    if (!goal || (dayDiff(goal.targetDate) ?? 0) >= 0) {
+      cancelPastHidePrompt();
+      return;
+    }
+    state.settings = { ...state.settings, hiddenPastGoalIds: [...new Set([...(state.settings.hiddenPastGoalIds || []), goalId])] };
+    state.pastHidePromptGoalId = null;
+    state.lastHiddenPastGoalId = goalId;
+    saveSettings();
+    renderMain();
+    renderSettings();
+    renderDialog();
+    toast('지난 목표를 숨겼어요.', { action: 'undo-hide-past', label: '실행 취소' }, 5000);
+  }
+
+  function undoPastGoalHide() {
+    const goalId = state.lastHiddenPastGoalId;
+    if (!goalId) return;
+    state.settings = { ...state.settings, hiddenPastGoalIds: (state.settings.hiddenPastGoalIds || []).filter(id => id !== goalId) };
+    state.lastHiddenPastGoalId = null;
+    saveSettings();
+    renderMain();
+    renderSettings();
+    toast('목표를 다시 표시했어요.');
+  }
+
+  function restoreHiddenPastGoals() {
+    const count = (state.settings.hiddenPastGoalIds || []).length;
+    if (!count) {
+      toast('숨긴 지난 목표가 없어요.');
+      return;
+    }
+    state.settings = { ...state.settings, hiddenPastGoalIds: [] };
+    state.lastHiddenPastGoalId = null;
+    saveSettings();
+    renderMain();
+    renderSettings();
+    toast(`${count}개의 목표를 다시 표시했어요.`);
+  }
+
   function render() {
     document.documentElement.dataset.theme = state.settings.theme;
     document.documentElement.classList.toggle('dark', state.settings.dark);
     renderMain();
     renderSettings();
+    renderDialog();
     renderToast();
   }
 
@@ -766,6 +864,7 @@
       if (!element || !root.contains(element)) return;
       const action = element.dataset.action;
       if (action === 'backdrop-close' && event.target !== element) return;
+      if (action === 'cancel-hide-past' && element.classList.contains('past-hide-backdrop') && event.target !== element) return;
       if (element.dataset.colorEditorKind) { openGoalColorEditor(element); return; }
       if (action === 'close-color-editor') { closeGoalColorEditor(); return; }
       if (action === 'apply-goal-color') { applyGoalColorEditor(); return; }
@@ -773,12 +872,20 @@
       if (action === 'apply-theme-colors') { applyThemeColorsToAllGoals(); return; }
       if (action === 'confirm-theme-colors') { confirmThemeColorsToAllGoals(); return; }
       if (action === 'cancel-theme-colors') { cancelThemeColorsToAllGoals(); return; }
+      if (action === 'prompt-hide-past') { openPastHidePrompt(element.dataset.goalId); return; }
+      if (action === 'cancel-hide-past') { cancelPastHidePrompt(); return; }
+      if (action === 'confirm-hide-past') { confirmPastGoalHide(); return; }
+      if (action === 'undo-hide-past') { undoPastGoalHide(); return; }
+      if (action === 'restore-hidden-past') { restoreHiddenPastGoals(); return; }
+      if (action === 'toggle-hide-completed') { patchSettings({ hideCompleted: !state.settings.hideCompleted }); return; }
       if (action === 'open-settings') {
         state.settingsOpen = true;
         state.themeColorConfirmOpen = false;
+        state.pastHidePromptGoalId = null;
         state.goalSearch = '';
         state.goalListLimit = 60;
         renderSettings();
+        renderDialog();
         return;
       }
       if (action === 'close-settings' || action === 'backdrop-close') {
@@ -874,6 +981,12 @@
     });
 
     root.addEventListener('keydown', event => {
+      const pastCard = event.target.closest('[data-action="prompt-hide-past"]');
+      if (pastCard && ['Enter', ' '].includes(event.key)) {
+        event.preventDefault();
+        openPastHidePrompt(pastCard.dataset.goalId);
+        return;
+      }
       const fieldHandle = event.target.closest('[data-field-drag-handle]');
       if (fieldHandle && ['ArrowUp', 'ArrowDown'].includes(event.key)) {
         const key = fieldHandle.dataset.fieldDragHandle;
@@ -897,6 +1010,11 @@
         closeGoalColorEditor();
         return;
       }
+      if (event.key === 'Escape' && state.pastHidePromptGoalId) {
+        event.preventDefault();
+        cancelPastHidePrompt();
+        return;
+      }
       if (event.key === 'Escape' && state.themeColorConfirmOpen) {
         event.preventDefault();
         cancelThemeColorsToAllGoals();
@@ -909,11 +1027,11 @@
     });
   }
 
-  function toast(message) {
-    state.toast = message;
+  function toast(message, action = null, duration = action ? 5000 : 2200) {
+    state.toast = action ? { message, action: action.action, actionLabel: action.label } : { message };
     clearTimeout(state.toastTimer);
     renderToast();
-    state.toastTimer = setTimeout(() => { state.toast = ''; renderToast(); }, 2200);
+    state.toastTimer = setTimeout(() => { state.toast = ''; renderToast(); }, duration);
   }
 
   state.settingsOpen = !state.config.saved;
