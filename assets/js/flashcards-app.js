@@ -25,7 +25,7 @@
     close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>',
   };
 
-  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first' };
+  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards' };
   const state = {
     view: 'loading',
     config: loadConfig(),
@@ -40,10 +40,13 @@
     index: 0,
     flipped: false,
     randomIds: [],
+    listQuery: '',
+    listLimit: 30,
     settingsOpen: false,
     loading: false,
     error: '',
     demo: new URLSearchParams(location.search).get('demo') === '1',
+    demoView: new URLSearchParams(location.search).get('view') || '',
   };
 
   function loadJson(key, fallback) {
@@ -339,6 +342,7 @@
       index: state.index,
       sort: state.prefs.sort,
       direction: state.prefs.direction,
+      viewMode: state.prefs.viewMode,
       randomIds: state.randomIds,
     }));
   }
@@ -389,17 +393,20 @@
     if (!words.length) return;
     const session = resume ? loadSession() : null;
     state.activeSet = set;
-    state.view = 'cards';
     state.flipped = false;
+    state.listQuery = '';
+    state.listLimit = 30;
     if (session && setKey(session.set) === setKey(set)) {
       state.prefs.sort = session.sort || state.prefs.sort;
       state.prefs.direction = session.direction || state.prefs.direction;
+      state.prefs.viewMode = session.viewMode === 'list' ? 'list' : 'cards';
       state.randomIds = Array.isArray(session.randomIds) ? session.randomIds : [];
       state.index = Math.min(Math.max(0, Number(session.index) || 0), words.length - 1);
     } else {
       state.index = 0;
       state.randomIds = state.prefs.sort === 'random' ? shuffle(words.map(word => word.id)) : [];
     }
+    state.view = state.prefs.viewMode === 'list' ? 'list' : 'cards';
     savePrefs();
     saveSession();
     render();
@@ -425,8 +432,18 @@
     }
   }
 
+  function completeSet() {
+    localStorage.removeItem(LS_SESSION);
+    state.activeSet = null;
+    state.index = 0;
+    state.flipped = false;
+    state.randomIds = [];
+    state.view = 'library';
+    render();
+  }
+
   function renderHeader(title = '단어카드') {
-    const subtitle = state.words.length ? `${state.words.length}개 단어 · ${state.notes.length}개 학습 노트` : 'Notion 단어장을 카드로 펼쳐보세요';
+    const subtitle = state.words.length ? `${state.words.length}개 단어 · ${state.notes.length}개 학습 노트` : 'Notion 단어장을 카드와 목록으로 펼쳐보세요';
     const canRefresh = state.demo || Boolean(state.config.proxyUrl && state.config.apiKey && state.config.vocabDbId);
     return `
       <header class="app-header widget-header">
@@ -447,7 +464,7 @@
     const recent = loadSession();
     const recentWords = recent ? getSetWords(recent.set) : [];
     const connectedNotes = state.words.filter(word => word.relatedNoteIds.length).length;
-    let content = `${renderHeader()}<p class="intro">테스트 기록에는 반영하지 않고, 단어장을 과목과 학습 노트별로 편하게 넘겨보세요.</p>`;
+    let content = `${renderHeader()}<p class="intro">테스트 기록에는 반영하지 않고, 단어장을 과목과 학습 노트별 카드와 목록으로 살펴보세요.</p>`;
     if (!hasCoreConnection() && !state.demo) {
       content += `<div class="empty-state"><strong>단어장 연결이 필요해요.</strong><span>통합 설정에서 만든 단어카드 URL을 사용해 주세요.</span><div class="empty-actions"><button class="primary-button" type="button" data-action="open-settings">설정 열기</button></div></div>`;
       return `<div class="app-shell">${content}</div>`;
@@ -455,15 +472,16 @@
     content += `<div class="summary-strip"><strong>${state.words.length}개</strong><span>전체 단어</span><span class="summary-dot"></span><strong>${state.notes.length}개</strong><span>학습 노트</span><span class="summary-dot"></span><span>${connectedNotes}개 연결됨</span></div>`;
     if (recent && recentWords.length) {
       const position = Math.min((Number(recent.index) || 0) + 1, recentWords.length);
+      const isListRecent = recent.viewMode === 'list';
       content += `
         <section class="recent-set">
           <div class="row-between">
             <div>
               <div class="recent-label">최근에 본 세트</div>
               <div class="recent-title">${escapeHtml(recent.set.title)}</div>
-              <div class="recent-meta">${position} / ${recentWords.length}번째 카드</div>
+              <div class="recent-meta">${isListRecent ? `목록 보기 · ${recentWords.length}개 단어` : `${position} / ${recentWords.length}번째 카드`}</div>
             </div>
-            <button class="primary-button" type="button" data-action="continue-set">이어서 보기</button>
+            <button class="primary-button" type="button" data-action="continue-set">${isListRecent ? '목록 다시 보기' : '이어서 보기'}</button>
           </div>
         </section>`;
     }
@@ -523,6 +541,25 @@
     return `<details class="note-panel"><summary>관련 학습 노트 ${notes.length}개</summary><div class="note-list">${notes.map(note => `<a class="note-link" href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(note.title)} ↗</a>`).join('')}</div></details>`;
   }
 
+  function renderSetHeader() {
+    return `<header class="card-header">
+      <button class="back-button" type="button" data-action="back-library" aria-label="세트 선택으로 돌아가기">←</button>
+      <div class="card-header-main"><p class="eyebrow">WORD SET</p><div class="set-title">${escapeHtml(state.activeSet.title)}</div><div class="set-meta">열람 기록만 저장되며 테스트 통계에는 반영되지 않아요.</div></div>
+      <div class="header-actions"><button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button><button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어카드 설정">${icons.settings}</button></div>
+    </header>`;
+  }
+
+  function renderViewSwitch(activeMode) {
+    return `<div class="view-switch" role="group" aria-label="단어 보기 방식">
+      <button class="view-switch-button ${activeMode === 'cards' ? 'is-active' : ''}" type="button" data-action="view-cards" aria-pressed="${activeMode === 'cards'}">단어카드</button>
+      <button class="view-switch-button ${activeMode === 'list' ? 'is-active' : ''}" type="button" data-action="view-list" aria-pressed="${activeMode === 'list'}">목록 보기</button>
+    </div>`;
+  }
+
+  function renderSortSelect(label = '단어 순서') {
+    return `<div class="select-wrap"><label for="sort-select">${label}</label><select id="sort-select"><option value="created" ${state.prefs.sort === 'created' ? 'selected' : ''}>등록순</option><option value="name" ${state.prefs.sort === 'name' ? 'selected' : ''}>가나다·ABC순</option><option value="random" ${state.prefs.sort === 'random' ? 'selected' : ''}>랜덤</option></select></div>`;
+  }
+
   function renderCards() {
     const words = orderedWords();
     if (!words.length) {
@@ -535,14 +572,12 @@
     const front = state.prefs.direction === 'term-first' ? wordFace(word) : meaningFace(word);
     const back = state.prefs.direction === 'term-first' ? meaningFace(word) : wordFace(word);
     const progress = ((state.index + 1) / words.length) * 100;
+    const isLastCard = state.index === words.length - 1;
     return `<div class="app-shell">
-      <header class="card-header">
-        <button class="back-button" type="button" data-action="back-library" aria-label="세트 선택으로 돌아가기">←</button>
-        <div class="card-header-main"><p class="eyebrow">FLASHCARD SET</p><div class="set-title">${escapeHtml(state.activeSet.title)}</div><div class="set-meta">열람 기록만 저장되며 테스트 통계에는 반영되지 않아요.</div></div>
-        <div class="header-actions"><button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button><button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어카드 설정">${icons.settings}</button></div>
-      </header>
+      ${renderSetHeader()}
+      ${renderViewSwitch('cards')}
       <div class="controls">
-        <div class="select-wrap"><label for="sort-select">카드 순서</label><select id="sort-select"><option value="created" ${state.prefs.sort === 'created' ? 'selected' : ''}>등록순</option><option value="name" ${state.prefs.sort === 'name' ? 'selected' : ''}>가나다·ABC순</option><option value="random" ${state.prefs.sort === 'random' ? 'selected' : ''}>랜덤</option></select></div>
+        ${renderSortSelect('카드 순서')}
         <div class="select-wrap"><label for="direction-select">카드 방향</label><select id="direction-select"><option value="term-first" ${state.prefs.direction === 'term-first' ? 'selected' : ''}>단어 → 뜻</option><option value="meaning-first" ${state.prefs.direction === 'meaning-first' ? 'selected' : ''}>뜻 → 단어</option></select></div>
         <button class="shuffle-button" type="button" data-action="reshuffle" aria-label="카드 다시 섞기" title="카드 다시 섞기" ${state.prefs.sort === 'random' ? '' : 'disabled'}>↻</button>
       </div>
@@ -556,9 +591,53 @@
       <div class="navigation">
         <button class="nav-button" type="button" data-action="previous" ${state.index === 0 ? 'disabled' : ''}>← 이전</button>
         <button class="flip-button" type="button" data-action="flip" aria-label="카드 뒤집기">↺</button>
-        <button class="nav-button next" type="button" data-action="next" ${state.index === words.length - 1 ? 'disabled' : ''}>다음 →</button>
+        <button class="nav-button next ${isLastCard ? 'complete' : ''}" type="button" data-action="${isLastCard ? 'complete-set' : 'next'}">${isLastCard ? '완료' : '다음 →'}</button>
       </div>
       ${renderNotePanel(word)}
+    </div>`;
+  }
+
+  function listSearchText(word) {
+    const subjects = word.subjectIds.map(subjectLabel);
+    const notes = word.relatedNoteIds.map(id => state.noteMap.get(id)?.title || '');
+    return normalizeName([word.title, word.meaning, word.detail, ...subjects, ...notes].join(' '));
+  }
+
+  function renderListItem(word, orderIndex) {
+    const subjects = word.subjectIds.length ? word.subjectIds.map(subjectLabel) : ['미분류'];
+    const notes = word.relatedNoteIds.map(id => state.noteMap.get(id)).filter(Boolean);
+    return `<details class="word-list-item">
+      <summary><span class="word-list-number">${orderIndex + 1}</span><span class="word-list-main"><strong>${escapeHtml(word.title)}</strong><span>${escapeHtml(word.meaning || '뜻이 입력되지 않았어요.')}</span></span><span class="word-list-expand" aria-hidden="true">＋</span></summary>
+      <div class="word-list-detail">
+        ${word.detail ? `<p class="word-list-description">${escapeHtml(word.detail)}</p>` : '<p class="word-list-description is-empty">추가 설명이나 예문이 없습니다.</p>'}
+        <div class="word-list-meta"><div class="word-list-chips">${subjects.map(subject => `<span>${escapeHtml(subject)}</span>`).join('')}</div>${formatDate(word.createdTime) ? `<time>${escapeHtml(formatDate(word.createdTime))} 등록</time>` : ''}</div>
+        <div class="word-list-actions"><button class="secondary-button compact-button" type="button" data-action="open-word-card" data-word-id="${escapeHtml(word.id)}">카드로 보기</button>${notes.length ? `<div class="word-list-notes">${notes.map(note => `<a href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(note.title)} ↗</a>`).join('')}</div>` : '<span class="word-list-unlinked">연결된 학습 노트 없음</span>'}</div>
+      </div>
+    </details>`;
+  }
+
+  function renderList() {
+    const words = orderedWords();
+    if (!words.length) {
+      state.view = 'library';
+      state.activeSet = null;
+      return renderLibrary();
+    }
+    const query = normalizeName(state.listQuery);
+    const filtered = query ? words.filter(word => listSearchText(word).includes(query)) : words;
+    const visible = filtered.slice(0, state.listLimit);
+    const wordOrder = new Map(words.map((word, index) => [word.id, index]));
+    return `<div class="app-shell list-shell">
+      ${renderSetHeader()}
+      ${renderViewSwitch('list')}
+      <div class="list-toolbar">
+        <form class="list-search-form" role="search"><label class="sr-only" for="list-search">단어 검색</label><input id="list-search" type="search" value="${escapeHtml(state.listQuery)}" placeholder="단어·뜻·설명 검색"><button type="submit">검색</button></form>
+        ${renderSortSelect('목록 순서')}
+        <button class="shuffle-button" type="button" data-action="reshuffle" aria-label="목록 다시 섞기" title="목록 다시 섞기" ${state.prefs.sort === 'random' ? '' : 'disabled'}>↻</button>
+      </div>
+      <div class="list-summary"><span>${state.listQuery ? `검색 결과 ${filtered.length}개` : `${words.length}개 단어`}</span>${state.listQuery ? `<button type="button" data-action="clear-list-search">검색 초기화</button>` : '<span>행을 누르면 설명과 학습 노트를 볼 수 있어요.</span>'}</div>
+      ${visible.length ? `<div class="word-list">${visible.map(word => renderListItem(word, wordOrder.get(word.id) || 0)).join('')}</div>` : `<div class="empty-state list-empty"><strong>검색 결과가 없어요.</strong><span>다른 단어나 뜻으로 검색해 보세요.</span></div>`}
+      ${visible.length < filtered.length ? `<button class="load-more-button" type="button" data-action="load-more-list">${Math.min(30, filtered.length - visible.length)}개 더 보기</button>` : ''}
     </div>`;
   }
 
@@ -589,7 +668,7 @@
         <div class="setup-theme-row">${Object.entries(THEMES).map(([id, item]) => `<button class="setup-theme-option ${state.prefs.theme === id ? 'is-active' : ''}" type="button" data-theme-id="${id}" style="--swatch:${item.color}" title="${item.name}" aria-label="${item.name} 테마 적용"></button>`).join('')}</div>
       </section>
       <section class="db-section"><h2>연결된 DB 목록</h2><div class="db-list">${connectionRows.map(row => `<div class="db-row"><div class="db-icon">${row.icon}</div><div class="db-copy"><div class="db-row-head"><strong>${row.label}</strong><span class="db-status ${row.connected ? 'is-connected' : ''}">${row.connected ? '연결됨' : '대기'}</span></div><p>${row.desc}</p></div></div>`).join('')}</div></section>
-      <section class="setup-section setup-guide"><h2>화면 표시 안내</h2><p>데이터가 바로 보이지 않으면 아래 새로고침 버튼으로 Notion 데이터를 다시 불러오세요. 카드 순서, 카드 방향, 색상 테마와 다크모드 상태는 브라우저에 저장됩니다. 이 위젯은 읽기 전용이며 테스트 일정과 통계를 변경하지 않습니다.</p></section>
+      <section class="setup-section setup-guide"><h2>화면 표시 안내</h2><p>데이터가 바로 보이지 않으면 아래 새로고침 버튼으로 Notion 데이터를 다시 불러오세요. 보기 방식, 단어 순서, 카드 방향, 색상 테마와 다크모드 상태는 브라우저에 저장됩니다. 이 위젯은 읽기 전용이며 테스트 일정과 통계를 변경하지 않습니다.</p></section>
       ${installError || state.error ? `<div class="setup-error">${escapeHtml(installError || state.error)}</div>` : ''}
       <div class="setup-actions"><button class="setup-refresh-button" type="button" data-action="refresh-settings" ${connected && !state.loading ? '' : 'disabled'}>${state.loading ? '불러오는 중...' : '데이터 새로고침'}</button><button class="setup-close-button" type="button" data-action="close-setup">닫기</button></div>
     </section></div>`;
@@ -604,6 +683,7 @@
     else if (state.view === 'loading') root.innerHTML = '<div class="loading-state"><span class="spinner" aria-hidden="true"></span><span>단어장을 펼치고 있어요</span></div>';
     else if (state.view === 'error') root.innerHTML = renderError();
     else if (state.view === 'cards') root.innerHTML = renderCards();
+    else if (state.view === 'list') root.innerHTML = renderList();
     else root.innerHTML = renderLibrary();
     bindEvents();
   }
@@ -624,6 +704,21 @@
         if (action === 'back-subjects') { state.pickerSubject = null; render(); }
         if (action === 'back-library') { state.view = 'library'; state.flipped = false; render(); }
         if (action === 'continue-set') { const session = loadSession(); if (session) startSet(session.set, true); }
+        if (action === 'view-cards' && state.view !== 'cards') {
+          state.prefs.viewMode = 'cards'; state.view = 'cards'; state.flipped = false; savePrefs(); saveSession(); render();
+        }
+        if (action === 'view-list' && state.view !== 'list') {
+          state.prefs.viewMode = 'list'; state.view = 'list'; state.flipped = false; savePrefs(); saveSession(); render();
+        }
+        if (action === 'open-word-card') {
+          const words = orderedWords();
+          const nextIndex = words.findIndex(word => word.id === button.dataset.wordId);
+          if (nextIndex >= 0) state.index = nextIndex;
+          state.prefs.viewMode = 'cards'; state.view = 'cards'; state.flipped = false; savePrefs(); saveSession(); render();
+        }
+        if (action === 'clear-list-search') { state.listQuery = ''; state.listLimit = 30; render(); }
+        if (action === 'load-more-list') { state.listLimit += 30; render(); }
+        if (action === 'complete-set') completeSet();
         if (action === 'previous') moveCard(-1);
         if (action === 'next') moveCard(1);
         if (action === 'flip') flipCard();
@@ -661,6 +756,15 @@
       savePrefs(); saveSession(); render();
     });
 
+    const listSearchForm = root.querySelector('.list-search-form');
+    if (listSearchForm) listSearchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const input = root.querySelector('#list-search');
+      state.listQuery = clean(input?.value);
+      state.listLimit = 30;
+      render();
+    });
+
     const card = root.querySelector('.flashcard');
     if (card) {
       let startX = 0;
@@ -684,8 +788,10 @@
   }
 
   document.addEventListener('keydown', event => {
-    if (state.view !== 'cards' || state.settingsOpen) return;
+    if (!['cards','list'].includes(state.view) || state.settingsOpen) return;
     if (['INPUT','SELECT','TEXTAREA','BUTTON','A'].includes(event.target.tagName)) return;
+    if (state.view === 'list' && event.key === 'Escape') { state.view = 'library'; render(); return; }
+    if (state.view !== 'cards') return;
     if (event.code === 'Space') { event.preventDefault(); flipCard(); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); moveCard(-1); }
     if (event.key === 'ArrowRight') { event.preventDefault(); moveCard(1); }
@@ -694,7 +800,21 @@
 
   async function boot() {
     applyPrefs();
-    if (state.demo) { loadDemo(); render(); return; }
+    if (state.demo) {
+      loadDemo();
+      if (state.demoView === 'list') {
+        state.prefs.viewMode = 'list';
+        state.activeSet = makeSet('__all__', 'all');
+        state.view = 'list';
+      } else if (state.demoView === 'cards-last') {
+        state.prefs.viewMode = 'cards';
+        state.activeSet = makeSet('__all__', 'all');
+        state.index = Math.max(0, getSetWords(state.activeSet).length - 1);
+        state.view = 'cards';
+      }
+      render();
+      return;
+    }
     if (!hasCoreConnection()) {
       state.view = 'setup';
       render();

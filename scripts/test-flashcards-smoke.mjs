@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const appSource = fs.readFileSync(new URL('../study-timer/assets/js/flashcards-app.js', import.meta.url), 'utf8');
-function runApp(search) {
+function runApp(search, testHooks = false) {
   const storage = new Map();
   const root = { innerHTML:'', querySelectorAll:() => [], querySelector:() => null };
   const classList = { add() {}, remove() {}, toggle() {} };
@@ -23,8 +23,11 @@ function runApp(search) {
     matchMedia:() => ({ matches:false }), alert:() => {}, setTimeout, clearTimeout,
   };
   context.window = context;
-  vm.runInNewContext(appSource, context, { filename:'flashcards-app.js' });
-  return { root, context };
+  const source = testHooks
+    ? appSource.replace('window.CozyFlashcards = { reload:loadData };', 'window.CozyFlashcards = { reload:loadData, startSet, makeSet, completeSet };')
+    : appSource;
+  vm.runInNewContext(source, context, { filename:'flashcards-app.js' });
+  return { root, context, storage };
 }
 
 const { root, context } = runApp('?demo=1');
@@ -50,6 +53,20 @@ assert.match(listPreview.root.innerHTML, /문맥, 맥락/);
 assert.match(listPreview.root.innerHTML, /카드로 보기/);
 assert.match(listPreview.root.innerHTML, /관련 학습 노트|독해 지문 07/);
 
+const lastCard = runApp('?demo=1&view=cards-last');
+assert.match(lastCard.root.innerHTML, /data-action="complete-set"/);
+assert.match(lastCard.root.innerHTML, />완료<\/button>/);
+assert.doesNotMatch(lastCard.root.innerHTML, /data-action="next"[^>]*disabled/);
+
+const completion = runApp('?demo=1', true);
+const completionSet = completion.context.CozyFlashcards.makeSet('__all__', 'all');
+completion.context.CozyFlashcards.startSet(completionSet);
+assert.ok(completion.storage.has('cozy_flashcards_session'), '세트 열람 중에는 최근 세트가 저장되어야 합니다.');
+completion.context.CozyFlashcards.completeSet();
+assert.equal(completion.storage.has('cozy_flashcards_session'), false, '완료하면 최근 세트가 삭제되어야 합니다.');
+assert.match(completion.root.innerHTML, /단어 세트 선택/);
+assert.doesNotMatch(completion.root.innerHTML, /최근에 본 세트/);
+
 const disconnected = runApp('');
 assert.match(disconnected.root.innerHTML, /단어카드 위젯 설정/);
 assert.match(disconnected.root.innerHTML, /URL 파라미터가 필요합니다/);
@@ -60,4 +77,4 @@ assert.match(disconnected.root.innerHTML, /학습 노트 DB/);
 assert.match(disconnected.root.innerHTML, /데이터 새로고침/);
 assert.doesNotMatch(disconnected.root.innerHTML, /Cloudflare Worker 주소|WIDGET_TOKEN|data-config=|<input/);
 
-console.log('flashcards demo and setup smoke tests passed');
+console.log('flashcards demo, list, setup, and completion smoke tests passed');
