@@ -142,21 +142,58 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .icon-button:disabled { opacity: .38; cursor: default; transform: none; }
 .intro { margin: 12px 0 0; color: var(--text-soft); font-size: 13px; line-height: 1.65; }
 
-.summary-strip {
+.summary-cards {
   margin-top: 22px;
-  padding: 15px 17px;
+  overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--card);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--text-soft);
-  font-size: 12px;
-  font-weight: 750;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.summary-strip strong { color: var(--text); font-size: 14px; }
-.summary-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.summary-card {
+  min-width: 0;
+  min-height: 142px;
+  padding: 18px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.summary-card + .summary-card { border-left: 1px solid var(--border); }
+.summary-card-icon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+.summary-card-icon svg { width: 27px; height: 27px; }
+.summary-card strong {
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -.03em;
+}
+.summary-card strong small { margin-left: 1px; font-size: 11px; font-weight: 850; letter-spacing: 0; }
+.summary-card-label {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.35;
+}
+.summary-card-help {
+  margin-top: 3px;
+  color: var(--text-soft);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.35;
+}
 
 .recent-set {
   margin-top: 16px;
@@ -168,6 +205,24 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .recent-label { margin-bottom: 5px; color: var(--accent); font-size: 11px; font-weight: 850; }
 .recent-title { margin-bottom: 3px; font-size: 15px; font-weight: 850; }
 .recent-meta { color: var(--text-soft); font-size: 12px; }
+.recent-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.recent-dismiss-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--soft);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.recent-dismiss-button:hover { transform: translateY(-1px); background: var(--border); color: var(--accent-title); }
+.recent-dismiss-button svg { width: 16px; height: 16px; }
 .primary-button,
 .secondary-button,
 .ghost-button {
@@ -189,7 +244,18 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .section { margin-top: 26px; }
 .section-heading { margin-bottom: 12px; }
 .section-heading p { margin: 3px 0 0; color: var(--text-soft); font-size: 11px; }
+.note-search-form { width: 100%; height: 50px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; padding: 5px; border: 1px solid var(--border); border-radius: 15px; background: var(--card); }
+.note-search-form:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
+.note-search-form input { min-width: 0; flex: 1; padding: 0 9px; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 12px; }
+.note-search-form input::placeholder { color: var(--text-soft); }
+.note-search-form button { height: 38px; padding: 0 13px; border: 0; border-radius: 10px; background: var(--soft); color: var(--accent-title); font-size: 10.5px; font-weight: 850; cursor: pointer; }
+.note-search-form .note-search-clear { padding: 0 8px; background: transparent; color: var(--text-soft); }
 .grid-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.note-sort-row { grid-column: 1 / -1; min-height: 35px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--text-soft); font-size: 10px; font-weight: 800; }
+.note-sort-control { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--accent-title); cursor: pointer; }
+.note-sort-icon { font-size: 15px; font-weight: 900; line-height: 1; }
+.note-sort-control select { max-width: 130px; padding: 5px 21px 5px 5px; border: 0; outline: 0; background: transparent; color: var(--accent-title); font-size: 10px; font-weight: 850; cursor: pointer; }
+.note-search-empty { grid-column: 1 / -1; padding: 24px 14px; border: 1px dashed var(--border); border-radius: 16px; color: var(--text-soft); font-size: 11px; font-weight: 750; text-align: center; }
 .choice-card {
   width: 100%;
   min-height: 92px;
@@ -202,7 +268,12 @@ h3 { margin-bottom: 0; font-size: 14px; }
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 .choice-card:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 10px 24px rgba(86,61,43,.08); }
-.choice-icon { display: block; margin-bottom: 11px; font-size: 20px; }
+.choice-icon { min-height: 22px; display: flex; align-items: center; margin-bottom: 11px; font-size: 20px; }
+.notion-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; font-size: 18px; line-height: 1; }
+.notion-icon-image-wrap { position: relative; }
+.notion-icon-image-wrap > span { position: absolute; inset: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; }
+.notion-icon-image-wrap img { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; border-radius: 3px; object-fit: contain; display: block; }
+.notion-icon-fallback { color: var(--text-soft); }
 .choice-title { display: block; overflow: hidden; color: var(--text); font-size: 14px; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
 .choice-meta { display: block; margin-top: 4px; color: var(--text-soft); font-size: 11px; font-weight: 700; }
 .choice-card.is-wide { grid-column: 1 / -1; }
@@ -321,7 +392,11 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .meaning-scroll { width: 100%; max-height: 230px; overflow-y: auto; text-align: left; }
 .meaning-primary { color: var(--text); font-size: clamp(19px, 4.5vw, 25px); line-height: 1.55; font-weight: 820; white-space: pre-wrap; overflow-wrap: anywhere; }
 .meaning-detail { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-soft); font-size: 14px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
-.subject-chip { margin-top: 16px; padding: 6px 10px; border-radius: 999px; background: var(--soft); color: var(--accent-title); font-size: 10px; font-weight: 850; }
+.subject-chip-list { margin-top: 16px; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; }
+.subject-chip { padding: 6px 10px; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; background: var(--soft); color: var(--accent-title); font-size: 10px; font-weight: 850; }
+.subject-chip .notion-icon { width: 14px; height: 14px; font-size: 13px; }
+.subject-chip .notion-icon-image-wrap > span { font-size: 11px; }
+.subject-chip b { font: inherit; }
 .flip-hint { position: absolute; bottom: 20px; left: 0; right: 0; color: var(--text-soft); font-size: 10px; font-weight: 700; text-align: center; }
 
 .navigation { margin-top: 12px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
@@ -344,7 +419,8 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .note-panel summary::after { content: '＋'; float: right; color: var(--accent); }
 .note-panel[open] summary::after { content: '−'; }
 .note-list { padding: 0 12px 12px; display: grid; gap: 7px; }
-.note-link { padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-decoration: none; font-size: 12px; font-weight: 800; }
+.note-link { padding: 11px 12px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); text-decoration: none; font-size: 12px; font-weight: 800; }
+.note-link .notion-icon { width: 17px; height: 17px; font-size: 15px; }
 .note-link:hover { border-color: var(--accent); color: var(--accent-title); }
 .unlinked-note { padding: 0 16px 14px; color: var(--text-soft); font-size: 11px; }
 
@@ -398,12 +474,18 @@ h3 { margin-bottom: 0; font-size: 14px; }
 .word-list-description.is-empty { color: var(--text-soft); }
 .word-list-meta { padding: 11px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .word-list-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.word-list-chips span { padding: 4px 7px; border-radius: 999px; background: var(--soft); color: var(--accent-title); font-size: 9px; font-weight: 800; }
+.word-list-chips > span { padding: 4px 7px; display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; background: var(--soft); color: var(--accent-title); font-size: 9px; font-weight: 800; }
+.word-list-chips .notion-icon { width: 13px; height: 13px; font-size: 12px; }
+.word-list-chips .notion-icon-image-wrap > span { font-size: 10px; }
+.word-list-chips b { font: inherit; }
 .word-list-meta time { flex: 0 0 auto; color: var(--text-soft); font-size: 9px; font-weight: 750; }
 .word-list-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .compact-button { flex: 0 0 auto; padding: 8px 10px; border-radius: 10px; font-size: 10px; }
 .word-list-notes { min-width: 0; display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 5px; }
-.word-list-notes a { max-width: 180px; overflow: hidden; padding: 5px 8px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); color: var(--accent-title); font-size: 9px; font-weight: 800; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
+.word-list-notes a { max-width: 190px; overflow: hidden; padding: 5px 8px; display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 9px; background: var(--card); color: var(--accent-title); font-size: 9px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.word-list-notes a > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.word-list-notes .notion-icon { width: 13px; height: 13px; font-size: 12px; }
+.word-list-notes .notion-icon-image-wrap > span { font-size: 10px; }
 .word-list-notes a:hover { border-color: var(--accent); }
 .word-list-unlinked { color: var(--text-soft); font-size: 9.5px; }
 .layout-grid .word-list-item summary { min-height: 142px; grid-template-columns: 25px minmax(0, 1fr) 22px; align-content: start; align-items: center; }
@@ -536,10 +618,17 @@ h3 { margin-bottom: 0; font-size: 14px; }
   .flashcard, .flashcard-face { min-height: 330px; }
   .flashcard-face { padding: 27px 22px; }
   .recent-set .row-between { align-items: flex-start; flex-direction: column; }
-  .recent-set .primary-button { width: 100%; }
+  .recent-actions { width: 100%; }
+  .recent-set .primary-button { min-width: 0; flex: 1; }
 }
 
 @media (max-width: 390px) {
+  .summary-card { min-height: 128px; padding: 15px 7px 13px; }
+  .summary-card-icon { width: 29px; height: 29px; }
+  .summary-card-icon svg { width: 23px; height: 23px; }
+  .summary-card strong { font-size: 21px; }
+  .summary-card-label { font-size: 10px; }
+  .summary-card-help { font-size: 8px; }
   .controls { grid-template-columns: 1fr; }
   .shuffle-button { grid-column: auto; }
   .list-toolbar { grid-template-columns: minmax(0, 1fr) 52px; }

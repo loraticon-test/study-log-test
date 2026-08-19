@@ -24,7 +24,7 @@ function runApp(search, testHooks = false, initialStorage = {}) {
   };
   context.window = context;
   const source = testHooks
-    ? appSource.replace('window.CozyFlashcards = { reload:loadData };', 'window.CozyFlashcards = { reload:loadData, startSet, makeSet, completeSet };')
+    ? appSource.replace('window.CozyFlashcards = { reload:loadData };', 'window.CozyFlashcards = { reload:loadData, startSet, makeSet, completeSet, dismissRecentSet, parseNotionIcon };')
     : appSource;
   vm.runInNewContext(source, context, { filename:'flashcards-app.js' });
   return { root, context, storage };
@@ -32,7 +32,7 @@ function runApp(search, testHooks = false, initialStorage = {}) {
 
 const { root, context } = runApp('?demo=1');
 
-assert.match(root.innerHTML, /단어카드/);
+assert.match(root.innerHTML, /단어 카드/);
 assert.match(root.innerHTML, /단어 세트 선택/);
 assert.match(root.innerHTML, /전체 과목/);
 assert.match(root.innerHTML, /테스트 기록에는 반영하지 않고/);
@@ -40,7 +40,38 @@ assert.match(root.innerHTML, /header-kicker/);
 assert.match(root.innerHTML, /data-action="refresh"/);
 assert.match(root.innerHTML, /data-action="toggle-dark"/);
 assert.match(root.innerHTML, /primary-icon-button/);
+assert.match(root.innerHTML, /class="summary-cards"/);
+assert.equal((root.innerHTML.match(/class="summary-card"/g) || []).length, 3, '상단 요약은 세 개의 카드로 표시되어야 합니다.');
+assert.match(root.innerHTML, /전체 단어/);
+assert.match(root.innerHTML, /학습 노트 연결 단어/);
+assert.match(root.innerHTML, /학습 노트와 연결된 단어/);
+assert.doesNotMatch(root.innerHTML, /개 연결됨/);
+assert.match(root.innerHTML, /notion-icon-emoji[^>]*>🇬🇧/);
+assert.match(root.innerHTML, /notion-icon-emoji[^>]*>🔬/);
+assert.match(root.innerHTML, /notion-icon-fallback[^>]*>📖/);
 assert.ok(context.CozyFlashcards, '공개 앱 핸들이 생성되어야 합니다.');
+
+const iconParser = runApp('?demo=1', true).context.CozyFlashcards.parseNotionIcon;
+assert.equal(iconParser({ type:'emoji', emoji:'📈' }).value, '📈');
+assert.equal(iconParser({ type:'external', external:{ url:'https://example.com/icon.png' } }).value, 'https://example.com/icon.png');
+assert.equal(iconParser({ type:'icon', icon:{ name:'book-open', color:'blue' } }).value, 'https://www.notion.so/icons/book-open_blue.svg');
+
+const notesPreview = runApp('?demo=1&view=notes');
+assert.match(notesPreview.root.innerHTML, /class="note-search-form"/);
+assert.match(notesPreview.root.innerHTML, /placeholder="학습 노트 검색"/);
+assert.match(notesPreview.root.innerHTML, /이 과목의 모든 단어/);
+assert.match(notesPreview.root.innerHTML, /id="note-sort-select"/);
+assert.match(notesPreview.root.innerHTML, /최근 등록순/);
+assert.match(notesPreview.root.innerHTML, /오래된 등록순/);
+assert.match(notesPreview.root.innerHTML, /가나다·ABC순/);
+assert.ok(notesPreview.root.innerHTML.indexOf('이 과목의 모든 단어') < notesPreview.root.innerHTML.indexOf('note-sort-row'), '학습 노트 정렬은 전체 단어 블록 바로 아래에 있어야 합니다.');
+assert.match(notesPreview.root.innerHTML, /notion-icon-emoji[^>]*>📄/);
+assert.match(notesPreview.root.innerHTML, /notion-icon-emoji[^>]*>📚/);
+
+const oldestNotesPreview = runApp('?demo=1&view=notes', false, {
+  cozy_flashcards_prefs: JSON.stringify({ noteSort:'created-asc' }),
+});
+assert.ok(oldestNotesPreview.root.innerHTML.indexOf('수능 영단어 3강') < oldestNotesPreview.root.innerHTML.indexOf('독해 지문 07'), '오래된 등록순 정렬이 적용되어야 합니다.');
 
 const listPreview = runApp('?demo=1&view=list');
 assert.match(listPreview.root.innerHTML, /data-action="view-cards"/);
@@ -87,8 +118,20 @@ assert.equal(completion.storage.has('cozy_flashcards_session'), false, '완료�
 assert.match(completion.root.innerHTML, /단어 세트 선택/);
 assert.doesNotMatch(completion.root.innerHTML, /최근에 본 세트/);
 
+const recentSession = JSON.stringify({
+  set:{ subjectId:'__all__', kind:'all', noteId:null, title:'전체 과목 · 전체 단어' },
+  index:0,
+  viewMode:'list',
+});
+const dismissRecent = runApp('?demo=1', true, { cozy_flashcards_session:recentSession });
+assert.match(dismissRecent.root.innerHTML, /data-action="dismiss-recent"/);
+assert.match(dismissRecent.root.innerHTML, /aria-label="최근에 본 세트 닫기"/);
+dismissRecent.context.CozyFlashcards.dismissRecentSet();
+assert.equal(dismissRecent.storage.has('cozy_flashcards_session'), false, '닫기 버튼을 누르면 최근 세트 기록이 삭제되어야 합니다.');
+assert.doesNotMatch(dismissRecent.root.innerHTML, /최근에 본 세트/);
+
 const disconnected = runApp('');
-assert.match(disconnected.root.innerHTML, /단어카드 위젯 설정/);
+assert.match(disconnected.root.innerHTML, /단어 카드 위젯 설정/);
 assert.match(disconnected.root.innerHTML, /URL 파라미터가 필요합니다/);
 assert.match(disconnected.root.innerHTML, /연결된 DB 목록/);
 assert.match(disconnected.root.innerHTML, /단어장 DB/);

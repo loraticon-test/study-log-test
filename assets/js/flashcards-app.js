@@ -22,10 +22,11 @@
     book: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
     database: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v7c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path><path d="M4 12v7c0 1.66 3.58 3 8 3s8-1.34 8-3v-7"></path></svg>',
     note: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M8 13h8M8 17h6"></path></svg>',
+    link: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>',
     close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>',
   };
 
-  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards', listLayout: 'wide', showListDetails: false };
+  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards', listLayout: 'wide', showListDetails: false, noteSort: 'created-desc' };
   const state = {
     view: 'loading',
     config: loadConfig(),
@@ -36,6 +37,7 @@
     notes: [],
     noteMap: new Map(),
     pickerSubject: null,
+    noteQuery: '',
     activeSet: null,
     index: 0,
     flipped: false,
@@ -185,6 +187,25 @@
     return propertyText(title) || '제목 없음';
   }
 
+  function parseNotionIcon(icon) {
+    if (!icon) return null;
+    if (icon.type === 'emoji' && icon.emoji) return { type:'emoji', value:icon.emoji };
+    if (icon.type === 'external' && icon.external?.url) return { type:'img', value:icon.external.url };
+    if (icon.type === 'file' && icon.file?.url) return { type:'img', value:icon.file.url };
+    if (icon.type === 'custom_emoji' && icon.custom_emoji?.url) return { type:'img', value:icon.custom_emoji.url };
+    if (icon.type === 'icon' && icon.icon?.name) {
+      const color = icon.icon.color || 'gray';
+      return { type:'img', value:`https://www.notion.so/icons/${icon.icon.name}_${color}.svg` };
+    }
+    return null;
+  }
+
+  function renderNotionIcon(icon, fallback = '📖') {
+    if (icon?.type === 'emoji') return `<span class="notion-icon notion-icon-emoji" aria-hidden="true">${escapeHtml(icon.value)}</span>`;
+    if (icon?.type === 'img') return `<span class="notion-icon notion-icon-image-wrap" aria-hidden="true"><img src="${escapeHtml(icon.value)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${fallback}</span></span>`;
+    return `<span class="notion-icon notion-icon-fallback" aria-hidden="true">${fallback}</span>`;
+  }
+
   function extractSubjectIds(props, subjectMap) {
     const knownIds = new Set(subjectMap.keys());
     const preferredNames = ['직접 과목', '직접과목', '과목 (노트X)', '과목', '하위 과목', 'subject'];
@@ -202,7 +223,7 @@
     const raw = pages.map(page => {
       const props = page.properties || {};
       const parentProp = findProperty(props, ['상위 항목', '상위항목', '부모', 'parent'], ['relation']);
-      return { id:page.id, name:pageTitle(page), parentId:relationIds(parentProp)[0] || null };
+      return { id:page.id, name:pageTitle(page), icon:parseNotionIcon(page.icon), parentId:relationIds(parentProp)[0] || null };
     });
     const map = new Map(raw.map(item => [item.id, item]));
     raw.forEach(item => { item.parentName = item.parentId && map.get(item.parentId) ? map.get(item.parentId).name : null; });
@@ -213,6 +234,7 @@
     return pages.map(page => ({
       id: page.id,
       title: pageTitle(page),
+      icon: parseNotionIcon(page.icon),
       createdTime: page.created_time,
       subjectIds: extractSubjectIds(page.properties || {}, subjectMap),
       relatedIds: new Set(allRelationIds(page.properties || {})),
@@ -280,14 +302,15 @@
   function loadDemo() {
     const now = Date.now();
     state.subjects = [
-      { id:'subject-en', name:'영어', parentId:null, parentName:null },
-      { id:'subject-science', name:'과학', parentId:null, parentName:null },
+      { id:'subject-en', name:'영어', icon:{ type:'emoji', value:'🇬🇧' }, parentId:null, parentName:null },
+      { id:'subject-science', name:'과학', icon:{ type:'emoji', value:'🔬' }, parentId:null, parentName:null },
+      { id:'subject-history', name:'역사', icon:null, parentId:null, parentName:null },
     ];
     state.subjectMap = new Map(state.subjects.map(item => [item.id, item]));
     state.notes = [
-      { id:'note-reading', title:'독해 지문 07', createdTime:new Date(now - 86400000).toISOString(), subjectIds:['subject-en'], relatedIds:new Set(['word-1','word-2','word-3']) },
-      { id:'note-vocab', title:'수능 영단어 3강', createdTime:new Date(now - 172800000).toISOString(), subjectIds:['subject-en'], relatedIds:new Set(['word-4','word-5']) },
-      { id:'note-biology', title:'세포의 구조', createdTime:new Date(now - 259200000).toISOString(), subjectIds:['subject-science'], relatedIds:new Set(['word-6']) },
+      { id:'note-reading', title:'독해 지문 07', icon:{ type:'emoji', value:'📄' }, createdTime:new Date(now - 86400000).toISOString(), subjectIds:['subject-en'], relatedIds:new Set(['word-1','word-2','word-3']) },
+      { id:'note-vocab', title:'수능 영단어 3강', icon:{ type:'emoji', value:'📚' }, createdTime:new Date(now - 172800000).toISOString(), subjectIds:['subject-en'], relatedIds:new Set(['word-4','word-5']) },
+      { id:'note-biology', title:'세포의 구조', icon:{ type:'emoji', value:'🧬' }, createdTime:new Date(now - 259200000).toISOString(), subjectIds:['subject-science'], relatedIds:new Set(['word-6']) },
     ];
     state.noteMap = new Map(state.notes.map(item => [item.id, item]));
     state.words = [
@@ -442,7 +465,12 @@
     render();
   }
 
-  function renderHeader(title = '단어카드') {
+  function dismissRecentSet() {
+    localStorage.removeItem(LS_SESSION);
+    render();
+  }
+
+  function renderHeader(title = '단어 카드') {
     const subtitle = state.words.length ? `${state.words.length}개 단어 · ${state.notes.length}개 학습 노트` : 'Notion 단어장을 카드와 목록으로 펼쳐보세요';
     const canRefresh = state.demo || Boolean(state.config.proxyUrl && state.config.apiKey && state.config.vocabDbId);
     return `
@@ -455,7 +483,7 @@
         <div class="header-actions">
           <button class="icon-button" type="button" data-action="refresh" title="새로고침" aria-label="단어장 새로고침" ${canRefresh ? '' : 'disabled'}>${icons.refresh}</button>
           <button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button>
-          <button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어카드 설정">${icons.settings}</button>
+          <button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어 카드 설정">${icons.settings}</button>
         </div>
       </header>`;
   }
@@ -466,10 +494,14 @@
     const connectedNotes = state.words.filter(word => word.relatedNoteIds.length).length;
     let content = `${renderHeader()}<p class="intro">테스트 기록에는 반영하지 않고, 단어장을 과목과 학습 노트별 카드와 목록으로 살펴보세요.</p>`;
     if (!hasCoreConnection() && !state.demo) {
-      content += `<div class="empty-state"><strong>단어장 연결이 필요해요.</strong><span>통합 설정에서 만든 단어카드 URL을 사용해 주세요.</span><div class="empty-actions"><button class="primary-button" type="button" data-action="open-settings">설정 열기</button></div></div>`;
+      content += `<div class="empty-state"><strong>단어장 연결이 필요해요.</strong><span>통합 설정에서 만든 단어 카드 URL을 사용해 주세요.</span><div class="empty-actions"><button class="primary-button" type="button" data-action="open-settings">설정 열기</button></div></div>`;
       return `<div class="app-shell">${content}</div>`;
     }
-    content += `<div class="summary-strip"><strong>${state.words.length}개</strong><span>전체 단어</span><span class="summary-dot"></span><strong>${state.notes.length}개</strong><span>학습 노트</span><span class="summary-dot"></span><span>${connectedNotes}개 연결됨</span></div>`;
+    content += `<div class="summary-cards" aria-label="단어장 요약">
+      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.book}</span><strong>${state.words.length}<small>개</small></strong><span class="summary-card-label">전체 단어</span><span class="summary-card-help">단어장에 등록됨</span></div>
+      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.note}</span><strong>${state.notes.length}<small>개</small></strong><span class="summary-card-label">학습 노트</span><span class="summary-card-help">학습 노트 DB에 등록됨</span></div>
+      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.link}</span><strong>${connectedNotes}<small>개</small></strong><span class="summary-card-label">학습 노트 연결 단어</span><span class="summary-card-help">학습 노트와 연결된 단어</span></div>
+    </div>`;
     if (recent && recentWords.length) {
       const position = Math.min((Number(recent.index) || 0) + 1, recentWords.length);
       const isListRecent = recent.viewMode === 'list';
@@ -481,7 +513,10 @@
               <div class="recent-title">${escapeHtml(recent.set.title)}</div>
               <div class="recent-meta">${isListRecent ? `목록 보기 · ${recentWords.length}개 단어` : `${position} / ${recentWords.length}번째 카드`}</div>
             </div>
-            <button class="primary-button" type="button" data-action="continue-set">${isListRecent ? '목록 다시 보기' : '이어서 보기'}</button>
+            <div class="recent-actions">
+              <button class="primary-button" type="button" data-action="continue-set">${isListRecent ? '목록 다시 보기' : '이어서 보기'}</button>
+              <button class="recent-dismiss-button" type="button" data-action="dismiss-recent" title="최근 세트 닫기" aria-label="최근에 본 세트 닫기">${icons.close}</button>
+            </div>
           </div>
         </section>`;
     }
@@ -494,7 +529,7 @@
       .filter(subject => !subject.parentId || !state.subjectMap.has(subject.parentId))
       .map(subject => {
         const count = baseWordsForSubject(subject.id).length;
-        return `<button class="choice-card" type="button" data-subject="${escapeHtml(subject.id)}" ${count ? '' : 'disabled'}><span class="choice-icon">📘</span><span class="choice-title">${escapeHtml(subjectLabel(subject.id))}</span><span class="choice-meta">${count}개 단어</span></button>`;
+        return `<button class="choice-card" type="button" data-subject="${escapeHtml(subject.id)}" ${count ? '' : 'disabled'}><span class="choice-icon">${renderNotionIcon(subject.icon)}</span><span class="choice-title">${escapeHtml(subjectLabel(subject.id))}</span><span class="choice-meta">${count}개 단어</span></button>`;
       }).join('');
     const uncategorized = baseWordsForSubject('__uncategorized__').length;
     return `
@@ -508,27 +543,41 @@
       </section>`;
   }
 
+  function sortNoteRows(rows) {
+    const sort = state.prefs.noteSort || 'created-desc';
+    return [...rows].sort((a, b) => {
+      if (sort === 'name') return a.note.title.localeCompare(b.note.title, 'ko-KR', { sensitivity:'base', numeric:true });
+      const aTime = new Date(a.note.createdTime || 0).getTime();
+      const bTime = new Date(b.note.createdTime || 0).getTime();
+      return sort === 'created-asc' ? aTime - bTime : bTime - aTime;
+    });
+  }
+
   function renderSetPicker(subjectId) {
     const base = baseWordsForSubject(subjectId);
     const noteRows = state.notes.map(note => ({ note, count:base.filter(word => word.relatedNoteIds.includes(note.id)).length })).filter(item => item.count > 0);
+    const noteQuery = normalizeName(state.noteQuery);
+    const filteredNoteRows = sortNoteRows(noteRows.filter(item => !noteQuery || normalizeName(item.note.title).includes(noteQuery)));
     const unlinked = base.filter(word => word.relatedNoteIds.length === 0).length;
-    const noteCards = noteRows.map(({ note, count }) => `<button class="choice-card" type="button" data-set-kind="note" data-note-id="${escapeHtml(note.id)}"><span class="choice-icon">📖</span><span class="choice-title">${escapeHtml(note.title)}</span><span class="choice-meta">${count}개 단어${formatDate(note.createdTime) ? ` · ${escapeHtml(formatDate(note.createdTime))}` : ''}</span></button>`).join('');
+    const noteCards = filteredNoteRows.map(({ note, count }) => `<button class="choice-card" type="button" data-set-kind="note" data-note-id="${escapeHtml(note.id)}"><span class="choice-icon">${renderNotionIcon(note.icon)}</span><span class="choice-title">${escapeHtml(note.title)}</span><span class="choice-meta">${count}개 단어${formatDate(note.createdTime) ? ` · ${escapeHtml(formatDate(note.createdTime))}` : ''}</span></button>`).join('');
     const currentLabel = subjectId === '__all__' ? '전체 과목' : subjectId === '__uncategorized__' ? '미분류' : subjectLabel(subjectId);
     return `
       <div class="breadcrumb"><button type="button" data-action="back-subjects">과목</button><span>›</span><span>${escapeHtml(currentLabel)}</span></div>
       <section class="section">
         <div class="section-heading"><div><h2>${escapeHtml(currentLabel)}</h2><p>전체 단어나 특정 학습 노트를 선택해 주세요.</p></div><button class="ghost-button" type="button" data-action="back-subjects">과목 변경</button></div>
-        ${base.length ? `<div class="grid-list">
+        ${base.length ? `<form class="note-search-form" role="search"><label class="sr-only" for="note-search">학습 노트 검색</label><input id="note-search" type="search" value="${escapeHtml(state.noteQuery)}" placeholder="학습 노트 검색"><button type="submit">검색</button>${state.noteQuery ? '<button class="note-search-clear" type="button" data-action="clear-note-search">초기화</button>' : ''}</form><div class="grid-list">
           <button class="choice-card is-wide" type="button" data-set-kind="all"><span class="choice-icon">🃏</span><span class="choice-title">이 과목의 모든 단어</span><span class="choice-meta">${base.length}개 단어</span></button>
+          <div class="note-sort-row"><span>${state.noteQuery ? `검색 결과 ${filteredNoteRows.length}개` : `학습 노트 ${noteRows.length}개`}</span><label class="note-sort-control"><span class="note-sort-icon" aria-hidden="true">↕</span><span class="sr-only">학습 노트 정렬</span><select id="note-sort-select" aria-label="학습 노트 정렬"><option value="created-desc" ${state.prefs.noteSort === 'created-desc' ? 'selected' : ''}>최근 등록순</option><option value="created-asc" ${state.prefs.noteSort === 'created-asc' ? 'selected' : ''}>오래된 등록순</option><option value="name" ${state.prefs.noteSort === 'name' ? 'selected' : ''}>가나다·ABC순</option></select></label></div>
           ${noteCards}
+          ${state.noteQuery && !noteCards ? '<div class="note-search-empty">검색된 학습 노트가 없습니다.</div>' : ''}
           ${unlinked ? `<button class="choice-card" type="button" data-set-kind="unlinked"><span class="choice-icon">🔗</span><span class="choice-title">학습 노트 미연결</span><span class="choice-meta">${unlinked}개 단어</span></button>` : ''}
         </div>` : `<div class="empty-state"><strong>이 과목에는 단어가 없어요.</strong><span>다른 과목을 선택해 주세요.</span></div>`}
       </section>`;
   }
 
   function wordFace(word) {
-    const subjects = word.subjectIds.length ? word.subjectIds.map(subjectLabel).join(' · ') : '미분류';
-    return `<div class="face-label">단어</div><div class="word-text">${escapeHtml(word.title)}</div><div class="subject-chip">${escapeHtml(subjects)}</div><div class="flip-hint">카드를 눌러 뒤집기 · Space</div>`;
+    const subjectIds = word.subjectIds.length ? word.subjectIds : [null];
+    return `<div class="face-label">단어</div><div class="word-text">${escapeHtml(word.title)}</div><div class="subject-chip-list">${subjectIds.map(id => { const subject = id ? state.subjectMap.get(id) : null; return `<span class="subject-chip">${renderNotionIcon(subject?.icon)}<b>${escapeHtml(id ? subjectLabel(id) : '미분류')}</b></span>`; }).join('')}</div><div class="flip-hint">카드를 눌러 뒤집기 · Space</div>`;
   }
 
   function meaningFace(word) {
@@ -538,20 +587,20 @@
   function renderNotePanel(word) {
     const notes = word.relatedNoteIds.map(id => state.noteMap.get(id)).filter(Boolean);
     if (!notes.length) return `<div class="note-panel"><div class="unlinked-note" style="padding-top:14px">연결된 학습 노트가 없습니다.</div></div>`;
-    return `<details class="note-panel"><summary>관련 학습 노트 ${notes.length}개</summary><div class="note-list">${notes.map(note => `<a class="note-link" href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(note.title)} ↗</a>`).join('')}</div></details>`;
+    return `<details class="note-panel"><summary>관련 학습 노트 ${notes.length}개</summary><div class="note-list">${notes.map(note => `<a class="note-link" href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${renderNotionIcon(note.icon)}<span>${escapeHtml(note.title)} ↗</span></a>`).join('')}</div></details>`;
   }
 
   function renderSetHeader() {
     return `<header class="card-header">
       <button class="back-button" type="button" data-action="back-library" aria-label="세트 선택으로 돌아가기">←</button>
       <div class="card-header-main"><p class="eyebrow">WORD SET</p><div class="set-title">${escapeHtml(state.activeSet.title)}</div></div>
-      <div class="header-actions"><button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button><button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어카드 설정">${icons.settings}</button></div>
+      <div class="header-actions"><button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button><button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어 카드 설정">${icons.settings}</button></div>
     </header>`;
   }
 
   function renderViewSwitch(activeMode) {
     return `<div class="view-switch" role="group" aria-label="단어 보기 방식">
-      <button class="view-switch-button ${activeMode === 'cards' ? 'is-active' : ''}" type="button" data-action="view-cards" aria-pressed="${activeMode === 'cards'}">단어카드</button>
+      <button class="view-switch-button ${activeMode === 'cards' ? 'is-active' : ''}" type="button" data-action="view-cards" aria-pressed="${activeMode === 'cards'}">단어 카드</button>
       <button class="view-switch-button ${activeMode === 'list' ? 'is-active' : ''}" type="button" data-action="view-list" aria-pressed="${activeMode === 'list'}">목록 보기</button>
     </div>`;
   }
@@ -604,14 +653,14 @@
   }
 
   function renderListItem(word, orderIndex) {
-    const subjects = word.subjectIds.length ? word.subjectIds.map(subjectLabel) : ['미분류'];
+    const subjects = word.subjectIds.length ? word.subjectIds.map(id => ({ id, label:subjectLabel(id), icon:state.subjectMap.get(id)?.icon })) : [{ id:null, label:'미분류', icon:null }];
     const notes = word.relatedNoteIds.map(id => state.noteMap.get(id)).filter(Boolean);
     return `<details class="word-list-item" ${state.prefs.showListDetails ? 'open' : ''}>
       <summary><span class="word-list-number">${orderIndex + 1}</span><span class="word-list-main"><strong>${escapeHtml(word.title)}</strong><span>${escapeHtml(word.meaning || '뜻이 입력되지 않았어요.')}</span></span><span class="word-list-expand" aria-hidden="true">＋</span></summary>
       <div class="word-list-detail">
         ${word.detail ? `<p class="word-list-description">${escapeHtml(word.detail)}</p>` : '<p class="word-list-description is-empty">추가 설명이나 예문이 없습니다.</p>'}
-        <div class="word-list-meta"><div class="word-list-chips">${subjects.map(subject => `<span>${escapeHtml(subject)}</span>`).join('')}</div>${formatDate(word.createdTime) ? `<time>${escapeHtml(formatDate(word.createdTime))} 등록</time>` : ''}</div>
-        <div class="word-list-actions"><button class="secondary-button compact-button" type="button" data-action="open-word-card" data-word-id="${escapeHtml(word.id)}">카드로 보기</button>${notes.length ? `<div class="word-list-notes">${notes.map(note => `<a href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${escapeHtml(note.title)} ↗</a>`).join('')}</div>` : '<span class="word-list-unlinked">연결된 학습 노트 없음</span>'}</div>
+        <div class="word-list-meta"><div class="word-list-chips">${subjects.map(subject => `<span>${renderNotionIcon(subject.icon)}<b>${escapeHtml(subject.label)}</b></span>`).join('')}</div>${formatDate(word.createdTime) ? `<time>${escapeHtml(formatDate(word.createdTime))} 등록</time>` : ''}</div>
+        <div class="word-list-actions"><button class="secondary-button compact-button" type="button" data-action="open-word-card" data-word-id="${escapeHtml(word.id)}">카드로 보기</button>${notes.length ? `<div class="word-list-notes">${notes.map(note => `<a href="${notionUrl(note.id)}" target="_blank" rel="noopener noreferrer">${renderNotionIcon(note.icon)}<span>${escapeHtml(note.title)} ↗</span></a>`).join('')}</div>` : '<span class="word-list-unlinked">연결된 학습 노트 없음</span>'}</div>
       </div>
     </details>`;
   }
@@ -670,10 +719,10 @@
     const statusTitle = urlConnected && connected ? 'URL로 연결됨' : connected ? '저장된 설정으로 연결됨' : 'URL 파라미터가 필요합니다';
     const statusText = connected
       ? '설정값은 이 화면에서 다시 입력하지 않고, 임베드 URL에서 자동으로 읽어옵니다.'
-      : '위젯통합설정 페이지에서 생성한 단어카드 링크를 노션 임베드에 붙여넣어 주세요.';
+      : '위젯통합설정 페이지에서 생성한 단어 카드 링크를 노션 임베드에 붙여넣어 주세요.';
     return `<div class="setup-screen"><section class="setup-panel" aria-labelledby="settings-title">
       <header class="setup-header">
-        <div><div class="setup-kicker">Flashcard Settings</div><h1 class="setup-title" id="settings-title">${icons.settings}<span>단어카드 위젯 설정</span></h1><p class="setup-subtitle">이 위젯은 URL 파라미터로 Notion DB 설정값을 불러옵니다.</p></div>
+        <div><div class="setup-kicker">Flashcard Settings</div><h1 class="setup-title" id="settings-title">${icons.settings}<span>단어 카드 위젯 설정</span></h1><p class="setup-subtitle">이 위젯은 URL 파라미터로 Notion DB 설정값을 불러옵니다.</p></div>
         <button class="setup-icon-button" type="button" data-action="close-setup" title="닫기" aria-label="설정 닫기">×</button>
       </header>
       <div class="connection-alert ${connected ? 'is-connected' : 'is-waiting'}">
@@ -717,9 +766,10 @@
           else loadData({ keepSettings:true });
         }
         if (action === 'retry') loadData();
-        if (action === 'back-subjects') { state.pickerSubject = null; render(); }
+        if (action === 'back-subjects') { state.pickerSubject = null; state.noteQuery = ''; render(); }
         if (action === 'back-library') { state.view = 'library'; state.flipped = false; render(); }
         if (action === 'continue-set') { const session = loadSession(); if (session) startSet(session.set, true); }
+        if (action === 'dismiss-recent') { dismissRecentSet(); return; }
         if (action === 'view-cards' && state.view !== 'cards') {
           state.prefs.viewMode = 'cards'; state.view = 'cards'; state.flipped = false; savePrefs(); saveSession(); render();
         }
@@ -733,6 +783,7 @@
           state.prefs.viewMode = 'cards'; state.view = 'cards'; state.flipped = false; savePrefs(); saveSession(); render();
         }
         if (action === 'clear-list-search') { state.listQuery = ''; state.listLimit = 30; render(); }
+        if (action === 'clear-note-search') { state.noteQuery = ''; render(); }
         if (action === 'load-more-list') { state.listLimit += 30; render(); }
         if (action === 'toggle-list-details') {
           state.prefs.showListDetails = !state.prefs.showListDetails;
@@ -761,6 +812,7 @@
     root.querySelectorAll('[data-subject]').forEach(button => button.addEventListener('click', () => {
       if (button.disabled) return;
       state.pickerSubject = button.dataset.subject;
+      state.noteQuery = '';
       render();
     }));
     root.querySelectorAll('[data-set-kind]').forEach(button => button.addEventListener('click', () => {
@@ -782,6 +834,21 @@
       savePrefs(); saveSession(); render();
     });
 
+    const noteSortSelect = root.querySelector('#note-sort-select');
+    if (noteSortSelect) noteSortSelect.addEventListener('change', () => {
+      state.prefs.noteSort = noteSortSelect.value;
+      savePrefs();
+      render();
+    });
+
+    const noteSearchForm = root.querySelector('.note-search-form');
+    if (noteSearchForm) noteSearchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const input = root.querySelector('#note-search');
+      state.noteQuery = clean(input?.value);
+      render();
+    });
+
     const listSearchForm = root.querySelector('.list-search-form');
     if (listSearchForm) listSearchForm.addEventListener('submit', event => {
       event.preventDefault();
@@ -796,6 +863,12 @@
         if (!details.open) details.open = true;
       }));
     }
+
+    root.querySelectorAll('.notion-icon img').forEach(image => {
+      const showFallback = () => { image.style.display = 'none'; };
+      image.addEventListener('error', showFallback, { once:true });
+      if (image.complete && image.naturalWidth === 0) showFallback();
+    });
 
     const card = root.querySelector('.flashcard');
     if (card) {
@@ -838,6 +911,9 @@
         state.prefs.viewMode = 'list';
         state.activeSet = makeSet('__all__', 'all');
         state.view = 'list';
+      } else if (state.demoView === 'notes') {
+        state.pickerSubject = 'subject-en';
+        state.view = 'library';
       } else if (state.demoView === 'cards-last') {
         state.prefs.viewMode = 'cards';
         state.activeSet = makeSet('__all__', 'all');
