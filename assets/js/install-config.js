@@ -53,6 +53,7 @@
       catClock: "nyan_clock_config",
       blankStudy: "cozy_blank_study_config",
       dday: "cozy_dday_config",
+      flashcards: "cozy_flashcards_config",
     };
     const storageKey = storageByApp[app];
     if (storageKey) {

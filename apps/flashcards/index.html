@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#FDFBF7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="단어카드">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="코지 단어카드">
+  <meta name="description" content="Notion 단어장을 과목과 학습 노트별 카드로 편하게 넘겨보는 위젯입니다.">
+  <title>코지 단어카드</title>
+  <link rel="manifest" id="app-manifest" href="./manifest-flashcards.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/icons/word-meaning/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="../../assets/images/icons/word-meaning/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/icons/word-meaning/apple-touch-icon.png">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="../../assets/css/flashcards.css?v=20260819-0004">
+  <script>
+    try {
+      const prefs = JSON.parse(localStorage.getItem('cozy_flashcards_prefs') || '{}');
+      if (prefs.dark === true || (!('dark' in prefs) && matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+      document.documentElement.dataset.theme = prefs.theme || 'latte';
+    } catch (_) {}
+  </script>
+  <script src="../../assets/js/install-config.js?v=20260819-0001" data-app="flashcards"></script>
+</head>
+<body>
+  <main id="root" aria-live="polite">
+    <div class="initial-loader"><span class="spinner" aria-hidden="true"></span><span>단어장을 펼치고 있어요</span></div>
+  </main>
+  <script>
+    Promise.resolve(window.STUDY_INSTALL_READY).finally(() => {
+      const script = document.createElement('script');
+      script.src = '../../assets/js/flashcards-app.js?v=20260819-0004';
+      document.body.appendChild(script);
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator && ['https:', 'http:'].includes(location.protocol)) {
+      addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
