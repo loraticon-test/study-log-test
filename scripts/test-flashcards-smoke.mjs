@@ -39,6 +39,17 @@ assert.match(root.innerHTML, /data-action="toggle-dark"/);
 assert.match(root.innerHTML, /primary-icon-button/);
 assert.ok(context.CozyFlashcards, '공개 앱 핸들이 생성되어야 합니다.');
 
+const listPreview = runApp('?demo=1&view=list');
+assert.match(listPreview.root.innerHTML, /data-action="view-cards"/);
+assert.match(listPreview.root.innerHTML, /data-action="view-list"/);
+assert.match(listPreview.root.innerHTML, /목록 보기/);
+assert.match(listPreview.root.innerHTML, /list-search-form/);
+assert.match(listPreview.root.innerHTML, /단어·뜻·설명 검색/);
+assert.match(listPreview.root.innerHTML, /context/);
+assert.match(listPreview.root.innerHTML, /문맥, 맥락/);
+assert.match(listPreview.root.innerHTML, /카드로 보기/);
+assert.match(listPreview.root.innerHTML, /관련 학습 노트|독해 지문 07/);
+
 const disconnected = runApp('');
 assert.match(disconnected.root.innerHTML, /단어카드 위젯 설정/);
 assert.match(disconnected.root.innerHTML, /URL 파라미터가 필요합니다/);

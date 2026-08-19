@@ -2,7 +2,7 @@
   "id": "./",
   "name": "코지 단어카드",
   "short_name": "단어카드",
-  "description": "Notion 단어장을 과목과 학습 노트별 카드로 편하게 넘겨보는 위젯입니다.",
+  "description": "Notion 단어장을 과목과 학습 노트별 카드와 목록으로 보는 위젯입니다.",
   "scope": "./",
   "start_url": "./index.html",
   "display": "standalone",
