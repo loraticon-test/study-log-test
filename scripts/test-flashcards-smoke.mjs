@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const appSource = fs.readFileSync(new URL('../study-timer/assets/js/flashcards-app.js', import.meta.url), 'utf8');
-function runApp(search, testHooks = false) {
-  const storage = new Map();
+function runApp(search, testHooks = false, initialStorage = {}) {
+  const storage = new Map(Object.entries(initialStorage));
   const root = { innerHTML:'', querySelectorAll:() => [], querySelector:() => null };
   const classList = { add() {}, remove() {}, toggle() {} };
   const document = {
@@ -52,6 +52,17 @@ assert.match(listPreview.root.innerHTML, /context/);
 assert.match(listPreview.root.innerHTML, /문맥, 맥락/);
 assert.match(listPreview.root.innerHTML, /카드로 보기/);
 assert.match(listPreview.root.innerHTML, /관련 학습 노트|독해 지문 07/);
+assert.match(listPreview.root.innerHTML, /data-list-layout="grid"/);
+assert.match(listPreview.root.innerHTML, /data-list-layout="compact"/);
+assert.match(listPreview.root.innerHTML, /data-list-layout="wide"/);
+assert.match(listPreview.root.innerHTML, /layout-wide/);
+assert.doesNotMatch(listPreview.root.innerHTML, /열람 기록만 저장되며 테스트 통계에는 반영되지 않아요/);
+
+const gridPreview = runApp('?demo=1&view=list', false, {
+  cozy_flashcards_prefs: JSON.stringify({ listLayout:'grid' }),
+});
+assert.match(gridPreview.root.innerHTML, /word-list layout-grid/);
+assert.match(gridPreview.root.innerHTML, /layout-switch-button is-active[^>]*data-list-layout="grid"/);
 
 const lastCard = runApp('?demo=1&view=cards-last');
 assert.match(lastCard.root.innerHTML, /data-action="complete-set"/);

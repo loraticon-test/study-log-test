@@ -25,7 +25,7 @@
     close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>',
   };
 
-  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards' };
+  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards', listLayout: 'wide' };
   const state = {
     view: 'loading',
     config: loadConfig(),
@@ -544,7 +544,7 @@
   function renderSetHeader() {
     return `<header class="card-header">
       <button class="back-button" type="button" data-action="back-library" aria-label="세트 선택으로 돌아가기">←</button>
-      <div class="card-header-main"><p class="eyebrow">WORD SET</p><div class="set-title">${escapeHtml(state.activeSet.title)}</div><div class="set-meta">열람 기록만 저장되며 테스트 통계에는 반영되지 않아요.</div></div>
+      <div class="card-header-main"><p class="eyebrow">WORD SET</p><div class="set-title">${escapeHtml(state.activeSet.title)}</div></div>
       <div class="header-actions"><button class="icon-button" type="button" data-action="toggle-dark" title="${state.prefs.dark ? '라이트모드' : '다크모드'}" aria-label="${state.prefs.dark ? '라이트모드' : '다크모드'}">${state.prefs.dark ? icons.sun : icons.moon}</button><button class="icon-button primary-icon-button" type="button" data-action="open-settings" title="설정" aria-label="단어카드 설정">${icons.settings}</button></div>
     </header>`;
   }
@@ -616,6 +616,16 @@
     </details>`;
   }
 
+  function renderListLayoutSwitch() {
+    const active = ['grid','compact','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
+    const layouts = [
+      { id:'grid', label:'격자형', icon:'<span class="layout-icon layout-icon-grid"><i></i><i></i><i></i><i></i></span>' },
+      { id:'compact', label:'간단 목록형', icon:'<span class="layout-icon layout-icon-compact"><i></i><i></i><i></i></span>' },
+      { id:'wide', label:'가로형', icon:'<span class="layout-icon layout-icon-wide"><i></i><i></i></span>' },
+    ];
+    return `<div class="layout-switch" role="group" aria-label="목록 형식">${layouts.map(layout => `<button class="layout-switch-button ${active === layout.id ? 'is-active' : ''}" type="button" data-list-layout="${layout.id}" title="${layout.label}" aria-label="${layout.label}" aria-pressed="${active === layout.id}">${layout.icon}</button>`).join('')}</div>`;
+  }
+
   function renderList() {
     const words = orderedWords();
     if (!words.length) {
@@ -627,6 +637,7 @@
     const filtered = query ? words.filter(word => listSearchText(word).includes(query)) : words;
     const visible = filtered.slice(0, state.listLimit);
     const wordOrder = new Map(words.map((word, index) => [word.id, index]));
+    const listLayout = ['grid','compact','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
     return `<div class="app-shell list-shell">
       ${renderSetHeader()}
       ${renderViewSwitch('list')}
@@ -635,8 +646,8 @@
         ${renderSortSelect('목록 순서')}
         <button class="shuffle-button" type="button" data-action="reshuffle" aria-label="목록 다시 섞기" title="목록 다시 섞기" ${state.prefs.sort === 'random' ? '' : 'disabled'}>↻</button>
       </div>
-      <div class="list-summary"><span>${state.listQuery ? `검색 결과 ${filtered.length}개` : `${words.length}개 단어`}</span>${state.listQuery ? `<button type="button" data-action="clear-list-search">검색 초기화</button>` : '<span>행을 누르면 설명과 학습 노트를 볼 수 있어요.</span>'}</div>
-      ${visible.length ? `<div class="word-list">${visible.map(word => renderListItem(word, wordOrder.get(word.id) || 0)).join('')}</div>` : `<div class="empty-state list-empty"><strong>검색 결과가 없어요.</strong><span>다른 단어나 뜻으로 검색해 보세요.</span></div>`}
+      <div class="list-summary"><span>${state.listQuery ? `검색 결과 ${filtered.length}개` : `${words.length}개 단어`}</span><div class="list-summary-end">${state.listQuery ? `<button type="button" data-action="clear-list-search">검색 초기화</button>` : '<span class="list-hint">항목을 누르면 상세 내용을 볼 수 있어요.</span>'}${renderListLayoutSwitch()}</div></div>
+      ${visible.length ? `<div class="word-list layout-${listLayout}">${visible.map(word => renderListItem(word, wordOrder.get(word.id) || 0)).join('')}</div>` : `<div class="empty-state list-empty"><strong>검색 결과가 없어요.</strong><span>다른 단어나 뜻으로 검색해 보세요.</span></div>`}
       ${visible.length < filtered.length ? `<button class="load-more-button" type="button" data-action="load-more-list">${Math.min(30, filtered.length - visible.length)}개 더 보기</button>` : ''}
     </div>`;
   }
@@ -731,6 +742,11 @@
 
     root.querySelectorAll('[data-theme-id]').forEach(button => button.addEventListener('click', () => {
       state.prefs.theme = button.dataset.themeId; savePrefs(); render();
+    }));
+    root.querySelectorAll('[data-list-layout]').forEach(button => button.addEventListener('click', () => {
+      state.prefs.listLayout = button.dataset.listLayout;
+      savePrefs();
+      render();
     }));
     root.querySelectorAll('[data-subject]').forEach(button => button.addEventListener('click', () => {
       if (button.disabled) return;
