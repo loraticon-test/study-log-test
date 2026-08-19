@@ -25,7 +25,7 @@
     close: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>',
   };
 
-  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards', listLayout: 'wide' };
+  const defaultPrefs = { theme: 'latte', dark: false, sort: 'created', direction: 'term-first', viewMode: 'cards', listLayout: 'wide', showListDetails: false };
   const state = {
     view: 'loading',
     config: loadConfig(),
@@ -606,7 +606,7 @@
   function renderListItem(word, orderIndex) {
     const subjects = word.subjectIds.length ? word.subjectIds.map(subjectLabel) : ['미분류'];
     const notes = word.relatedNoteIds.map(id => state.noteMap.get(id)).filter(Boolean);
-    return `<details class="word-list-item">
+    return `<details class="word-list-item" ${state.prefs.showListDetails ? 'open' : ''}>
       <summary><span class="word-list-number">${orderIndex + 1}</span><span class="word-list-main"><strong>${escapeHtml(word.title)}</strong><span>${escapeHtml(word.meaning || '뜻이 입력되지 않았어요.')}</span></span><span class="word-list-expand" aria-hidden="true">＋</span></summary>
       <div class="word-list-detail">
         ${word.detail ? `<p class="word-list-description">${escapeHtml(word.detail)}</p>` : '<p class="word-list-description is-empty">추가 설명이나 예문이 없습니다.</p>'}
@@ -624,6 +624,11 @@
       { id:'wide', label:'가로형', icon:'<span class="layout-icon layout-icon-wide"><i></i><i></i></span>' },
     ];
     return `<div class="layout-switch" role="group" aria-label="목록 형식">${layouts.map(layout => `<button class="layout-switch-button ${active === layout.id ? 'is-active' : ''}" type="button" data-list-layout="${layout.id}" title="${layout.label}" aria-label="${layout.label}" aria-pressed="${active === layout.id}">${layout.icon}</button>`).join('')}</div>`;
+  }
+
+  function renderListDetailToggle() {
+    const active = Boolean(state.prefs.showListDetails);
+    return `<button class="list-detail-toggle ${active ? 'is-active' : ''}" type="button" data-action="toggle-list-details" role="switch" aria-checked="${active}" aria-label="상세 내용 모두 보기"><span class="list-detail-toggle-label">상세 내용 모두 보기</span><span class="list-detail-toggle-track" aria-hidden="true"><i></i></span></button>`;
   }
 
   function renderList() {
@@ -646,7 +651,7 @@
         ${renderSortSelect('목록 순서')}
         <button class="shuffle-button" type="button" data-action="reshuffle" aria-label="목록 다시 섞기" title="목록 다시 섞기" ${state.prefs.sort === 'random' ? '' : 'disabled'}>↻</button>
       </div>
-      <div class="list-summary"><span>${state.listQuery ? `검색 결과 ${filtered.length}개` : `${words.length}개 단어`}</span><div class="list-summary-end">${state.listQuery ? `<button type="button" data-action="clear-list-search">검색 초기화</button>` : '<span class="list-hint">항목을 누르면 상세 내용을 볼 수 있어요.</span>'}${renderListLayoutSwitch()}</div></div>
+      <div class="list-summary"><span>${state.listQuery ? `검색 결과 ${filtered.length}개` : `${words.length}개 단어`}</span><div class="list-summary-end">${state.listQuery ? `<button type="button" data-action="clear-list-search">검색 초기화</button>` : ''}${renderListDetailToggle()}${renderListLayoutSwitch()}</div></div>
       ${visible.length ? `<div class="word-list layout-${listLayout}">${visible.map(word => renderListItem(word, wordOrder.get(word.id) || 0)).join('')}</div>` : `<div class="empty-state list-empty"><strong>검색 결과가 없어요.</strong><span>다른 단어나 뜻으로 검색해 보세요.</span></div>`}
       ${visible.length < filtered.length ? `<button class="load-more-button" type="button" data-action="load-more-list">${Math.min(30, filtered.length - visible.length)}개 더 보기</button>` : ''}
     </div>`;
@@ -729,6 +734,11 @@
         }
         if (action === 'clear-list-search') { state.listQuery = ''; state.listLimit = 30; render(); }
         if (action === 'load-more-list') { state.listLimit += 30; render(); }
+        if (action === 'toggle-list-details') {
+          state.prefs.showListDetails = !state.prefs.showListDetails;
+          savePrefs();
+          render();
+        }
         if (action === 'complete-set') completeSet();
         if (action === 'previous') moveCard(-1);
         if (action === 'next') moveCard(1);
@@ -780,6 +790,12 @@
       state.listLimit = 30;
       render();
     });
+
+    if (state.prefs.showListDetails) {
+      root.querySelectorAll('.word-list-item').forEach(details => details.addEventListener('toggle', () => {
+        if (!details.open) details.open = true;
+      }));
+    }
 
     const card = root.querySelector('.flashcard');
     if (card) {

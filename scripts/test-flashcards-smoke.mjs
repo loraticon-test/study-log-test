@@ -57,12 +57,21 @@ assert.match(listPreview.root.innerHTML, /data-list-layout="compact"/);
 assert.match(listPreview.root.innerHTML, /data-list-layout="wide"/);
 assert.match(listPreview.root.innerHTML, /layout-wide/);
 assert.doesNotMatch(listPreview.root.innerHTML, /열람 기록만 저장되며 테스트 통계에는 반영되지 않아요/);
+assert.match(listPreview.root.innerHTML, /상세 내용 모두 보기/);
+assert.match(listPreview.root.innerHTML, /role="switch" aria-checked="false"/);
+assert.doesNotMatch(listPreview.root.innerHTML, /항목을 누르면 상세 내용을 볼 수 있어요/);
 
 const gridPreview = runApp('?demo=1&view=list', false, {
   cozy_flashcards_prefs: JSON.stringify({ listLayout:'grid' }),
 });
 assert.match(gridPreview.root.innerHTML, /word-list layout-grid/);
 assert.match(gridPreview.root.innerHTML, /layout-switch-button is-active[^>]*data-list-layout="grid"/);
+
+const detailsPreview = runApp('?demo=1&view=list', false, {
+  cozy_flashcards_prefs: JSON.stringify({ showListDetails:true }),
+});
+assert.match(detailsPreview.root.innerHTML, /role="switch" aria-checked="true"/);
+assert.match(detailsPreview.root.innerHTML, /<details class="word-list-item" open>/);
 
 const lastCard = runApp('?demo=1&view=cards-last');
 assert.match(lastCard.root.innerHTML, /data-action="complete-set"/);
