@@ -33,6 +33,11 @@ function runApp(search, testHooks = false, initialStorage = {}) {
   return { root, context, storage };
 }
 
+function summaryValue(html, kind) {
+  const match = html.match(new RegExp(`data-summary-kind="${kind}" data-summary-value="(\\d+)"`));
+  return match ? Number(match[1]) : null;
+}
+
 const { root, context } = runApp('?demo=1');
 
 assert.match(root.innerHTML, /단어 카드/);
@@ -49,6 +54,9 @@ assert.equal((root.innerHTML.match(/class="summary-card"/g) || []).length, 3, '�
 assert.match(root.innerHTML, /전체 단어/);
 assert.match(root.innerHTML, /학습 노트 연결 단어/);
 assert.match(root.innerHTML, /학습 노트와 연결된 단어/);
+assert.equal(summaryValue(root.innerHTML, 'words'), 7);
+assert.equal(summaryValue(root.innerHTML, 'notes'), 3);
+assert.equal(summaryValue(root.innerHTML, 'connected-words'), 5);
 assert.doesNotMatch(root.innerHTML, /개 연결됨/);
 assert.match(root.innerHTML, /notion-icon-flag/);
 assert.match(root.innerHTML, /twemoji@17\.0\.3\/assets\/svg\/1f1ec-1f1e7\.svg/);
@@ -66,6 +74,12 @@ assert.equal(flagEmojiAsset('🇬🇧'), 'https://cdn.jsdelivr.net/gh/jdecked/tw
 assert.equal(flagEmojiAsset('📈'), '');
 
 const notesPreview = runApp('?demo=1&view=notes');
+assert.equal(summaryValue(notesPreview.root.innerHTML, 'words'), 5);
+assert.equal(summaryValue(notesPreview.root.innerHTML, 'notes'), 2);
+assert.equal(summaryValue(notesPreview.root.innerHTML, 'connected-words'), 4);
+assert.match(notesPreview.root.innerHTML, /영어 단어/);
+assert.match(notesPreview.root.innerHTML, /영어 학습 노트/);
+assert.match(notesPreview.root.innerHTML, /영어 단어 중 연결됨/);
 assert.match(notesPreview.root.innerHTML, /class="note-search-form"/);
 assert.match(notesPreview.root.innerHTML, /placeholder="학습 노트 검색"/);
 assert.match(notesPreview.root.innerHTML, /이 과목의 모든 단어/);

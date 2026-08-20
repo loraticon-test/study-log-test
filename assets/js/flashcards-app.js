@@ -497,20 +497,34 @@
       </header>`;
   }
 
+  function renderSummaryCards(subjectId = null) {
+    const isSubjectScope = subjectId !== null && subjectId !== '__all__';
+    const words = isSubjectScope ? baseWordsForSubject(subjectId) : state.words;
+    const relatedNoteIds = new Set(words.flatMap(word => word.relatedNoteIds).filter(id => state.noteMap.has(id)));
+    const noteCount = isSubjectScope ? relatedNoteIds.size : state.notes.length;
+    const connectedWordCount = words.filter(word => word.relatedNoteIds.some(id => state.noteMap.has(id))).length;
+    const scopeLabel = subjectId === '__uncategorized__' ? '미분류' : isSubjectScope ? subjectLabel(subjectId) : '';
+    const wordLabel = isSubjectScope ? `${scopeLabel} 단어` : '전체 단어';
+    const noteLabel = isSubjectScope ? `${scopeLabel} 학습 노트` : '학습 노트';
+    const wordHelp = isSubjectScope ? `${scopeLabel} 과목에 포함됨` : '단어장에 등록됨';
+    const noteHelp = isSubjectScope ? `${scopeLabel} 단어와 연결됨` : '학습 노트 DB에 등록됨';
+    const connectedHelp = isSubjectScope ? `${scopeLabel} 단어 중 연결됨` : '학습 노트와 연결된 단어';
+    return `<div class="summary-cards" aria-label="${isSubjectScope ? `${escapeHtml(scopeLabel)} 과목 요약` : '단어장 요약'}">
+      <div class="summary-card" data-summary-kind="words" data-summary-value="${words.length}"><span class="summary-card-icon" aria-hidden="true">${icons.book}</span><strong>${words.length}<small>개</small></strong><span class="summary-card-label">${escapeHtml(wordLabel)}</span><span class="summary-card-help">${escapeHtml(wordHelp)}</span></div>
+      <div class="summary-card" data-summary-kind="notes" data-summary-value="${noteCount}"><span class="summary-card-icon" aria-hidden="true">${icons.note}</span><strong>${noteCount}<small>개</small></strong><span class="summary-card-label">${escapeHtml(noteLabel)}</span><span class="summary-card-help">${escapeHtml(noteHelp)}</span></div>
+      <div class="summary-card" data-summary-kind="connected-words" data-summary-value="${connectedWordCount}"><span class="summary-card-icon" aria-hidden="true">${icons.link}</span><strong>${connectedWordCount}<small>개</small></strong><span class="summary-card-label">학습 노트 연결 단어</span><span class="summary-card-help">${escapeHtml(connectedHelp)}</span></div>
+    </div>`;
+  }
+
   function renderLibrary() {
     const recent = loadSession();
     const recentWords = recent ? getSetWords(recent.set) : [];
-    const connectedNotes = state.words.filter(word => word.relatedNoteIds.length).length;
     let content = renderHeader();
     if (!hasCoreConnection() && !state.demo) {
       content += `<div class="empty-state"><strong>단어장 연결이 필요해요.</strong><span>통합 설정에서 만든 단어 카드 URL을 사용해 주세요.</span><div class="empty-actions"><button class="primary-button" type="button" data-action="open-settings">설정 열기</button></div></div>`;
       return `<div class="app-shell">${content}</div>`;
     }
-    content += `<div class="summary-cards" aria-label="단어장 요약">
-      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.book}</span><strong>${state.words.length}<small>개</small></strong><span class="summary-card-label">전체 단어</span><span class="summary-card-help">단어장에 등록됨</span></div>
-      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.note}</span><strong>${state.notes.length}<small>개</small></strong><span class="summary-card-label">학습 노트</span><span class="summary-card-help">학습 노트 DB에 등록됨</span></div>
-      <div class="summary-card"><span class="summary-card-icon" aria-hidden="true">${icons.link}</span><strong>${connectedNotes}<small>개</small></strong><span class="summary-card-label">학습 노트 연결 단어</span><span class="summary-card-help">학습 노트와 연결된 단어</span></div>
-    </div>`;
+    content += renderSummaryCards(state.pickerSubject);
     if (recent && recentWords.length) {
       const position = Math.min((Number(recent.index) || 0) + 1, recentWords.length);
       const isListRecent = recent.viewMode === 'list';
