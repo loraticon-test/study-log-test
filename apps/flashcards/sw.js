@@ -1,10 +1,10 @@
-const CACHE_NAME = 'cozy-flashcards-v11';
+const CACHE_NAME = 'cozy-flashcards-v14';
 const APP_SHELL = [
   './index.html',
   './manifest-flashcards.webmanifest',
   '../../assets/js/install-config.js?v=20260819-0001',
-  '../../assets/js/flashcards-app.js?v=20260820-0011',
-  '../../assets/css/flashcards.css?v=20260820-0011'
+  '../../assets/js/flashcards-app.js?v=20260820-0014',
+  '../../assets/css/flashcards.css?v=20260820-0014'
 ];
 const OPTIONAL_ASSETS = [
   '../../assets/images/icons/word-meaning/icon.svg',

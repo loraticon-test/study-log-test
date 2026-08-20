@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const appSource = fs.readFileSync(new URL('../study-timer/assets/js/flashcards-app.js', import.meta.url), 'utf8');
+const cssSource = fs.readFileSync(new URL('../study-timer/assets/css/flashcards.css', import.meta.url), 'utf8');
+assert.match(cssSource, /\.notion-icon-image-wrap > span \{[^}]*visibility: hidden/);
+assert.match(appSource, /fallback\.style\.visibility = 'visible'/);
 function runApp(search, testHooks = false, initialStorage = {}) {
   const storage = new Map(Object.entries(initialStorage));
   const root = { innerHTML:'', querySelectorAll:() => [], querySelector:() => null };
@@ -24,7 +27,7 @@ function runApp(search, testHooks = false, initialStorage = {}) {
   };
   context.window = context;
   const source = testHooks
-    ? appSource.replace('window.CozyFlashcards = { reload:loadData };', 'window.CozyFlashcards = { reload:loadData, startSet, makeSet, completeSet, dismissRecentSet, parseNotionIcon };')
+    ? appSource.replace('window.CozyFlashcards = { reload:loadData };', 'window.CozyFlashcards = { reload:loadData, startSet, makeSet, completeSet, dismissRecentSet, parseNotionIcon, flagEmojiAsset };')
     : appSource;
   vm.runInNewContext(source, context, { filename:'flashcards-app.js' });
   return { root, context, storage };
@@ -35,7 +38,8 @@ const { root, context } = runApp('?demo=1');
 assert.match(root.innerHTML, /단어 카드/);
 assert.match(root.innerHTML, /단어 세트 선택/);
 assert.match(root.innerHTML, /전체 과목/);
-assert.match(root.innerHTML, /테스트 기록에는 반영하지 않고/);
+assert.doesNotMatch(root.innerHTML, /개 단어 · \d+개 학습 노트/);
+assert.doesNotMatch(root.innerHTML, /테스트 기록에는 반영하지 않고/);
 assert.match(root.innerHTML, /header-kicker/);
 assert.match(root.innerHTML, /data-action="refresh"/);
 assert.match(root.innerHTML, /data-action="toggle-dark"/);
@@ -46,15 +50,20 @@ assert.match(root.innerHTML, /전체 단어/);
 assert.match(root.innerHTML, /학습 노트 연결 단어/);
 assert.match(root.innerHTML, /학습 노트와 연결된 단어/);
 assert.doesNotMatch(root.innerHTML, /개 연결됨/);
-assert.match(root.innerHTML, /notion-icon-emoji[^>]*>🇬🇧/);
+assert.match(root.innerHTML, /notion-icon-flag/);
+assert.match(root.innerHTML, /twemoji@17\.0\.3\/assets\/svg\/1f1ec-1f1e7\.svg/);
+assert.doesNotMatch(root.innerHTML, /notion-icon-emoji[^>]*>🇬🇧/);
 assert.match(root.innerHTML, /notion-icon-emoji[^>]*>🔬/);
 assert.match(root.innerHTML, /notion-icon-fallback[^>]*>📖/);
 assert.ok(context.CozyFlashcards, '공개 앱 핸들이 생성되어야 합니다.');
 
 const iconParser = runApp('?demo=1', true).context.CozyFlashcards.parseNotionIcon;
+const flagEmojiAsset = runApp('?demo=1', true).context.CozyFlashcards.flagEmojiAsset;
 assert.equal(iconParser({ type:'emoji', emoji:'📈' }).value, '📈');
 assert.equal(iconParser({ type:'external', external:{ url:'https://example.com/icon.png' } }).value, 'https://example.com/icon.png');
 assert.equal(iconParser({ type:'icon', icon:{ name:'book-open', color:'blue' } }).value, 'https://www.notion.so/icons/book-open_blue.svg');
+assert.equal(flagEmojiAsset('🇬🇧'), 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/svg/1f1ec-1f1e7.svg');
+assert.equal(flagEmojiAsset('📈'), '');
 
 const notesPreview = runApp('?demo=1&view=notes');
 assert.match(notesPreview.root.innerHTML, /class="note-search-form"/);
@@ -84,8 +93,8 @@ assert.match(listPreview.root.innerHTML, /문맥, 맥락/);
 assert.match(listPreview.root.innerHTML, /카드로 보기/);
 assert.match(listPreview.root.innerHTML, /관련 학습 노트|독해 지문 07/);
 assert.match(listPreview.root.innerHTML, /data-list-layout="grid"/);
-assert.match(listPreview.root.innerHTML, /data-list-layout="compact"/);
 assert.match(listPreview.root.innerHTML, /data-list-layout="wide"/);
+assert.doesNotMatch(listPreview.root.innerHTML, /data-list-layout="compact"|간단 목록형/);
 assert.match(listPreview.root.innerHTML, /layout-wide/);
 assert.doesNotMatch(listPreview.root.innerHTML, /열람 기록만 저장되며 테스트 통계에는 반영되지 않아요/);
 assert.match(listPreview.root.innerHTML, /상세 내용 모두 보기/);
@@ -97,6 +106,12 @@ const gridPreview = runApp('?demo=1&view=list', false, {
 });
 assert.match(gridPreview.root.innerHTML, /word-list layout-grid/);
 assert.match(gridPreview.root.innerHTML, /layout-switch-button is-active[^>]*data-list-layout="grid"/);
+
+const legacyCompactPreview = runApp('?demo=1&view=list', false, {
+  cozy_flashcards_prefs: JSON.stringify({ listLayout:'compact' }),
+});
+assert.match(legacyCompactPreview.root.innerHTML, /word-list layout-wide/);
+assert.doesNotMatch(legacyCompactPreview.root.innerHTML, /layout-compact|data-list-layout="compact"/);
 
 const detailsPreview = runApp('?demo=1&view=list', false, {
   cozy_flashcards_prefs: JSON.stringify({ showListDetails:true }),

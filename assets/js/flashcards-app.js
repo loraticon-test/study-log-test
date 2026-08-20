@@ -200,8 +200,19 @@
     return null;
   }
 
+  function flagEmojiAsset(value) {
+    const codePoints = [...String(value || '')].map(char => char.codePointAt(0));
+    if (codePoints.length !== 2 || !codePoints.every(point => point >= 0x1F1E6 && point <= 0x1F1FF)) return '';
+    const filename = codePoints.map(point => point.toString(16)).join('-');
+    return `https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/svg/${filename}.svg`;
+  }
+
   function renderNotionIcon(icon, fallback = '📖') {
-    if (icon?.type === 'emoji') return `<span class="notion-icon notion-icon-emoji" aria-hidden="true">${escapeHtml(icon.value)}</span>`;
+    if (icon?.type === 'emoji') {
+      const flagAsset = flagEmojiAsset(icon.value);
+      if (flagAsset) return `<span class="notion-icon notion-icon-image-wrap notion-icon-flag" aria-hidden="true"><img src="${flagAsset}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>🏳️</span></span>`;
+      return `<span class="notion-icon notion-icon-emoji" aria-hidden="true">${escapeHtml(icon.value)}</span>`;
+    }
     if (icon?.type === 'img') return `<span class="notion-icon notion-icon-image-wrap" aria-hidden="true"><img src="${escapeHtml(icon.value)}" alt="" loading="lazy" referrerpolicy="no-referrer"><span>${fallback}</span></span>`;
     return `<span class="notion-icon notion-icon-fallback" aria-hidden="true">${fallback}</span>`;
   }
@@ -471,14 +482,12 @@
   }
 
   function renderHeader(title = '단어 카드') {
-    const subtitle = state.words.length ? `${state.words.length}개 단어 · ${state.notes.length}개 학습 노트` : 'Notion 단어장을 카드와 목록으로 펼쳐보세요';
     const canRefresh = state.demo || Boolean(state.config.proxyUrl && state.config.apiKey && state.config.vocabDbId);
     return `
       <header class="app-header widget-header">
         <div class="brand widget-heading">
           <div class="header-kicker">${icons.book}<span>Flashcards</span></div>
           <h1 class="widget-title">${escapeHtml(title)}</h1>
-          <p class="widget-subtitle">${escapeHtml(subtitle)}</p>
         </div>
         <div class="header-actions">
           <button class="icon-button" type="button" data-action="refresh" title="새로고침" aria-label="단어장 새로고침" ${canRefresh ? '' : 'disabled'}>${icons.refresh}</button>
@@ -492,7 +501,7 @@
     const recent = loadSession();
     const recentWords = recent ? getSetWords(recent.set) : [];
     const connectedNotes = state.words.filter(word => word.relatedNoteIds.length).length;
-    let content = `${renderHeader()}<p class="intro">테스트 기록에는 반영하지 않고, 단어장을 과목과 학습 노트별 카드와 목록으로 살펴보세요.</p>`;
+    let content = renderHeader();
     if (!hasCoreConnection() && !state.demo) {
       content += `<div class="empty-state"><strong>단어장 연결이 필요해요.</strong><span>통합 설정에서 만든 단어 카드 URL을 사용해 주세요.</span><div class="empty-actions"><button class="primary-button" type="button" data-action="open-settings">설정 열기</button></div></div>`;
       return `<div class="app-shell">${content}</div>`;
@@ -666,10 +675,9 @@
   }
 
   function renderListLayoutSwitch() {
-    const active = ['grid','compact','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
+    const active = ['grid','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
     const layouts = [
       { id:'grid', label:'격자형', icon:'<span class="layout-icon layout-icon-grid"><i></i><i></i><i></i><i></i></span>' },
-      { id:'compact', label:'간단 목록형', icon:'<span class="layout-icon layout-icon-compact"><i></i><i></i><i></i></span>' },
       { id:'wide', label:'가로형', icon:'<span class="layout-icon layout-icon-wide"><i></i><i></i></span>' },
     ];
     return `<div class="layout-switch" role="group" aria-label="목록 형식">${layouts.map(layout => `<button class="layout-switch-button ${active === layout.id ? 'is-active' : ''}" type="button" data-list-layout="${layout.id}" title="${layout.label}" aria-label="${layout.label}" aria-pressed="${active === layout.id}">${layout.icon}</button>`).join('')}</div>`;
@@ -691,7 +699,7 @@
     const filtered = query ? words.filter(word => listSearchText(word).includes(query)) : words;
     const visible = filtered.slice(0, state.listLimit);
     const wordOrder = new Map(words.map((word, index) => [word.id, index]));
-    const listLayout = ['grid','compact','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
+    const listLayout = ['grid','wide'].includes(state.prefs.listLayout) ? state.prefs.listLayout : 'wide';
     return `<div class="app-shell list-shell">
       ${renderSetHeader()}
       ${renderViewSwitch('list')}
@@ -865,7 +873,11 @@
     }
 
     root.querySelectorAll('.notion-icon img').forEach(image => {
-      const showFallback = () => { image.style.display = 'none'; };
+      const fallback = image.nextElementSibling;
+      const showFallback = () => {
+        image.style.display = 'none';
+        if (fallback) fallback.style.visibility = 'visible';
+      };
       image.addEventListener('error', showFallback, { once:true });
       if (image.complete && image.naturalWidth === 0) showFallback();
     });
